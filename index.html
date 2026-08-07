@@ -14,21 +14,13 @@
             color: white;
             padding: 80px 0;
         }
-        .carousel-item img {
-            height: 450px;
-            object-fit: cover;
-            filter: brightness(0.85);
-        }
-        .carousel-caption {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 8px;
-            padding: 15px;
-            bottom: 30px;
-        }
+        .carousel-item img { height: 450px; object-fit: cover; filter: brightness(0.85); }
+        .carousel-caption { background: rgba(0, 0, 0, 0.5); border-radius: 8px; padding: 15px; bottom: 30px; }
         .product-card img { height: 220px; object-fit: cover; }
         section { padding: 60px 0; }
         .zalo-btn { background-color: #0068ff; border-color: #0068ff; color: white; }
         .zalo-btn:hover { background-color: #0055d4; color: white; }
+        .category-tab { cursor: pointer; transition: all 0.2s; }
     </style>
 </head>
 <body>
@@ -56,22 +48,18 @@
         </div>
     </nav>
 
-    <!-- SLIDER / THANH TRƯỢT SẢN PHẨM TIÊU BIỂU -->
+    <!-- SLIDER -->
     <div id="featuredCarousel" class="carousel slide shadow" data-bs-ride="carousel">
         <div class="carousel-indicators" id="carousel-indicators"></div>
         <div class="carousel-inner" id="carousel-inner">
             <div class="carousel-item active">
                 <div class="d-flex justify-content-center align-items-center bg-dark text-white" style="height: 450px;">
-                    <div class="spinner-border text-warning me-2" role="status"></div> Đang tải slider từ hệ thống quản trị...
+                    <div class="spinner-border text-warning me-2" role="status"></div> Đang tải...
                 </div>
             </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        </button>
+        <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+        <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
     </div>
 
     <!-- HERO -->
@@ -79,7 +67,7 @@
         <div class="container">
             <h1 class="display-5 fw-bold mb-3" id="main-title">Đồ Gỗ Trường Vinh – Tinh Hoa Nghề Mộc</h1>
             <p class="lead mb-4" id="main-desc">Chuyên thiết kế, sản xuất đồ gỗ nội thất cao cấp và đồ gỗ nội thất tâm linh độc quyền.</p>
-            <a href="#sanpham" class="btn btn-warning btn-lg fw-bold text-dark px-4 py-2 shadow">Khám Phá Toàn Bộ Sản Phẩm</a>
+            <a href="#sanpham" class="btn btn-warning btn-lg fw-bold text-dark px-4 py-2 shadow">Khám Phá Sản Phẩm</a>
         </div>
     </header>
 
@@ -87,30 +75,27 @@
     <section id="gioithieu" class="bg-light">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                    <img id="about-img" src="" alt="Xưởng sản xuất" class="img-fluid rounded shadow bg-secondary bg-opacity-25" style="min-height: 300px; object-fit: cover;">
-                </div>
+                <div class="col-lg-6 mb-4 mb-lg-0"><img id="about-img" src="" alt="Xưởng" class="img-fluid rounded shadow bg-secondary bg-opacity-25" style="min-height: 300px; object-fit: cover;"></div>
                 <div class="col-lg-6">
                     <h2 class="fw-bold mb-3 text-dark">Về Cơ Sở Sản Xuất Đồ Gỗ Trường Vinh</h2>
-                    <p class="text-muted" id="about-text">Đang cập nhật nội dung giới thiệu từ trang quản trị...</p>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> 100% Gỗ tự nhiên tuyển chọn, tẩm sấy kỹ chống mối mọt.</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Chuyên sâu Nội thất tâm linh: Bàn thờ, án gian, sập thờ chạm khắc tinh xảo.</li>
-                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Giá gốc tận xưởng, bảo hành dài hạn uy tín.</li>
-                    </ul>
+                    <p class="text-muted" id="about-text">Đang cập nhật nội dung...</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- SẢN PHẨM -->
+    <!-- SẢN PHẨM & DANH MỤC -->
     <section id="sanpham">
         <div class="container">
-            <div class="text-center mb-5">
+            <div class="text-center mb-4">
                 <h2 class="fw-bold">Tất Cả Sản Phẩm</h2>
-                <p class="text-muted">Được chế tác trực tiếp tại xưởng đồ gỗ Trường Vinh</p>
+                <p class="text-muted">Lựa chọn theo danh mục sản phẩm</p>
             </div>
-            <div id="loading-text" class="text-center py-4 text-muted"><div class="spinner-border text-warning me-2" role="status"></div>Đang tải dữ liệu sản phẩm...</div>
+            
+            <!-- Thanh danh mục lọc sản phẩm -->
+            <div class="d-flex justify-content-center flex-wrap gap-2 mb-5" id="category-filters"></div>
+
+            <div id="loading-text" class="text-center py-4 text-muted"><div class="spinner-border text-warning me-2" role="status"></div>Đang tải dữ liệu...</div>
             <div class="row g-4" id="product-list"></div>
         </div>
     </section>
@@ -118,139 +103,115 @@
     <!-- LIÊN HỆ -->
     <section id="lienhe" class="bg-light">
         <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">Liên Hệ Tư Vấn & Đặt Hàng</h2>
-                <p class="text-muted">Kết nối trực tiếp với chủ xưởng để nhận báo giá chi tiết</p>
-            </div>
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="bg-white p-4 rounded shadow-sm h-100">
-                                <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-industry me-2"></i>Đồ Gỗ Trường Vinh</h5>
-                                <p class="text-muted mb-2"><strong>Chuyên:</strong> Nội thất cao cấp & Đồ gỗ tâm linh</p>
-                                <p class="text-muted mb-2"><strong>Địa chỉ:</strong> <span id="info-address">Làng nghề mộc, Tỉnh Nam Định</span></p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="bg-white p-4 rounded shadow-sm h-100 d-flex flex-column justify-content-center text-center">
-                                <h5 class="fw-bold mb-3">Hỗ Trợ Nhanh 24/7</h5>
-                                <a href="#" id="btn-hotline" class="btn btn-danger btn-lg mb-3 fw-bold shadow-sm">
-                                    <i class="fas fa-phone-alt me-2"></i> Gọi Ngay: <span id="info-phone">0916597203</span>
-                                </a>
-                                <a href="https://zalo.me/0916597203" id="btn-zalo" target="_blank" class="btn zalo-btn btn-lg fw-bold shadow-sm">
-                                    <i class="fas fa-comments me-2"></i> Nhắn Tin Zalo Tư Vấn
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="text-center mb-5"><h2 class="fw-bold">Liên Hệ Tư Vấn & Đặt Hàng</h2></div>
+            <div class="row justify-content-center"><div class="col-lg-8"><div class="row g-4">
+                <div class="col-md-6"><div class="bg-white p-4 rounded shadow-sm h-100">
+                    <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-industry me-2"></i>Đồ Gỗ Trường Vinh</h5>
+                    <p class="text-muted mb-2"><strong>Địa chỉ:</strong> <span id="info-address">Nam Định</span></p>
+                </div></div>
+                <div class="col-md-6"><div class="bg-white p-4 rounded shadow-sm h-100 d-flex flex-column justify-content-center text-center">
+                    <a href="#" id="btn-hotline" class="btn btn-danger btn-lg mb-3 fw-bold shadow-sm"><i class="fas fa-phone-alt me-2"></i> <span id="info-phone">0916597203</span></a>
+                    <a href="https://zalo.me/0916597203" target="_blank" class="btn zalo-btn btn-lg fw-bold shadow-sm"><i class="fas fa-comments me-2"></i> Nhắn Tin Zalo</a>
+                </div></div>
+            </div></div></div>
         </div>
     </section>
 
-    <footer class="bg-dark text-white text-center py-3">
-        <div class="container"><p class="mb-0">&copy; 2026 Đồ Gỗ Trường Vinh. All rights reserved.</p></div>
-    </footer>
+    <footer class="bg-dark text-white text-center py-3"><div class="container"><p class="mb-0">&copy; 2026 Đồ Gỗ Trường Vinh.</p></div></footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby6IDxe8RnW0J2xsF533Q-cXkwjBjO5cPyx9L5DvIlKONXb2P_Oyp-DSVqB91pbPBU/exec";
+        let allProducts = [];
+        let allCategories = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             fetch(API_URL + "?action=getData")
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
                     document.getElementById('loading-text').style.display = 'none';
-                    
                     if (data.settings) {
                         if(data.settings.title) document.getElementById('main-title').innerText = data.settings.title;
                         if(data.settings.desc) document.getElementById('main-desc').innerText = data.settings.desc;
                         if(data.settings.about) document.getElementById('about-text').innerText = data.settings.about;
-                        
-                        // Lấy link ảnh Giới thiệu từ trang Admin
-                        if(data.settings.aboutimg) {
-                            document.getElementById('about-img').src = data.settings.aboutimg;
-                        }
-
-                        // Lấy link ảnh nền Hero Section từ trang Admin
+                        if(data.settings.aboutimg) document.getElementById('about-img').src = data.settings.aboutimg;
                         if(data.settings.herobg) {
                             document.getElementById('trangchu').style.background = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${data.settings.herobg}')`;
                             document.getElementById('trangchu').style.backgroundSize = 'cover';
-                            document.getElementById('trangchu').style.backgroundPosition = 'center';
-                        }
-
-                        if(data.settings.address) document.getElementById('info-address').innerText = data.settings.address;
-                        if(data.settings.phone) {
-                            document.getElementById('info-phone').innerText = data.settings.phone;
-                            document.getElementById('btn-hotline').href = "tel:" + data.settings.phone.replace(/\s+/g, '');
                         }
                     }
 
-                    // Slider thanh trượt từ dữ liệu sản phẩm quản trị
-                    const products = data.products || [];
-                    const carouselInner = document.getElementById('carousel-inner');
-                    const carouselIndicators = document.getElementById('carousel-indicators');
-                    
-                    if (products.length > 0) {
-                        carouselInner.innerHTML = '';
-                        carouselIndicators.innerHTML = '';
-                        const featuredProducts = products.slice(0, 5); 
+                    allProducts = data.products || [];
+                    allCategories = data.categories || [];
 
-                        featuredProducts.forEach((p, index) => {
-                            const isActive = index === 0 ? 'active' : '';
-                            carouselIndicators.innerHTML += `
-                                <button type="button" data-bs-target="#featuredCarousel" data-bs-slide-to="${index}" class="${isActive}" aria-label="Slide ${index + 1}"></button>
-                            `;
-                            carouselInner.innerHTML += `
-                                <div class="carousel-item ${isActive}">
-                                    <img src="${p.image}" class="d-block w-100" alt="${p.name}">
-                                    <div class="carousel-caption d-none d-md-block">
-                                        <h3 class="fw-bold text-warning">${p.name}</h3>
-                                        <p>${p.desc} - <strong class="text-light">${p.price}</strong></p>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        carouselInner.innerHTML = `
-                            <div class="carousel-item active">
-                                <div class="d-flex justify-content-center align-items-center bg-dark text-white" style="height: 450px;">
-                                    Chưa có sản phẩm nào được thêm từ trang quản trị.
-                                </div>
-                            </div>
-                        `;
-                    }
-
-                    // Danh sách toàn bộ sản phẩm
-                    const productListEl = document.getElementById('product-list');
-                    productListEl.innerHTML = '';
-                    if (products.length > 0) {
-                        products.forEach(p => {
-                            productListEl.innerHTML += `
-                                <div class="col-md-4">
-                                    <div class="card product-card h-100 shadow-sm border-0">
-                                        <img src="${p.image}" class="card-img-top" alt="${p.name}">
-                                        <div class="card-body d-flex flex-column">
-                                            <h5 class="card-title fw-bold text-dark">${p.name}</h5>
-                                            <p class="card-text text-muted small">${p.desc}</p>
-                                            <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top">
-                                                <span class="text-danger fw-bold">${p.price}</span>
-                                                <a href="#lienhe" class="btn btn-outline-dark btn-sm">Tư vấn ngay</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        productListEl.innerHTML = '<p class="text-center text-muted">Chưa có sản phẩm nào.</p>';
-                    }
-                })
-                .catch(err => {
-                    document.getElementById('loading-text').innerHTML = '<span class="text-danger">Không thể kết nối kho dữ liệu Google Sheets!</span>';
+                    renderCategoryFilters();
+                    renderProducts(allProducts);
+                    renderSlider(allProducts);
                 });
         });
+
+        function renderCategoryFilters() {
+            const filterContainer = document.getElementById('category-filters');
+            let html = `<button class="btn btn-dark btn-sm fw-bold px-3 py-2" onclick="filterByCategory('all')">Tất cả</button>`;
+            allCategories.forEach(cat => {
+                html += `<button class="btn btn-outline-dark btn-sm fw-bold px-3 py-2" onclick="filterByCategory('${cat.id}')">${cat.name}</button>`;
+            });
+            filterContainer.innerHTML = html;
+        }
+
+        function filterByCategory(catId) {
+            if (catId === 'all') {
+                renderProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(p => p.categoryId === catId);
+                renderProducts(filtered);
+            }
+        }
+
+        function renderProducts(products) {
+            const productListEl = document.getElementById('product-list');
+            if (products.length === 0) {
+                productListEl.innerHTML = '<p class="text-center text-muted">Chưa có sản phẩm nào trong danh mục này.</p>';
+                return;
+            }
+            productListEl.innerHTML = products.map(p => `
+                <div class="col-md-4">
+                    <div class="card product-card h-100 shadow-sm border-0">
+                        <img src="${p.image}" class="card-img-top" alt="${p.name}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-dark">${p.name}</h5>
+                            <p class="card-text text-muted small">${p.desc}</p>
+                            <div class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top">
+                                <span class="text-danger fw-bold">${p.price}</span>
+                                <a href="#lienhe" class="btn btn-outline-dark btn-sm">Tư vấn ngay</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function renderSlider(products) {
+            const carouselInner = document.getElementById('carousel-inner');
+            const carouselIndicators = document.getElementById('carousel-indicators');
+            if (products.length > 0) {
+                carouselInner.innerHTML = '';
+                carouselIndicators.innerHTML = '';
+                const featured = products.slice(0, 5);
+                featured.forEach((p, index) => {
+                    const isActive = index === 0 ? 'active' : '';
+                    carouselIndicators.innerHTML += `<button type="button" data-bs-target="#featuredCarousel" data-bs-slide-to="${index}" class="${isActive}"></button>`;
+                    carouselInner.innerHTML += `
+                        <div class="carousel-item ${isActive}">
+                            <img src="${p.image}" class="d-block w-100" alt="${p.name}">
+                            <div class="carousel-caption d-none d-md-block">
+                                <h3 class="fw-bold text-warning">${p.name}</h3>
+                                <p>${p.desc} - <strong class="text-light">${p.price}</strong></p>
+                            </div>
+                        </div>`;
+                });
+            }
+        }
     </script>
 </body>
 </html>
