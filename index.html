@@ -145,12 +145,10 @@
     }
     if(data.settings.address) document.getElementById('info-address').innerText = data.settings.address;
     
-    // ĐOẠN CODE CẦN BỔ SUNG ĐỂ GỌI ĐIỆN ĐÚNG SỐ:
-    if(data.settings.phone) {
-        document.getElementById('info-phone').innerText = data.settings.phone;
-        // Gán link gọi điện chuẩn dạng tel: để bật app gọi điện trên điện thoại / máy tính
-        document.getElementById('btn-hotline').href = "tel:" + data.settings.phone.replace(/\s+/g, '');
-    }
+    // Xử lý hiển thị số điện thoại an toàn
+    const phoneNumber = data.settings.phone || "0916597203"; // Nếu sheet trống thì dùng mặc định số này
+    document.getElementById('info-phone').innerText = phoneNumber;
+    document.getElementById('btn-hotline').href = "tel:" + phoneNumber.replace(/\s+/g, '');
 }
 
                     allProducts = data.products || [];
