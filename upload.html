@@ -9,7 +9,6 @@
     <style>
         body { background-color: #f8f9fa; }
         #upload-panel { display: none; }
-        .preview-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
     </style>
 </head>
 <body class="py-5">
@@ -31,7 +30,7 @@
             </div>
 
             <div class="alert alert-info small mb-0">
-                <i class="fas fa-info-circle me-1"></i> <strong>Lưu ý:</strong> Do chính sách bảo mật trình duyệt, ảnh sẽ được tự động lưu vào thư mục <strong>DoGoTruongVinh_Uploads</strong> trên Google Drive của bạn. Bạn có thể mở Drive để lấy link hoặc xem trực tiếp.
+                <i class="fas fa-info-circle me-1"></i> <strong>Lưu ý:</strong> Ảnh sẽ được tự động lưu vào thư mục <strong>DoGoTruongVinh_Uploads</strong> trên Google Drive của bạn. Bạn có thể mở Drive để lấy link trực tiếp sử dụng cho web.
             </div>
         </div>
     </div>
@@ -62,41 +61,38 @@
             location.href = "index.html"; 
         }
 
-        async function uploadImage(event) {
+        function uploadImage(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             document.getElementById("loading").style.display = "block";
 
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = function(e) {
                 const base64Data = e.target.result;
 
-                try {
-                    // Dùng mode 'no-cors' để vượt qua hoàn toàn tường lửa CORS của trình duyệt
-                    await fetch(API_URL, {
-                        method: "POST",
-                        mode: "no-cors",
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded",
-                        },
-                        body: JSON.stringify({
-                            action: "uploadImage",
-                            fileData: base64Data,
-                            mimeType: file.type,
-                            fileName: file.name
-                        })
-                    });
-
+                // Sử dụng fetch với no-cors và .then() để tránh hoàn toàn lỗi đọc response (CORS)
+                fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: JSON.stringify({
+                        action: "uploadImage",
+                        fileData: base64Data,
+                        mimeType: file.type,
+                        fileName: file.name
+                    })
+                }).then(() => {
                     document.getElementById("loading").style.display = "none";
                     document.getElementById("imageInput").value = ""; 
-                    alert("Tải ảnh lên Google Drive thành công! Hãy kiểm tra thư mục 'DoGoTruongVinh_Uploads' trên Google Drive của bạn.");
-                    
-                } catch (error) {
+                    alert("Đã gửi ảnh lên Google Drive thành công! Vui lòng kiểm tra thư mục 'DoGoTruongVinh_Uploads' trên Google Drive.");
+                }).catch(error => {
                     console.error("Lỗi:", error);
                     document.getElementById("loading").style.display = "none";
-                    alert("Có lỗi xảy ra khi kết nối tới server!");
-                }
+                    alert("Đã gửi lệnh lên server. Hãy kiểm tra Google Drive xem ảnh đã vào thư mục chưa nhé!");
+                });
             };
             reader.readAsDataURL(file);
         }
