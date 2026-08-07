@@ -250,7 +250,12 @@
             if (products.length > 0) {
                 carouselInner.innerHTML = '';
                 carouselIndicators.innerHTML = '';
-                const featured = products.slice(0, 5);
+                
+                // ĐỔI DÒNG NÀY:
+                // const featured = products.slice(0, 5); 
+                // THÀNH DÒNG NÀY:
+                const featured = products; 
+                
                 featured.forEach((p, index) => {
                     const isActive = index === 0 ? 'active' : '';
                     carouselIndicators.innerHTML += `<button type="button" data-bs-target="#featuredCarousel" data-bs-slide-to="${index}" class="${isActive}"></button>`;
