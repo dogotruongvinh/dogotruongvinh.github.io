@@ -14,7 +14,12 @@
             color: white;
             padding: 80px 0;
         }
-        .carousel-item img { height: 450px; object-fit: cover; filter: brightness(0.85); }
+        .carousel-item img {
+    height: 450px;             /* Giữ chiều cao cố định khung slider */
+    width: 100%;               /* Chiều rộng tràn đầy khung */
+    object-fit: contain;       /* Giúp ảnh scale đúng tỷ lệ, không bị méo hay cắt xén */
+    background-color: #111;    /* Màu nền lót 2 bên nếu tỷ lệ ảnh hẹp hơn khung */
+}
         .carousel-caption { background: rgba(0, 0, 0, 0.5); border-radius: 8px; padding: 15px; bottom: 30px; }
         .product-card img { height: 220px; object-fit: cover; }
         section { padding: 60px 0; }
