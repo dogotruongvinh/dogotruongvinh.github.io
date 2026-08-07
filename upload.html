@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tải Ảnh Lên GitHub & Lấy Link</title>
-    <!-- Sử dụng Bootstrap 5 giao diện đẹp, hiện đại -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -19,18 +18,18 @@
         <div class="upload-card">
             <h3 class="fw-bold text-primary mb-4 text-center"><i class="fas fa-cloud-upload-alt me-2"></i>Tải Ảnh Lên GitHub</h3>
             
-            <!-- Form cấu hình GitHub (Chỉ cần điền 1 lần hoặc lưu trình duyệt) -->
+            <!-- Cấu hình GitHub -->
             <div class="card bg-light p-3 mb-3 border-0">
-                <h6 class="fw-bold text-secondary mb-2"><i class="fas.fa-cog me-1"></i> Cấu hình GitHub cá nhân:</h6>
+                <h6 class="fw-bold text-secondary mb-2"><i class="fas fa-cog me-1"></i> Cấu hình GitHub cá nhân:</h6>
                 <div class="mb-2">
                     <input type="text" id="repoOwner" class="form-control form-control-sm" placeholder="Tên tài khoản GitHub (ví dụ: dogotruongvinh)">
                 </div>
                 <div class="mb-2">
-                    <input type="text" id="repoName" class="form-control form-control-sm" placeholder="Tên Repository (ví dụ: dogotruongvinh.github.io)">
+                    <input type="text" id="repoName" class="form-control form-control-sm" placeholder="Tên Repository (ví dụ: my-website hoặc dogotruongvinh.github.io)">
                 </div>
                 <div class="mb-0">
                     <input type="password" id="githubToken" class="form-control form-control-sm" placeholder="GitHub Personal Access Token (ghp_...)">
-                    <div class="form-text small text-muted">Token cần có quyền truy cập repo để ghi file.</div>
+                    <div class="form-text small text-muted">Token cần có quyền truy cập repo (scope: repo).</div>
                 </div>
             </div>
 
@@ -81,11 +80,11 @@
             const file = fileInput.files[0];
             if (!file) return;
 
-            selectedFileName = Date.now() + "_" + file.name.replace(/\s+/g, '_'); // Tạo tên file độc nhất tránh trùng
+            selectedFileName = Date.now() + "_" + file.name.replace(/\s+/g, '_'); // Tạo tên file độc nhất
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                base64Data = e.target.result.split(',')[1]; // Lấy chuỗi base64 thuần
+                base64Data = e.target.result.split(',')[1]; 
                 document.getElementById('preview').src = e.target.result;
                 document.getElementById('preview').style.display = 'block';
                 document.getElementById('uploadBtn').removeAttribute('disabled');
@@ -94,16 +93,21 @@
         }
 
         async function uploadToGitHub() {
-            const owner = document.getElementById('repoOwner').value.trim();
-            const repo = document.getElementById('repoName').value.trim();
+            let ownerInput = document.getElementById('repoOwner').value.trim();
+            let repoInput = document.getElementById('repoName').value.trim();
             const token = document.getElementById('githubToken').value.trim();
 
-            if (!owner || !repo || !token) {
+            if (!ownerInput || !repoInput || !token) {
                 alert("Vui lòng điền đầy đủ thông tin Tên tài khoản, Tên Repository và GitHub Token!");
                 return;
             }
 
-            // Lưu lại cấu hình vào trình duyệt để lần sau không phải nhập lại
+            // Xử lý thông minh để cắt sạch đường link nếu lỡ dán cả URL vào
+            const owner = ownerInput.replace('https://github.com/', '').split('/')[0];
+            let repo = repoInput.replace('https://github.com/', '').split('/').pop().replace('.git', '');
+            if (repo.includes('/')) repo = repo.split('/')[0];
+
+            // Lưu lại cấu hình sạch vào trình duyệt
             localStorage.setItem('gh_owner', owner);
             localStorage.setItem('gh_repo', repo);
             localStorage.setItem('gh_token', token);
@@ -112,8 +116,8 @@
             document.getElementById('uploadBtn').setAttribute('disabled', 'true');
             document.getElementById('resultBox').style.display = 'none';
 
-            // Đường dẫn API GitHub để tạo file mới
-            const filePath = `images/${selectedFileName}`; // Ảnh sẽ tự động được lưu vào thư mục 'images' trong repo của bạn
+            // Đường dẫn API GitHub chuẩn xác
+            const filePath = `images/${selectedFileName}`;
             const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
 
             const payload = {
@@ -137,8 +141,7 @@
                 if (response.ok) {
                     document.getElementById('status').innerText = "Tải lên thành công!";
                     
-                    // Tạo chuẩn URL trực tiếp từ GitHub Pages hoặc raw.githubusercontent
-                    // Ưu tiên dùng link raw hoặc link GitHub Pages công khai của bạn
+                    // Tạo chuẩn URL trực tiếp từ GitHub Pages
                     const imageUrl = `https://${owner}.github.io/${repo}/images/${selectedFileName}`;
                     
                     document.getElementById('resultUrl').value = imageUrl;
