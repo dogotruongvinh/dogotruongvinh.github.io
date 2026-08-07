@@ -17,15 +17,11 @@
         <nav class="navbar navbar-dark bg-dark rounded shadow-sm mb-4 px-3">
             <span class="navbar-brand fw-bold"><i class="fas fa-lock me-2"></i>QUẢN TRỊ WEBSITE</span>
             <div>
-                <button onclick="backupData()" class="btn btn-warning btn-sm me-2"><i class="fas fa-download"></i> Backup</button>
-                <label class="btn btn-info btn-sm me-2">
-                    <i class="fas fa-upload"></i> Restore
-                    <input type="file" id="restore-file" style="display: none;" onchange="restoreData(event)">
-                </label>
                 <button onclick="logout()" class="btn btn-danger btn-sm"><i class="fas fa-sign-out-alt"></i> Thoát</button>
             </div>
         </nav>
 
+        <!-- Cấu hình chung -->
         <div class="card mb-4 shadow-sm">
             <div class="card-header bg-primary text-white fw-bold">Cấu Hình Website</div>
             <div class="card-body">
@@ -33,24 +29,39 @@
                     <div class="row">
                         <div class="col-md-6 mb-2"><input type="text" id="set-title" class="form-control" placeholder="Tiêu đề trang chủ"></div>
                         <div class="col-md-6 mb-2"><input type="text" id="set-desc" class="form-control" placeholder="Mô tả trang chủ"></div>
-                        <div class="col-md-6 mb-2"><input type="text" id="set-herobg" class="form-control" placeholder="Link ảnh nền"></div>
+                        <div class="col-md-6 mb-2"><input type="text" id="set-herobg" class="form-control" placeholder="Link ảnh nền Hero"></div>
                         <div class="col-md-6 mb-2"><input type="text" id="set-aboutimg" class="form-control" placeholder="Link ảnh giới thiệu"></div>
                     </div>
                     <textarea id="set-about" class="form-control mb-2" placeholder="Nội dung giới thiệu" rows="3"></textarea>
-                    <button type="submit" class="btn btn-primary" id="btn-save-settings">Lưu cấu hình</button>
+                    <button type="submit" class="btn btn-primary btn-sm" id="btn-save-settings">Lưu cấu hình</button>
                 </form>
             </div>
         </div>
 
+        <!-- Quản lý Danh Mục -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Quản Lý Danh Mục Sản Phẩm</span>
+                <button class="btn btn-light btn-sm fw-bold" onclick="showCategoryModal()">+ Thêm Danh Mục</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light"><tr><th>Tên Danh Mục</th><th class="text-center">Thao tác</th></tr></thead>
+                    <tbody id="category-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quản lý Sản Phẩm -->
         <div class="card shadow-sm">
             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <span class="fw-bold">Danh Sách Sản Phẩm</span>
-                <button class="btn btn-light btn-sm fw-bold" onclick="showModal()">+ Thêm Sản Phẩm</button>
+                <button class="btn btn-light btn-sm fw-bold" onclick="showProductModal()">+ Thêm Sản Phẩm</button>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
-                        <tr><th>Ảnh</th><th>Tên</th><th>Giá</th><th class="text-center">Thao tác</th></tr>
+                        <tr><th>Ảnh</th><th>Tên</th><th>Danh mục</th><th>Giá</th><th class="text-center">Thao tác</th></tr>
                     </thead>
                     <tbody id="product-tbody"></tbody>
                 </table>
@@ -58,26 +69,38 @@
         </div>
     </div>
 
-    <!-- Modal Thêm/Sửa Sản Phẩm -->
-    <div class="modal fade" id="productModal" tabindex="-1">
-        <div class="modal-dialog"><div class="modal-content"><div class="modal-body">
-            <form id="product-form">
-                <input type="hidden" id="prod-index">
-                <input type="hidden" id="prod-id">
-                <input type="text" id="prod-name" class="form-control mb-2" placeholder="Tên sản phẩm" required>
-                <input type="text" id="prod-price" class="form-control mb-2" placeholder="Giá sản phẩm" required>
-                <input type="text" id="prod-image" class="form-control mb-2" placeholder="Link ảnh sản phẩm" required>
-                <textarea id="prod-desc" class="form-control mb-2" placeholder="Mô tả sản phẩm" rows="3"></textarea>
-                <button type="submit" class="btn btn-success w-100">Lưu sản phẩm</button>
-            </form>
-        </div></div></div>
-    </div>
+    <!-- Modal Danh Mục -->
+    <div class="modal fade" id="categoryModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body">
+        <form id="category-form">
+            <input type="hidden" id="cat-index">
+            <input type="hidden" id="cat-id">
+            <h5 class="fw-bold mb-3">Thêm/Sửa Danh Mục</h5>
+            <input type="text" id="cat-name" class="form-control mb-3" placeholder="Tên danh mục (Ví dụ: Sập Thờ, Án Gian...)" required>
+            <button type="submit" class="btn btn-secondary w-100">Lưu danh mục</button>
+        </form>
+    </div></div></div></div>
+
+    <!-- Modal Sản Phẩm -->
+    <div class="modal fade" id="productModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-body">
+        <form id="product-form">
+            <input type="hidden" id="prod-index">
+            <input type="hidden" id="prod-id">
+            <h5 class="fw-bold mb-3">Thêm/Sửa Sản Phẩm</h5>
+            <input type="text" id="prod-name" class="form-control mb-2" placeholder="Tên sản phẩm" required>
+            <select id="prod-category" class="form-control mb-2" required></select>
+            <input type="text" id="prod-price" class="form-control mb-2" placeholder="Giá sản phẩm" required>
+            <input type="text" id="prod-image" class="form-control mb-2" placeholder="Link ảnh sản phẩm" required>
+            <textarea id="prod-desc" class="form-control mb-2" placeholder="Mô tả sản phẩm" rows="3"></textarea>
+            <button type="submit" class="btn btn-success w-100">Lưu sản phẩm</button>
+        </form>
+    </div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby6IDxe8RnW0J2xsF533Q-cXkwjBjO5cPyx9L5DvIlKONXb2P_Oyp-DSVqB91pbPBU/exec";
         const PASSWORD = "Ttm20073094@"; 
         let products = [];
+        let categories = [];
 
         window.onload = () => {
             if (sessionStorage.getItem("auth") === PASSWORD) {
@@ -101,78 +124,113 @@
                 document.getElementById("set-herobg").value = data.settings.herobg || "";
                 document.getElementById("set-aboutimg").value = data.settings.aboutimg || "";
                 document.getElementById("set-about").value = data.settings.about || "";
+                
                 products = data.products || [];
-                renderTable();
+                categories = data.categories || [];
+                renderCategories();
+                renderProducts();
+                updateCategorySelect();
             } catch (err) {
                 console.error("Lỗi tải dữ liệu:", err);
             }
         }
 
-        function renderTable() {
-            document.getElementById("product-tbody").innerHTML = products.map((p, i) => `
+        function renderCategories() {
+            document.getElementById("category-tbody").innerHTML = categories.map((c, i) => `
+                <tr>
+                    <td>${c.name}</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-warning me-1" onclick="editCat(${i})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="delCat(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join("");
+        }
+
+        function renderProducts() {
+            document.getElementById("product-tbody").innerHTML = products.map((p, i) => {
+                const cat = categories.find(c => c.id === p.categoryId);
+                const catName = cat ? cat.name : '<span class="text-muted">Chưa phân loại</span>';
+                return `
                 <tr>
                     <td><img src="${p.image}" width="50" height="50" style="object-fit:cover;" class="rounded"></td>
                     <td>${p.name}</td>
+                    <td>${catName}</td>
                     <td>${p.price}</td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-warning me-1" onclick="editProd(${i})"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="delProd(${i})"><i class="fas fa-trash"></i></button>
                     </td>
-                </tr>`).join("");
+                </tr>`;
+            }).join("");
         }
 
-        // 1. LƯU CẤU HÌNH WEBSITE
+        function updateCategorySelect() {
+            const select = document.getElementById("prod-category");
+            select.innerHTML = '<option value="">-- Chọn danh mục sản phẩm --</option>' + 
+                categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+        }
+
+        // Lưu Cấu hình
         document.getElementById("settings-form").addEventListener("submit", async function(e) {
             e.preventDefault();
-            const btn = document.getElementById("btn-save-settings");
-            btn.innerText = "Đang lưu...";
-            
-            const settingsData = {
-                action: "saveSettings",
-                settings: {
-                    title: document.getElementById("set-title").value,
-                    desc: document.getElementById("set-desc").value,
-                    herobg: document.getElementById("set-herobg").value,
-                    aboutimg: document.getElementById("set-aboutimg").value,
-                    about: document.getElementById("set-about").value
-                }
-            };
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify(settingsData)
-                });
-                const result = await response.json();
-                if(result.status === "success") {
-                    alert("Lưu cấu hình thành công!");
-                } else {
-                    alert("Lưu thất bại!");
-                }
-            } catch (error) {
-                console.error("Lỗi:", error);
-                alert("Không thể kết nối tới Google Sheets!");
-            } finally {
-                btn.innerText = "Lưu cấu hình";
-            }
+            await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "saveSettings",
+                    settings: {
+                        title: document.getElementById("set-title").value,
+                        desc: document.getElementById("set-desc").value,
+                        herobg: document.getElementById("set-herobg").value,
+                        aboutimg: document.getElementById("set-aboutimg").value,
+                        about: document.getElementById("set-about").value
+                    }
+                })
+            });
+            alert("Lưu cấu hình thành công!");
         });
 
-        // HÀM GỬI DANH SÁCH SẢN PHẨM LÊN GOOGLE SHEETS
-        async function saveProductsToSheet() {
-            try {
-                await fetch(API_URL, {
-                    method: "POST",
-                    body: JSON.stringify({
-                        action: "saveProducts",
-                        products: products
-                    })
-                });
-            } catch (error) {
-                console.error("Lỗi khi lưu sản phẩm:", error);
+        // Thêm/Sửa Danh mục
+        document.getElementById("category-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const index = document.getElementById("cat-index").value;
+            const id = document.getElementById("cat-id").value || "cat_" + Date.now();
+            const name = document.getElementById("cat-name").value;
+
+            if (index === "") categories.push({ id, name });
+            else categories[index] = { id, name };
+
+            await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "saveCategories", categories }) });
+            renderCategories();
+            updateCategorySelect();
+            bootstrap.Modal.getInstance(document.getElementById("categoryModal")).hide();
+            this.reset();
+        });
+
+        function showCategoryModal() {
+            document.getElementById("category-form").reset();
+            document.getElementById("cat-index").value = "";
+            document.getElementById("cat-id").value = "";
+            new bootstrap.Modal(document.getElementById("categoryModal")).show();
+        }
+
+        function editCat(i) {
+            const c = categories[i];
+            document.getElementById("cat-index").value = i;
+            document.getElementById("cat-id").value = c.id;
+            document.getElementById("cat-name").value = c.name;
+            new bootstrap.Modal(document.getElementById("categoryModal")).show();
+        }
+
+        async function delCat(i) {
+            if (confirm("Xóa danh mục này?")) {
+                categories.splice(i, 1);
+                await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "saveCategories", categories }) });
+                renderCategories();
+                updateCategorySelect();
             }
         }
 
-        // 2. THÊM / SỬA SẢN PHẨM
+        // Thêm/Sửa Sản phẩm
         document.getElementById("product-form").addEventListener("submit", async function(e) {
             e.preventDefault();
             const index = document.getElementById("prod-index").value;
@@ -181,30 +239,23 @@
             const price = document.getElementById("prod-price").value;
             const image = document.getElementById("prod-image").value;
             const desc = document.getElementById("prod-desc").value;
+            const categoryId = document.getElementById("prod-category").value;
 
-            if (index === "") {
-                // Thêm mới
-                products.push({ id, name, price, image, desc });
-            } else {
-                // Cập nhật
-                products[index] = { id, name, price, image, desc };
-            }
+            const newProd = { id, name, price, image, desc, categoryId };
+            if (index === "") products.push(newProd);
+            else products[index] = newProd;
 
-            await saveProductsToSheet();
-            renderTable();
-            
+            await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "saveProducts", products }) });
+            renderProducts();
             bootstrap.Modal.getInstance(document.getElementById("productModal")).hide();
             this.reset();
-            document.getElementById("prod-index").value = "";
-            document.getElementById("prod-id").value = "";
-            alert("Đã lưu sản phẩm thành công!");
         });
 
-        function showModal() { 
+        function showProductModal() {
             document.getElementById("product-form").reset();
             document.getElementById("prod-index").value = "";
             document.getElementById("prod-id").value = "";
-            new bootstrap.Modal(document.getElementById("productModal")).show(); 
+            new bootstrap.Modal(document.getElementById("productModal")).show();
         }
 
         function editProd(i) {
@@ -215,53 +266,16 @@
             document.getElementById("prod-price").value = p.price;
             document.getElementById("prod-image").value = p.image;
             document.getElementById("prod-desc").value = p.desc;
+            document.getElementById("prod-category").value = p.categoryId || "";
             new bootstrap.Modal(document.getElementById("productModal")).show();
         }
 
         async function delProd(i) {
             if (confirm("Bạn có chắc muốn xoá sản phẩm này?")) {
                 products.splice(i, 1);
-                await saveProductsToSheet();
-                renderTable();
-                alert("Đã xoá thành công!");
+                await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "saveProducts", products }) });
+                renderProducts();
             }
-        }
-
-        // BACKUP
-        function backupData() {
-            const data = { 
-                settings: { 
-                    title: document.getElementById('set-title').value,
-                    desc: document.getElementById('set-desc').value,
-                    herobg: document.getElementById('set-herobg').value,
-                    aboutimg: document.getElementById('set-aboutimg').value,
-                    about: document.getElementById('set-about').value
-                }, 
-                products 
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "Backup_DoGoTruongVinh_" + new Date().toISOString().slice(0,10) + ".json";
-            a.click();
-        }
-
-        // RESTORE
-        async function restoreData(event) {
-            const file = event.target.files[0];
-            if (!file || !confirm("CẢNH BÁO: Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại!")) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const restored = JSON.parse(e.target.result);
-                products = restored.products;
-                await Promise.all([
-                    fetch(API_URL, {method:"POST", body: JSON.stringify({action:"saveSettings", settings: restored.settings})}),
-                    fetch(API_URL, {method:"POST", body: JSON.stringify({action:"saveProducts", products})})
-                ]);
-                alert("Khôi phục thành công!");
-                loadData();
-            };
-            reader.readAsText(file);
         }
     </script>
 </body>
