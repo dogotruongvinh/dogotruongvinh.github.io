@@ -64,7 +64,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Thay link Web App Google Apps Script của bạn vào đây
+        // Đảm bảo thay đúng link Web App (kết thúc bằng /exec) mới nhất của bạn vào đây
         const API_URL = "https://script.google.com/macros/s/AKfycbwsdMkt0vI1HvMayBKNEALwQK2zllw4f2WLk77Z5CCSFWdsaldymv29D6o_h8bKZ_4/exec";
         const PASSWORD = "Ttm20073094@"; // Mật khẩu truy cập trang
         let uploadedImages = [];
@@ -102,8 +102,13 @@
                 const base64Data = e.target.result;
 
                 try {
+                    // Dùng fetch với cấu hình tối ưu để tránh lỗi CORS từ GitHub Pages sang Google Apps Script
                     const response = await fetch(API_URL, {
                         method: "POST",
+                        redirect: "follow",
+                        headers: {
+                            "Content-Type": "text/plain;charset=utf-8",
+                        },
                         body: JSON.stringify({
                             action: "uploadImage",
                             fileData: base64Data,
@@ -126,12 +131,12 @@
                         uploadedImages.unshift({ url: result.url, name: file.name });
                         renderHistory();
                     } else {
-                        alert("Tải ảnh thất bại!");
+                        alert("Tải ảnh thất bại từ phía Server!");
                     }
                 } catch (error) {
                     console.error("Lỗi:", error);
                     document.getElementById("loading").style.display = "none";
-                    alert("Có lỗi kết nối tới server!");
+                    alert("Có lỗi kết nối tới server! Vui lòng kiểm tra lại link API_URL hoặc quyền Deploy.");
                 }
             };
             reader.readAsDataURL(file);
