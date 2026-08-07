@@ -2,89 +2,163 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Upload Ảnh Lên Google Drive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tải Ảnh Lên GitHub & Lấy Link</title>
+    <!-- Sử dụng Bootstrap 5 giao diện đẹp, hiện đại -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; }
+        .upload-card { max-width: 600px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .preview-img { max-height: 200px; object-fit: contain; width: 100%; border-radius: 8px; border: 1px dashed #ddd; padding: 5px; }
+    </style>
 </head>
-<body class="p-4 bg-light">
-    <div class="container bg-white p-4 rounded shadow" style="max-width: 500px;">
-        <h4 class="mb-3 text-primary">Tải Ảnh Lên Google Drive</h4>
-        
-        <div class="mb-3">
-            <input type="file" id="imageInput" class="form-control" accept="image/*">
-        </div>
-        <button class="btn btn-primary w-100 mb-3" onclick="upload()">Tải lên & Lấy Link</button>
-        
-        <div id="status" class="text-center text-muted fw-bold mb-2"></div>
-        
-        <div id="result" class="mb-3" style="display:none;">
-            <label class="form-label small fw-bold text-success">Link ảnh trực tiếp (Copy dán vào web):</label>
-            <div class="input-group mb-2">
-                <input type="text" id="finalUrl" class="form-control" readonly>
-                <button class="btn btn-success" onclick="copyLink()">Sao chép</button>
+<body>
+
+    <div class="container">
+        <div class="upload-card">
+            <h3 class="fw-bold text-primary mb-4 text-center"><i class="fas fa-cloud-upload-alt me-2"></i>Tải Ảnh Lên GitHub</h3>
+            
+            <!-- Form cấu hình GitHub (Chỉ cần điền 1 lần hoặc lưu trình duyệt) -->
+            <div class="card bg-light p-3 mb-3 border-0">
+                <h6 class="fw-bold text-secondary mb-2"><i class="fas.fa-cog me-1"></i> Cấu hình GitHub cá nhân:</h6>
+                <div class="mb-2">
+                    <input type="text" id="repoOwner" class="form-control form-control-sm" placeholder="Tên tài khoản GitHub (ví dụ: dogotruongvinh)">
+                </div>
+                <div class="mb-2">
+                    <input type="text" id="repoName" class="form-control form-control-sm" placeholder="Tên Repository (ví dụ: dogotruongvinh.github.io)">
+                </div>
+                <div class="mb-0">
+                    <input type="password" id="githubToken" class="form-control form-control-sm" placeholder="GitHub Personal Access Token (ghp_...)">
+                    <div class="form-text small text-muted">Token cần có quyền truy cập repo để ghi file.</div>
+                </div>
             </div>
-            <div class="text-center">
-                <img id="preview" src="" class="img-thumbnail mt-2" style="max-height: 120px;">
+
+            <!-- Chọn file ảnh -->
+            <div class="mb-3">
+                <label class="form-label fw-bold text-muted small">Chọn ảnh từ máy tính:</label>
+                <input type="file" id="imageInput" class="form-control" accept="image/*" onchange="previewFile()">
+            </div>
+
+            <!-- Khung xem trước ảnh -->
+            <div class="text-center mb-3">
+                <img id="preview" src="" class="preview-img" style="display:none;">
+            </div>
+
+            <!-- Nút thực hiện tải lên -->
+            <button id="uploadBtn" class="btn btn-primary w-100 py-2 fw-bold" onclick="uploadToGitHub()" disabled>
+                <i class="fas fa-upload me-1"></i> Tải Lên GitHub & Lấy Link
+            </button>
+
+            <!-- Trạng thái -->
+            <div id="status" class="text-center text-muted mt-3 small"></div>
+
+            <!-- Khu vực nhận kết quả Link ảnh -->
+            <div id="resultBox" class="mt-4 p-3 bg-success bg-opacity-10 rounded border border-success" style="display:none;">
+                <label class="form-label fw-bold text-success small mb-1"><i class="fas fa-check-circle me-1"></i> Tải lên thành công! Link ảnh của bạn:</label>
+                <div class="input-group mb-2">
+                    <input type="text" id="resultUrl" class="form-control bg-white" readonly>
+                    <button class="btn btn-success" onclick="copyLink()"><i class="fas fa-copy me-1"></i> Sao chép</button>
+                </div>
+                <div class="form-text text-success small">Bạn có thể copy link trên dán trực tiếp vào thuộc tính `src` của thẻ `<img>` trên web.</div>
             </div>
         </div>
     </div>
 
     <script>
-        // 👉 THAY LINK /exec CHUẨN CỦA BẠN VÀO ĐÂY (Không dùng dấu ... nữa)
-        const API_URL = "https://script.google.com/macros/s/AKfycbyZ6POB_04r2jX-psm_GpUHHEVS0_tmgA686CKKtZ1uTe-6FkKP_lbPZW88T61sUvk/exec"; 
+        // Tự động điền lại thông tin nếu đã lưu trước đó trên trình duyệt
+        window.onload = () => {
+            if(localStorage.getItem('gh_owner')) document.getElementById('repoOwner').value = localStorage.getItem('gh_owner');
+            if(localStorage.getItem('gh_repo')) document.getElementById('repoName').value = localStorage.getItem('gh_repo');
+            if(localStorage.getItem('gh_token')) document.getElementById('githubToken').value = localStorage.getItem('gh_token');
+        };
 
-        async function upload() {
+        let base64Data = "";
+        let selectedFileName = "";
+
+        function previewFile() {
             const fileInput = document.getElementById('imageInput');
             const file = fileInput.files[0];
-            if (!file) {
-                alert("Vui lòng chọn một hình ảnh!");
-                return;
-            }
+            if (!file) return;
 
-            document.getElementById('status').innerText = "Đang tải ảnh lên, vui lòng chờ...";
-            document.getElementById('result').style.display = "none";
-
+            selectedFileName = Date.now() + "_" + file.name.replace(/\s+/g, '_'); // Tạo tên file độc nhất tránh trùng
             const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const response = await fetch(API_URL, {
-                        method: "POST",
-                        redirect: "follow",
-                        headers: {
-                            "Content-Type": "text/plain;charset=utf-8",
-                        },
-                        body: JSON.stringify({
-                            action: "uploadImage",
-                            fileData: e.target.result,
-                            mimeType: file.type,
-                            fileName: file.name
-                        })
-                    });
-
-                    const result = await response.json();
-                    
-                    if(result.status === "success") {
-                        document.getElementById('status').innerText = "Tải ảnh thành công!";
-                        document.getElementById('result').style.display = "block";
-                        document.getElementById('finalUrl').value = result.url;
-                        document.getElementById('preview').src = result.url;
-                        fileInput.value = ""; // Reset input
-                    } else {
-                        document.getElementById('status').innerText = "Lỗi: " + result.message;
-                    }
-                } catch (error) {
-                    console.error("Lỗi:", error);
-                    document.getElementById('status').innerText = "";
-                    alert("Lỗi kết nối! Hãy chắc chắn bạn đã dán đúng link API_URL kết thúc bằng /exec và đã bấm Deploy (New version).");
-                }
+            
+            reader.onload = function(e) {
+                base64Data = e.target.result.split(',')[1]; // Lấy chuỗi base64 thuần
+                document.getElementById('preview').src = e.target.result;
+                document.getElementById('preview').style.display = 'block';
+                document.getElementById('uploadBtn').removeAttribute('disabled');
             };
             reader.readAsDataURL(file);
         }
 
+        async function uploadToGitHub() {
+            const owner = document.getElementById('repoOwner').value.trim();
+            const repo = document.getElementById('repoName').value.trim();
+            const token = document.getElementById('githubToken').value.trim();
+
+            if (!owner || !repo || !token) {
+                alert("Vui lòng điền đầy đủ thông tin Tên tài khoản, Tên Repository và GitHub Token!");
+                return;
+            }
+
+            // Lưu lại cấu hình vào trình duyệt để lần sau không phải nhập lại
+            localStorage.setItem('gh_owner', owner);
+            localStorage.setItem('gh_repo', repo);
+            localStorage.setItem('gh_token', token);
+
+            document.getElementById('status').innerText = "Đang đẩy ảnh lên GitHub, vui lòng chờ...";
+            document.getElementById('uploadBtn').setAttribute('disabled', 'true');
+            document.getElementById('resultBox').style.display = 'none';
+
+            // Đường dẫn API GitHub để tạo file mới
+            const filePath = `images/${selectedFileName}`; // Ảnh sẽ tự động được lưu vào thư mục 'images' trong repo của bạn
+            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+
+            const payload = {
+                message: `Upload image ${selectedFileName} via web tool`,
+                content: base64Data
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Content-Type": "application/json",
+                        "Accept": "vnd.github+json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('status').innerText = "Tải lên thành công!";
+                    
+                    // Tạo chuẩn URL trực tiếp từ GitHub Pages hoặc raw.githubusercontent
+                    // Ưu tiên dùng link raw hoặc link GitHub Pages công khai của bạn
+                    const imageUrl = `https://${owner}.github.io/${repo}/images/${selectedFileName}`;
+                    
+                    document.getElementById('resultUrl').value = imageUrl;
+                    document.getElementById('resultBox').style.display = 'block';
+                } else {
+                    document.getElementById('status').innerText = "Lỗi: " + (result.message || "Không thể tải lên");
+                }
+            } catch (error) {
+                console.error("Lỗi:", error);
+                document.getElementById('status').innerText = "Lỗi kết nối tới GitHub API!";
+            } finally {
+                document.getElementById('uploadBtn').removeAttribute('disabled');
+            }
+        }
+
         function copyLink() {
-            const copyText = document.getElementById('finalUrl');
+            const copyText = document.getElementById('resultUrl');
             copyText.select();
             navigator.clipboard.writeText(copyText.value);
-            alert("Đã sao chép link thành công!");
+            alert("Đã sao chép link vào bộ nhớ tạm!");
         }
     </script>
 </body>
