@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80');
+            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), #333;
             background-size: cover;
             background-position: center;
             color: white;
@@ -61,10 +61,8 @@
         <div class="carousel-indicators" id="carousel-indicators"></div>
         <div class="carousel-inner" id="carousel-inner">
             <div class="carousel-item active">
-                <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="Đang tải...">
-                <div class="carousel-caption d-none d-md-block">
-                    <h3 class="fw-bold">Đồ Gỗ Trường Vinh</h3>
-                    <p>Đang tải hình ảnh sản phẩm nổi bật từ Google...</p>
+                <div class="d-flex justify-content-center align-items-center bg-dark text-white" style="height: 450px;">
+                    <div class="spinner-border text-warning me-2" role="status"></div> Đang tải slider từ hệ thống quản trị...
                 </div>
             </div>
         </div>
@@ -90,11 +88,11 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-4 mb-lg-0">
-                    <img id="about-img" src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=800&q=80" alt="Xưởng sản xuất" class="img-fluid rounded shadow">
+                    <img id="about-img" src="" alt="Xưởng sản xuất" class="img-fluid rounded shadow bg-secondary bg-opacity-25" style="min-height: 300px; object-fit: cover;">
                 </div>
                 <div class="col-lg-6">
                     <h2 class="fw-bold mb-3 text-dark">Về Cơ Sở Sản Xuất Đồ Gỗ Trường Vinh</h2>
-                    <p class="text-muted" id="about-text">Trải qua quá trình phát triển, Đồ Gỗ Trường Vinh tự hào giữ gìn và phát huy tinh hoa nghề mộc truyền thống với xưởng sản xuất trực tiếp...</p>
+                    <p class="text-muted" id="about-text">Đang cập nhật nội dung giới thiệu từ trang quản trị...</p>
                     <ul class="list-unstyled">
                         <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> 100% Gỗ tự nhiên tuyển chọn, tẩm sấy kỹ chống mối mọt.</li>
                         <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Chuyên sâu Nội thất tâm linh: Bàn thờ, án gian, sập thờ chạm khắc tinh xảo.</li>
@@ -112,7 +110,7 @@
                 <h2 class="fw-bold">Tất Cả Sản Phẩm</h2>
                 <p class="text-muted">Được chế tác trực tiếp tại xưởng đồ gỗ Trường Vinh</p>
             </div>
-            <div id="loading-text" class="text-center py-4 text-muted"><div class="spinner-border text-warning me-2" role="status"></div>Đang tải dữ liệu từ Google Drive...</div>
+            <div id="loading-text" class="text-center py-4 text-muted"><div class="spinner-border text-warning me-2" role="status"></div>Đang tải dữ liệu sản phẩm...</div>
             <div class="row g-4" id="product-list"></div>
         </div>
     </section>
@@ -160,11 +158,6 @@
         const API_URL = "https://script.google.com/macros/s/AKfycby6IDxe8RnW0J2xsF533Q-cXkwjBjO5cPyx9L5DvIlKONXb2P_Oyp-DSVqB91pbPBU/exec";
 
         window.addEventListener('DOMContentLoaded', () => {
-            if (API_URL.includes("DÁN_URL")) {
-                document.getElementById('loading-text').innerHTML = '<span class="text-danger">Vui lòng cập nhật API_URL trong code JavaScript!</span>';
-                return;
-            }
-
             fetch(API_URL + "?action=getData")
                 .then(response => response.json())
                 .then(data => {
@@ -175,12 +168,12 @@
                         if(data.settings.desc) document.getElementById('main-desc').innerText = data.settings.desc;
                         if(data.settings.about) document.getElementById('about-text').innerText = data.settings.about;
                         
-                        // Thay đổi ảnh phần Giới Thiệu nếu có cấu hình trên Google
+                        // Lấy link ảnh Giới thiệu từ trang Admin
                         if(data.settings.aboutimg) {
                             document.getElementById('about-img').src = data.settings.aboutimg;
                         }
 
-                        // Thay đổi ảnh nền Hero Section
+                        // Lấy link ảnh nền Hero Section từ trang Admin
                         if(data.settings.herobg) {
                             document.getElementById('trangchu').style.background = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${data.settings.herobg}')`;
                             document.getElementById('trangchu').style.backgroundSize = 'cover';
@@ -194,7 +187,7 @@
                         }
                     }
 
-                    // Slider thanh trượt
+                    // Slider thanh trượt từ dữ liệu sản phẩm quản trị
                     const products = data.products || [];
                     const carouselInner = document.getElementById('carousel-inner');
                     const carouselIndicators = document.getElementById('carousel-indicators');
@@ -219,6 +212,14 @@
                                 </div>
                             `;
                         });
+                    } else {
+                        carouselInner.innerHTML = `
+                            <div class="carousel-item active">
+                                <div class="d-flex justify-content-center align-items-center bg-dark text-white" style="height: 450px;">
+                                    Chưa có sản phẩm nào được thêm từ trang quản trị.
+                                </div>
+                            </div>
+                        `;
                     }
 
                     // Danh sách toàn bộ sản phẩm
