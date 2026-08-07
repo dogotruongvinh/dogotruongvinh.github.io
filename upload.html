@@ -10,13 +10,17 @@
         body { background-color: #f4f6f9; }
         .upload-card { max-width: 600px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .preview-img { max-height: 200px; object-fit: contain; width: 100%; border-radius: 8px; border: 1px dashed #ddd; padding: 5px; }
+        #upload-panel { display: none; } /* Mặc định ẩn giao diện đi */
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="upload-card">
-            <h3 class="fw-bold text-primary mb-4 text-center"><i class="fas fa-cloud-upload-alt me-2"></i>Tải Ảnh Lên GitHub</h3>
+        <div id="upload-panel" class="upload-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold text-primary m-0"><i class="fas fa-cloud-upload-alt me-2"></i>Tải Ảnh Lên GitHub</h3>
+                <button onclick="logout()" class="btn btn-outline-danger btn-sm"><i class="fas fa-sign-out-alt me-1"></i>Thoát</button>
+            </div>
             
             <!-- Cấu hình GitHub -->
             <div class="card bg-light p-3 mb-3 border-0">
@@ -65,12 +69,37 @@
     </div>
 
     <script>
-        // Tự động điền lại thông tin nếu đã lưu trước đó trên trình duyệt
+        // Mật khẩu bảo vệ (Bạn có thể đổi chuỗi bên trong dấu nháy)
+        const PASSWORD = "Ttm20073094@"; 
+
+        // Kiểm tra mật khẩu ngay khi mở trang
         window.onload = () => {
+            if (sessionStorage.getItem("upload_auth") === PASSWORD) {
+                document.getElementById("upload-panel").style.display = "block";
+                loadConfig();
+            } else {
+                let p = prompt("Nhập mật khẩu để truy cập trang tải ảnh:");
+                if (p === PASSWORD) {
+                    sessionStorage.setItem("upload_auth", PASSWORD);
+                    document.getElementById("upload-panel").style.display = "block";
+                    loadConfig();
+                } else {
+                    alert("Sai mật khẩu!");
+                    location.href = "index.html"; // Sai thì đá về trang chủ
+                }
+            }
+        };
+
+        function logout() {
+            sessionStorage.removeItem("upload_auth");
+            location.href = "index.html";
+        }
+
+        function loadConfig() {
             if(localStorage.getItem('gh_owner')) document.getElementById('repoOwner').value = localStorage.getItem('gh_owner');
             if(localStorage.getItem('gh_repo')) document.getElementById('repoName').value = localStorage.getItem('gh_repo');
             if(localStorage.getItem('gh_token')) document.getElementById('githubToken').value = localStorage.getItem('gh_token');
-        };
+        }
 
         let base64Data = "";
         let selectedFileName = "";
@@ -80,7 +109,7 @@
             const file = fileInput.files[0];
             if (!file) return;
 
-            selectedFileName = Date.now() + "_" + file.name.replace(/\s+/g, '_'); // Tạo tên file độc nhất
+            selectedFileName = Date.now() + "_" + file.name.replace(/\s+/g, '_'); 
             const reader = new FileReader();
             
             reader.onload = function(e) {
@@ -102,12 +131,10 @@
                 return;
             }
 
-            // Xử lý thông minh để cắt sạch đường link nếu lỡ dán cả URL vào
             const owner = ownerInput.replace('https://github.com/', '').split('/')[0];
             let repo = repoInput.replace('https://github.com/', '').split('/').pop().replace('.git', '');
             if (repo.includes('/')) repo = repo.split('/')[0];
 
-            // Lưu lại cấu hình sạch vào trình duyệt
             localStorage.setItem('gh_owner', owner);
             localStorage.setItem('gh_repo', repo);
             localStorage.setItem('gh_token', token);
@@ -116,7 +143,6 @@
             document.getElementById('uploadBtn').setAttribute('disabled', 'true');
             document.getElementById('resultBox').style.display = 'none';
 
-            // Đường dẫn API GitHub chuẩn xác
             const filePath = `images/${selectedFileName}`;
             const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
 
@@ -140,10 +166,7 @@
 
                 if (response.ok) {
                     document.getElementById('status').innerText = "Tải lên thành công!";
-                    
-                    // Tạo chuẩn URL trực tiếp từ GitHub Pages
                     const imageUrl = `https://${owner}.github.io/${repo}/images/${selectedFileName}`;
-                    
                     document.getElementById('resultUrl').value = imageUrl;
                     document.getElementById('resultBox').style.display = 'block';
                 } else {
