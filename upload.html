@@ -27,49 +27,21 @@
             </div>
 
             <div id="loading" class="text-center text-primary mb-3" style="display: none;">
-                <div class="spinner-border spinner-border-sm me-2" role="status"></div>Đang tải ảnh lên Google Drive, vui lòng chờ...
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>Đang đẩy ảnh lên Google Drive, vui lòng chờ...
             </div>
 
-            <!-- Kết quả ảnh vừa tải xong -->
-            <div id="result-box" class="card bg-light p-3 mb-4" style="display: none;">
-                <label class="form-label text-muted small fw-bold">Link ảnh trực tiếp vừa tải:</label>
-                <div class="input-group mb-2">
-                    <input type="text" id="resultUrl" class="form-control" readonly>
-                    <button class="btn btn-success" onclick="copyLink()"><i class="fas fa-copy"></i> Sao chép</button>
-                </div>
-                <div class="text-center">
-                    <img id="previewImg" src="" class="img-thumbnail rounded" style="max-height: 120px; object-fit: cover;">
-                </div>
-            </div>
-
-            <!-- Danh sách lịch sử các ảnh đã tải -->
-            <hr>
-            <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-images me-2"></i>Danh Sách Ảnh Đã Tải Lên</h5>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Ảnh</th>
-                            <th>Đường dẫn (Link)</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-tbody">
-                        <tr><td colspan="3" class="text-center text-muted">Chưa có ảnh nào được tải lên trong phiên này.</td></tr>
-                    </tbody>
-                </table>
+            <div class="alert alert-info small mb-0">
+                <i class="fas fa-info-circle me-1"></i> <strong>Lưu ý:</strong> Do chính sách bảo mật trình duyệt, ảnh sẽ được tự động lưu vào thư mục <strong>DoGoTruongVinh_Uploads</strong> trên Google Drive của bạn. Bạn có thể mở Drive để lấy link hoặc xem trực tiếp.
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Đảm bảo thay đúng link Web App (kết thúc bằng /exec) mới nhất của bạn vào đây
+        // Link Web App Google Apps Script của bạn
         const API_URL = "https://script.google.com/macros/s/AKfycbwsdMkt0vI1HvMayBKNEALwQK2zllw4f2WLk77Z5CCSFWdsaldymv29D6o_h8bKZ_4/exec";
         const PASSWORD = "Ttm20073094@"; // Mật khẩu truy cập trang
-        let uploadedImages = [];
 
-        // Kiểm tra mật khẩu khi mở trang
         window.onload = () => {
             if (sessionStorage.getItem("upload_auth") === PASSWORD) {
                 document.getElementById("upload-panel").style.display = "block";
@@ -90,24 +62,23 @@
             location.href = "index.html"; 
         }
 
-        function uploadImage(event) {
+        async function uploadImage(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             document.getElementById("loading").style.display = "block";
-            document.getElementById("result-box").style.display = "none";
 
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const base64Data = e.target.result;
 
                 try {
-                    // Dùng fetch với cấu hình tối ưu để tránh lỗi CORS từ GitHub Pages sang Google Apps Script
-                    const response = await fetch(API_URL, {
+                    // Dùng mode 'no-cors' để vượt qua hoàn toàn tường lửa CORS của trình duyệt
+                    await fetch(API_URL, {
                         method: "POST",
-                        redirect: "follow",
+                        mode: "no-cors",
                         headers: {
-                            "Content-Type": "text/plain;charset=utf-8",
+                            "Content-Type": "application/x-www-form-urlencoded",
                         },
                         body: JSON.stringify({
                             action: "uploadImage",
@@ -117,55 +88,17 @@
                         })
                     });
 
-                    const result = await response.json();
                     document.getElementById("loading").style.display = "none";
-                    document.getElementById("imageInput").value = ""; // Reset input file
-
-                    if (result.status === "success") {
-                        // Hiển thị kết quả ngay lên khung
-                        document.getElementById("result-box").style.display = "block";
-                        document.getElementById("resultUrl").value = result.url;
-                        document.getElementById("previewImg").src = result.url;
-
-                        // Thêm vào danh sách lịch sử
-                        uploadedImages.unshift({ url: result.url, name: file.name });
-                        renderHistory();
-                    } else {
-                        alert("Tải ảnh thất bại từ phía Server!");
-                    }
+                    document.getElementById("imageInput").value = ""; 
+                    alert("Tải ảnh lên Google Drive thành công! Hãy kiểm tra thư mục 'DoGoTruongVinh_Uploads' trên Google Drive của bạn.");
+                    
                 } catch (error) {
                     console.error("Lỗi:", error);
                     document.getElementById("loading").style.display = "none";
-                    alert("Có lỗi kết nối tới server! Vui lòng kiểm tra lại link API_URL hoặc quyền Deploy.");
+                    alert("Có lỗi xảy ra khi kết nối tới server!");
                 }
             };
             reader.readAsDataURL(file);
-        }
-
-        function renderHistory() {
-            const tbody = document.getElementById("history-tbody");
-            tbody.innerHTML = uploadedImages.map((item) => `
-                <tr>
-                    <td><img src="${item.url}" class="preview-thumb"></td>
-                    <td><input type="text" class="form-control form-control-sm" value="${item.url}" readonly></td>
-                    <td class="text-center text-nowrap">
-                        <a href="${item.url}" target="_blank" class="btn btn-sm btn-info text-white me-1" title="Xem ảnh"><i class="fas fa-eye"></i> Xem</a>
-                        <button class="btn btn-sm btn-success" onclick="copySpecificLink('${item.url}')" title="Copy Link"><i class="fas fa-copy"></i></button>
-                    </td>
-                </tr>
-            `).join("");
-        }
-
-        function copyLink() {
-            const copyText = document.getElementById("resultUrl");
-            copyText.select();
-            navigator.clipboard.writeText(copyText.value);
-            alert("Đã sao chép link thành công!");
-        }
-
-        function copySpecificLink(url) {
-            navigator.clipboard.writeText(url);
-            alert("Đã sao chép link: " + url);
         }
     </script>
 </body>
