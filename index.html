@@ -114,7 +114,7 @@
                     <p class="text-muted mb-2"><strong>Địa chỉ:</strong> <span id="info-address">Số 17, Đồ Gỗ Trường Vinh, Cầu Sạp, Duyên Hưng, Nam Ninh, Ninh Bình</span></p>
                 </div></div>
                 <div class="col-md-6"><div class="bg-white p-4 rounded shadow-sm h-100 d-flex flex-column justify-content-center text-center">
-                    <a href="#" id="btn-hotline" class="btn btn-danger btn-lg mb-3 fw-bold shadow-sm"><i class="fas fa-phone-alt me-2"></i> <span id="info-phone">0916597203</span></a>
+                    <a href="tel:..." id="btn-hotline" class="btn btn-danger btn-lg mb-3 fw-bold shadow-sm"><i class="fas fa-phone-alt me-2"></i> <span id="info-phone">0916597203</span></a>
                     <a href="https://zalo.me/84987168224" target="_blank" class="btn zalo-btn btn-lg fw-bold shadow-sm"><i class="fas fa-comments me-2"></i> Nhắn Tin Zalo</a>
                 </div></div>
             </div></div></div>
@@ -134,16 +134,24 @@
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById('loading-text').style.display = 'none';
-                    if (data.settings) {
-                        if(data.settings.title) document.getElementById('main-title').innerText = data.settings.title;
-                        if(data.settings.desc) document.getElementById('main-desc').innerText = data.settings.desc;
-                        if(data.settings.about) document.getElementById('about-text').innerText = data.settings.about;
-                        if(data.settings.aboutimg) document.getElementById('about-img').src = data.settings.aboutimg;
-                        if(data.settings.herobg) {
-                            document.getElementById('trangchu').style.background = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${data.settings.herobg}')`;
-                            document.getElementById('trangchu').style.backgroundSize = 'cover';
-                        }
-                    }
+                   if (data.settings) {
+    if(data.settings.title) document.getElementById('main-title').innerText = data.settings.title;
+    if(data.settings.desc) document.getElementById('main-desc').innerText = data.settings.desc;
+    if(data.settings.about) document.getElementById('about-text').innerText = data.settings.about;
+    if(data.settings.aboutimg) document.getElementById('about-img').src = data.settings.aboutimg;
+    if(data.settings.herobg) {
+        document.getElementById('trangchu').style.background = `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('${data.settings.herobg}')`;
+        document.getElementById('trangchu').style.backgroundSize = 'cover';
+    }
+    if(data.settings.address) document.getElementById('info-address').innerText = data.settings.address;
+    
+    // ĐOẠN CODE CẦN BỔ SUNG ĐỂ GỌI ĐIỆN ĐÚNG SỐ:
+    if(data.settings.phone) {
+        document.getElementById('info-phone').innerText = data.settings.phone;
+        // Gán link gọi điện chuẩn dạng tel: để bật app gọi điện trên điện thoại / máy tính
+        document.getElementById('btn-hotline').href = "tel:" + data.settings.phone.replace(/\s+/g, '');
+    }
+}
 
                     allProducts = data.products || [];
                     allCategories = data.categories || [];
