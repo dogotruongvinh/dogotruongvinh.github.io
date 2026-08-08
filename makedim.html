@@ -312,9 +312,26 @@ window.addEventListener('load', () => {
     }
 });
 
-        let copiedObject = null;
+        // Hàm xóa phiên làm việc và làm mới thiết kế
+function clearSession() {
+    if (confirm("Bạn muốn xóa toàn bộ thiết kế hiện tại và bắt đầu lại?")) {
+        localStorage.removeItem('cnc_session_data');
+        // Nếu bạn có dùng IndexedDB, xóa luôn dữ liệu trong đó
+        const request = indexedDB.open('CNCSessionDB', 1);
+        request.onsuccess = (e) => {
+            const db = e.target.result;
+            if (db.objectStoreNames.contains('designs')) {
+                const tx = db.transaction('designs', 'readwrite');
+                tx.objectStore('designs').clear();
+            }
+        };
+        location.reload();
+    }
+}
 
-// 1. Hàm sao chép đối tượng đang chọn
+     let copiedObject = null;
+
+// Hàm sao chép đối tượng đang chọn
 function copySelectedObject() {
     const activeObj = canvas.getActiveObject();
     if (!activeObj || activeObj.type === 'backgroundImage') {
@@ -327,7 +344,7 @@ function copySelectedObject() {
     });
 }
 
-// 2. Hàm dán đối tượng ra vùng làm việc
+// Hàm dán đối tượng ra vùng làm việc
 function pasteObject() {
     if (!copiedObject) {
         alert("Bạn chưa sao chép ảnh nào!");
@@ -335,7 +352,6 @@ function pasteObject() {
     }
     copiedObject.clone(function(cloned) {
         canvas.discardActiveObject();
-        // Dịch chuyển vị trí một chút để ảnh mới dán không bị đè khít lên ảnh cũ
         cloned.set({
             left: cloned.left + 20,
             top: cloned.top + 20,
@@ -345,14 +361,12 @@ function pasteObject() {
         canvas.setActiveObject(cloned);
         canvas.renderAll();
         
-        // Cập nhật lại đối tượng copy để có thể dán tiếp lần nữa
         copiedObject = cloned;
     });
 }
 
-// 3. Hỗ trợ phím tắt bàn phím (Ctrl+C và Ctrl+V)
+// Hỗ trợ phím tắt bàn phím (Ctrl+C và Ctrl+V)
 document.addEventListener('keydown', function(e) {
-    // Kiểm tra nếu đang gõ trong ô input thì không bắt sự kiện phím tắt
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
     if (e.ctrlKey && e.key === 'c') {
@@ -362,7 +376,10 @@ document.addEventListener('keydown', function(e) {
         e.preventDefault();
         pasteObject();
     }
-});
+});   
+
+
+        
     </script>
 </body>
 </html>
