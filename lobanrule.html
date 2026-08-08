@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Cụ Tra Cứu Thước Lỗ Ban Phong Thủy</title>
+    <!-- Nhúng Tailwind CSS để giao diện hiện đại -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen py-8 px-4 font-sans">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Tiêu đề trang -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-red-700 tracking-tight mb-2">TRA CỨU THƯỚC LỖ BAN</h1>
+            <p class="text-slate-500 text-sm md:text-base">Nhập kích thước (cm) và bấm tra cứu để kiểm tra các cung tốt - xấu</p>
+        </div>
+
+        <!-- Bộ nhập kích thước & Nút bấm -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100 mb-8 max-w-md mx-auto">
+            <label for="sizeInput" class="block text-sm font-semibold text-slate-700 mb-2">Nhập kích thước cần đo (cm):</label>
+            <div class="flex gap-2">
+                <div class="relative rounded-xl shadow-sm flex-1">
+                    <input 
+                        type="number" 
+                        step="0.1" 
+                        id="sizeInput" 
+                        class="block w-full rounded-xl border border-slate-300 pl-4 pr-12 py-3 text-lg font-bold text-slate-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500" 
+                        placeholder="Ví dụ: 81"
+                        value="81"
+                    >
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                        <span class="text-slate-500 font-medium text-sm">cm</span>
+                    </div>
+                </div>
+                
+                <!-- NÚT BẤM TRA CỨU -->
+                <button 
+                    id="searchBtn"
+                    class="bg-red-700 hover:bg-red-800 active:scale-95 text-white font-bold px-6 py-3 rounded-xl transition-all duration-150 flex items-center gap-2 shadow-lg shadow-red-700/20"
+                >
+                    <span>Tra Cứu</span>
+                </button>
+            </div>
+            <p class="mt-2 text-xs text-slate-400 text-center italic">Nhập số rồi bấm nút "Tra Cứu" hoặc ấn phím "Enter"</p>
+        </div>
+
+        <!-- Danh sách 3 loại thước Lỗ Ban -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- THƯỚC 52.2 CM -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                <div class="bg-red-700 text-white p-4 text-center">
+                    <h2 class="font-bold text-lg">Thước 52.2 cm</h2>
+                    <span class="text-xs opacity-90">Thông Thủy (Cửa, Cửa sổ)</span>
+                </div>
+                <div class="p-6 flex-1 flex flex-col justify-between w-full">
+                    <div class="text-center mb-4">
+                        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Cung hiện tại</span>
+                        <div id="cung522" class="text-2xl font-black mt-1">--</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl mb-4 text-sm text-slate-600 min-h-[80px]" id="desc522">
+                        --
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 mb-1 flex justify-between">
+                            <span>Vị trí trong chu kỳ:</span>
+                            <span id="pos522">0/52.2cm</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div id="bar522" class="h-full bg-slate-400 transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THƯỚC 42.9 CM -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                <div class="bg-red-700 text-white p-4 text-center">
+                    <h2 class="font-bold text-lg">Thước 42.9 cm</h2>
+                    <span class="text-xs opacity-90">Dương Trạch (Bếp, Bậc thềm...)</span>
+                </div>
+                <div class="p-6 flex-1 flex flex-col justify-between w-full">
+                    <div class="text-center mb-4">
+                        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Cung hiện tại</span>
+                        <div id="cung429" class="text-2xl font-black mt-1">--</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl mb-4 text-sm text-slate-600 min-h-[80px]" id="desc429">
+                        --
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 mb-1 flex justify-between">
+                            <span>Vị trí trong chu kỳ:</span>
+                            <span id="pos429">0/42.9cm</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div id="bar429" class="h-full bg-slate-400 transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THƯỚC 38.8 CM -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+                <div class="bg-red-700 text-white p-4 text-center">
+                    <h2 class="font-bold text-lg">Thước 38.8 cm</h2>
+                    <span class="text-xs opacity-90">Âm Phần (Đồ thờ, Tủ, Mộ phần)</span>
+                </div>
+                <div class="p-6 flex-1 flex flex-col justify-between w-full">
+                    <div class="text-center mb-4">
+                        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Cung hiện tại</span>
+                        <div id="cung388" class="text-2xl font-black mt-1">--</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl mb-4 text-sm text-slate-600 min-h-[80px]" id="desc388">
+                        --
+                    </div>
+                    <div>
+                        <div class="text-xs text-slate-400 mb-1 flex justify-between">
+                            <span>Vị trí trong chu kỳ:</span>
+                            <span id="pos388">0/38.8cm</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div id="bar388" class="h-full bg-slate-400 transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-8 text-center text-xs text-slate-400">
+            * Quy ước: <span class="text-red-600 font-bold">Cung màu đỏ</span> là cung TỐT (nên dùng), <span class="text-slate-800 font-bold">Cung màu đen</span> là cung XẤU (nên tránh).
+        </div>
+    </div>
+
+    <!-- Logic Xử Lý Tính Toán Thước Lỗ Ban -->
+    <script>
+        const arcs522 = [
+            { name: "Quý Nhân", type: "good", desc: "Gia đạo hanh thông, quý nhân phù trợ, sự nghiệp phát đạt." },
+            { name: "Hiểm Họa", type: "bad", desc: "Dễ gặp hoạn nạn, bệnh tật, gia tài hao tán." },
+            { name: "Thiên Tai", type: "bad", desc: "Phòng tai nạn bất ngờ, mất mát tiền của, ốm đau nặng." },
+            { name: "Thiên Tài", type: "good", desc: "Tấn tài tấn lộc, may mắn gõ cửa, con cái hiếu thảo." },
+            { name: "Nhân Lộc", type: "good", desc: "Gia đình thịnh vượng, lộc lá dồi dào, con cái đỗ đạt." },
+            { name: "Cô Độc", type: "bad", desc: "Cô đơn, hao tốn tiền của, gia đạo dễ ly tán bất hòa." },
+            { name: "Thiên Tặc", type: "bad", desc: "Đề phòng trộm cướp, thị phi kiện tụng, tai bay vạ gió." },
+            { name: "Tể Tướng", type: "good", desc: "Công danh sự nghiệp thuận lợi, quý tử, vạn sự cát tường." }
+        ];
+
+        const arcs429 = [
+            { name: "Tài", type: "good", desc: "Tài lộc dồi dào, tiền của thịnh vượng, gặp nhiều may mắn." },
+            { name: "Bệnh", type: "bad", desc: "Bệnh tật đau yếu kéo dài, hao tài tốn của vì viện phí." },
+            { name: "Ly", type: "bad", desc: "Sự nghiệp bất lợi, gia đạo phân tán, ly hương biệt xứ." },
+            { name: "Nghĩa", type: "good", desc: "Đạt được đại nghĩa, gặp nhiều may mắn, quý nhân giúp đỡ." },
+            { name: "Quan", type: "good", desc: "Công danh hanh thông, thăng chức, đỗ đạt cao." },
+            { name: "Kiếp", type: "bad", desc: "Dễ bị lừa gạt, mất mát tiền của, tai nạn bất ngờ." },
+            { name: "Hại", type: "bad", desc: "Tai họa khôn lường, dễ bị kẻ xấu hãm hại." },
+            { name: "Bản", type: "good", desc: "Bản mệnh vững vàng, đón nhiều tài lộc, gia đạo hưng thịnh." }
+        ];
+
+        const arcs388 = [
+            { name: "Đinh", type: "good", desc: "Gia đạo hạnh phúc, có tin vui về đường con cái." },
+            { name: "Hại", type: "bad", desc: "Họa hại ập đến, dễ bị ốm đau hoặc tai bay vạ gió." },
+            { name: "Vượng", type: "good", desc: "Tiền tài cực vượng, vạn sự hanh thông, phát đạt." },
+            { name: "Khổ", type: "bad", desc: "Cuộc sống vất vả gian truân, gặp nhiều thất bại." },
+            { name: "Nghĩa", type: "good", desc: "Gia đình thuận hòa, trọng nghĩa tình, đắc lộc." },
+            { name: "Quan", type: "good", desc: "Đường quan lộ rộng mở, nhiều may mắn trong công danh." },
+            { name: "Tử", type: "bad", desc: "Biệt ly, gặp điềm xấu nguy hiểm, hao tổn sức khỏe." },
+            { name: "Hưng", type: "good", desc: "Hưng thịnh phát đạt, con cái học hành giỏi giang." },
+            { name: "Thất", type: "bad", desc: "Thất thoát tiền bạc, đầu tư thua lỗ." },
+            { name: "Tài", type: "good", desc: "Tài lộc tấn tới, cuộc sống sung túc an nhàn." }
+        ];
+
+        const input = document.getElementById('sizeInput');
+        const button = document.getElementById('searchBtn');
+
+        function calculate() {
+            const cm = parseFloat(input.value);
+            if (isNaN(cm) || cm <= 0) {
+                resetUI();
+                return;
+            }
+
+            const mm = cm * 10;
+
+            // 1. Tính Thước 52.2 cm
+            const cycle522 = 522;
+            const pos522 = mm % cycle522;
+            const index522 = Math.floor(pos522 / 65.25) % 8;
+            updateCard('522', arcs522[index522], pos522, cycle522);
+
+            // 2. Tính Thước 42.9 cm
+            const cycle429 = 429;
+            const pos429 = mm % cycle429;
+            const index429 = Math.floor(pos429 / 53.625) % 8;
+            updateCard('429', arcs429[index429], pos429, cycle429);
+
+            // 3. Tính Thước 38.8 cm
+            const cycle388 = 388;
+            const pos388 = mm % cycle388;
+            const index388 = Math.floor(pos388 / 38.8) % 10;
+            updateCard('388', arcs388[index388], pos388, cycle388);
+        }
+
+        function updateCard(id, arc, pos, cycle) {
+            const cungEl = document.getElementById('cung' + id);
+            const descEl = document.getElementById('desc' + id);
+            const posEl = document.getElementById('pos' + id);
+            const barEl = document.getElementById('bar' + id);
+
+            cungEl.innerText = arc.name;
+            if (arc.type === 'good') {
+                cungEl.className = "text-2xl font-black mt-1 text-red-600";
+                barEl.className = "h-full bg-red-600 transition-all duration-300";
+            } else {
+                cungEl.className = "text-2xl font-black mt-1 text-slate-800";
+                barEl.className = "h-full bg-slate-500 transition-all duration-300";
+            }
+
+            descEl.innerText = arc.desc;
+            const percent = (pos / cycle) * 100;
+            posEl.innerText = (pos/10).toFixed(1) + ' / ' + (cycle/10).toFixed(1) + ' cm';
+            barEl.style.width = percent + '%';
+        }
+
+        function resetUI() {
+            ['522', '429', '388'].forEach(id => {
+                document.getElementById('cung' + id).innerText = '--';
+                document.getElementById('cung' + id).className = "text-2xl font-black mt-1 text-slate-400";
+                document.getElementById('desc' + id).innerText = 'Nhập kích thước lớn hơn 0 để tính toán.';
+                document.getElementById('pos' + id).innerText = '0 cm';
+                document.getElementById('bar' + id).style.width = '0%';
+                document.getElementById('bar' + id).className = "h-full bg-slate-300 transition-all duration-300";
+            });
+        }
+
+        // Sự kiện click nút bấm
+        button.addEventListener('click', calculate);
+
+        // Sự kiện ấn phím Enter trong ô nhập liệu
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                calculate();
+            }
+        });
+
+        // Tải trang lần đầu vẫn tính toán giá trị mẫu (81cm) cho trực quan
+        calculate();
+    </script>
+</body>
+</html>
