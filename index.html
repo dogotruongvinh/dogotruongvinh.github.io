@@ -15,9 +15,10 @@
             padding: 80px 0;
         }
         .carousel-item img {
-            height: 400px;
+            height: 450px; /* Bạn có thể điều chỉnh chiều cao này tùy ý */
             width: 100%;
-            object-fit: cover;
+            object-fit: contain; /* Giúp ảnh hiển thị đầy đủ không bị cắt xén */
+            background-color: #111; /* Thêm màu nền cho khoảng trống hai bên (nếu tỷ lệ ảnh không khớp) */
             object-position: center;
         }
         .carousel-caption { background: rgba(0, 0, 0, 0.5); border-radius: 8px; padding: 15px; bottom: 30px; }
