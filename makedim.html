@@ -311,6 +311,58 @@ window.addEventListener('load', () => {
         };
     }
 });
+
+        let copiedObject = null;
+
+// 1. Hàm sao chép đối tượng đang chọn
+function copySelectedObject() {
+    const activeObj = canvas.getActiveObject();
+    if (!activeObj || activeObj.type === 'backgroundImage') {
+        alert("Hãy chọn một ảnh ghép để sao chép!");
+        return;
+    }
+    activeObj.clone(function(cloned) {
+        copiedObject = cloned;
+        alert("Đã sao chép ảnh!");
+    });
+}
+
+// 2. Hàm dán đối tượng ra vùng làm việc
+function pasteObject() {
+    if (!copiedObject) {
+        alert("Bạn chưa sao chép ảnh nào!");
+        return;
+    }
+    copiedObject.clone(function(cloned) {
+        canvas.discardActiveObject();
+        // Dịch chuyển vị trí một chút để ảnh mới dán không bị đè khít lên ảnh cũ
+        cloned.set({
+            left: cloned.left + 20,
+            top: cloned.top + 20,
+            evented: true,
+        });
+        canvas.add(cloned);
+        canvas.setActiveObject(cloned);
+        canvas.renderAll();
+        
+        // Cập nhật lại đối tượng copy để có thể dán tiếp lần nữa
+        copiedObject = cloned;
+    });
+}
+
+// 3. Hỗ trợ phím tắt bàn phím (Ctrl+C và Ctrl+V)
+document.addEventListener('keydown', function(e) {
+    // Kiểm tra nếu đang gõ trong ô input thì không bắt sự kiện phím tắt
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    if (e.ctrlKey && e.key === 'c') {
+        e.preventDefault();
+        copySelectedObject();
+    } else if (e.ctrlKey && e.key === 'v') {
+        e.preventDefault();
+        pasteObject();
+    }
+});
     </script>
 </body>
 </html>
