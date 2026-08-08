@@ -98,7 +98,18 @@
     <canvas id="processingCanvas" style="display:none;"></canvas>
 
     <script>
-// Vá lỗi CanvasTextBaseline cho fabric.js
+// Vá lỗi giá trị baseline của fabric.js
+if (typeof fabric !== 'undefined' && fabric.util) {
+    const originalInitialize = fabric.Text.prototype.initialize;
+    fabric.Text.prototype.initialize = function(text, options) {
+        if (options && options.textBaseline === 'alphabetical') {
+            options.textBaseline = 'alphabetic';
+        }
+        return originalInitialize.call(this, text, options);
+    };
+}
+
+// Hoặc ép trực tiếp giá trị chuẩn cho prototype
 if (typeof fabric !== 'undefined' && fabric.Text) {
     fabric.Text.prototype.textBaseline = 'alphabetic';
 }
