@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>CNC Layout Pro - Ultimate Sharp</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #eee; }
+        .box { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ccc; }
+        #canvas-wrapper { border: 2px solid #333; display: inline-block; background: #fff; }
+        .crop-container { max-width: 400px; display: none; margin-bottom: 10px; }
+        img { max-width: 100%; }
+        button { padding: 8px 12px; cursor: pointer; margin-right: 5px; margin-bottom: 5px; }
+        .del-btn { background: #dc3545; color: white; border: none; }
+        .sharp-btn { background: #007bff; color: white; border: none; }
+        .input-group { margin: 8px 0; background: #f9f9f9; padding: 8px; border: 1px solid #ddd; display: inline-block; }
+        .input-group input { width: 60px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h3>1. Thiết lập Phôi</h3>
+        <input type="file" id="bgInput" accept="image/*"><br>
+        
+        <div id="crop-container-bg" class="crop-container">
+            <p><b>Cắt chỉnh ảnh nền:</b></p>
+            <img id="bgImageToCrop" src="">
+            <button onclick="confirmCropBg()">Xác nhận cắt Phôi</button>
+        </div>
+        <br>
+        Rộng thực (mm): <input type="number" id="realW" value="500" style="width: 60px;"> | 
+        Cao thực (mm): <input type="number" id="realH" value="200" style="width: 60px;"> 
+        <button onclick="applyPhôi()">Cập nhật Phôi</button>
+    </div>
+
+    <div class="box">
+        <h3>2. Công cụ Ảnh ghép & Làm nét cực đại (High-Boost)</h3>
+        <input type="file" id="imgInput" accept="image/*">
+        <div id="crop-container-img" class="crop-container">
+            <img id="imageToCrop" src="">
+            <button onclick="confirmCrop()">Xác nhận cắt & Thêm vào phôi</button>
+        </div>
+        <br>
+
+        <div class="input-group">
+            <b>Tùy chỉnh thông số ảnh đang chọn (mm):</b><br>
+            Rộng: <input type="number" id="inputW" oninput="updateObjFromInputs()">
+            Cao: <input type="number" id="inputH" oninput="updateObjFromInputs()">
+            X: <input type="number" id="inputX" oninput="updateObjFromInputs()">
+            Y: <input type="number" id="inputY" oninput="updateObjFromInputs()">
+        </div>
+        <br>
+
+        <label>Độ trong suốt: </label>
+        <input type="range" id="opacitySlider" min="0" max="1" step="0.1" value="1" oninput="updateOpacity(this.value)">
+        <br>
+        <button onclick="applyUltimateSharpness()" class="sharp-btn">Làm nét cực đại (High-Boost)</button>
+        <button onclick="deleteSelected()" class="del-btn">Xóa ảnh đang chọn</button>
+        <br><br>
+        <div id="canvas-wrapper"><canvas id="c"></canvas></div>
+        <br>
+        <button onclick="exportData()" style="padding:10px; background:green; color:white;">XUẤT THÔNG SỐ (mm)</button>
+        <pre id="output" style="background:#000; color:#0f0; padding:10px;">Chờ dữ liệu...</pre>
+    </div>
+
+    <canvas id="processingCanvas" style="display:none;"></canvas>
+
+    <script>
+        const canvas = new fabric.Canvas('c');
+        let ratio = 1, cropperBg = null, cropperImg = null, bgImage = null;
+
+        document.getElementById('bgInput').onchange = function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const bgImageToCrop = document.getElementById('bgImageToCrop');
+                bgImageToCrop.src = event.target.result;
+                document.getElementById('crop-container-bg').style.display = 'block';
+                if(cropperBg) cropperBg.destroy();
+                cropperBg = new Cropper(bgImageToCrop, { viewMode: 1 });
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        function confirmCropBg() {
+            const croppedCanvas = cropperBg.getCroppedCanvas();
+            fabric.Image.fromURL(croppedCanvas.toDataURL(), function(img) {
+                bgImage = img;
+                document.getElementById('crop-container-bg').style.display = 'none';
+                applyPhôi();
+            });
+        }
+
+        function applyPhôi() {
+            if (!bgImage) { alert("Hãy chọn và cắt ảnh phôi trước!"); return; }
+            const rW = parseFloat(document.getElementById('realW').value);
+            const rH = parseFloat(document.getElementById('realH').value);
+            
+            const displayW = 800;
+            const displayH = (rH / rW) * displayW;
+            
+            canvas.setDimensions({width: displayW, height: displayH});
+            ratio = displayW / rW;
+            
+            canvas.setBackgroundImage(bgImage, canvas.renderAll.bind(canvas), {
+                scaleX: displayW / bgImage.width,
+                scaleY: displayH / bgImage.height
+            });
+        }
+
+        document.getElementById('imgInput').onchange = function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imageToCrop.src = event.target.result;
+                document.getElementById('crop-container-img').style.display = 'block';
+                if(cropperImg) cropperImg.destroy();
+                cropperImg = new Cropper(imageToCrop, { viewMode: 1 });
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        function confirmCrop() {
+            const croppedCanvas = cropperImg.getCroppedCanvas();
+            fabric.Image.fromURL(croppedCanvas.toDataURL(), function(img) {
+                img.scale(0.3);
+                canvas.add(img);
+                canvas.setActiveObject(img);
+                updateInputsFromObj(img);
+            });
+            document.getElementById('crop-container-img').style.display = 'none';
+        }
+
+        canvas.on('object:selected', (e) => updateInputsFromObj(e.target));
+        canvas.on('object:moving', (e) => updateInputsFromObj(e.target));
+        canvas.on('object:scaling', (e) => updateInputsFromObj(e.target));
+
+        function updateInputsFromObj(obj) {
+            if (!obj || obj.type === 'backgroundImage') return;
+            document.getElementById('inputW').value = ((obj.width * obj.scaleX) / ratio).toFixed(1);
+            document.getElementById('inputH').value = ((obj.height * obj.scaleY) / ratio).toFixed(1);
+            document.getElementById('inputX').value = (obj.left / ratio).toFixed(1);
+            document.getElementById('inputY').value = (obj.top / ratio).toFixed(1);
+        }
+
+        function updateObjFromInputs() {
+            const obj = canvas.getActiveObject();
+            if (!obj || obj.type === 'backgroundImage') return;
+
+            const wMM = parseFloat(document.getElementById('inputW').value) || 0;
+            const hMM = parseFloat(document.getElementById('inputH').value) || 0;
+            const xMM = parseFloat(document.getElementById('inputX').value) || 0;
+            const yMM = parseFloat(document.getElementById('inputY').value) || 0;
+
+            obj.set({
+                scaleX: (wMM * ratio) / obj.width,
+                scaleY: (hMM * ratio) / obj.height,
+                left: xMM * ratio,
+                top: yMM * ratio
+            });
+            obj.setCoords();
+            canvas.renderAll();
+        }
+
+        // Thuật toán High-Boost tăng cường độ nét mạnh mẽ hơn
+        function applyUltimateSharpness() {
+            const obj = canvas.getActiveObject();
+            if (!obj || obj.type === 'backgroundImage') { alert("Hãy chọn một ảnh ghép để làm nét!"); return; }
+
+            const imgEl = obj.getElement();
+            const pCanvas = document.getElementById('processingCanvas');
+            const pCtx = pCanvas.getContext('2d');
+
+            pCanvas.width = imgEl.naturalWidth || imgEl.width;
+            pCanvas.height = imgEl.naturalHeight || imgEl.height;
+            pCtx.drawImage(imgEl, 0, 0);
+
+            const imageData = pCtx.getImageData(0, 0, pCanvas.width, pCanvas.height);
+            const data = imageData.data;
+            const w = pCanvas.width;
+            const h = pCanvas.height;
+            const output = pCtx.createImageData(w, h);
+            const dst = output.data;
+
+            // Kernel High-Boost cấp độ cao giúp làm nổi bật rõ rệt các đường viền
+            const kernel = [
+               -1, -1, -1,
+               -1,  9, -1,
+               -1, -1, -1
+            ];
+
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    for (let c = 0; c < 3; c++) {
+                        let i = (y * w + x) * 4 + c;
+                        let val = 0;
+                        for (let ky = -1; ky <= 1; ky++) {
+                            for (let kx = -1; kx <= 1; kx++) {
+                                let ki = ((y + ky) * w + (x + kx)) * 4 + c;
+                                val += data[ki] * kernel[(ky + 1) * 3 + (kx + 1)];
+                            }
+                        }
+                        dst[i] = Math.min(255, Math.max(0, val));
+                    }
+                    dst[(y * w + x) * 4 + 3] = data[(y * w + x) * 4 + 3];
+                }
+            }
+            pCtx.putImageData(output, 0, 0);
+
+            fabric.Image.fromURL(pCanvas.toDataURL(), function(newImg) {
+                newImg.set({
+                    left: obj.left,
+                    top: obj.top,
+                    scaleX: obj.scaleX,
+                    scaleY: obj.scaleY,
+                    angle: obj.angle,
+                    opacity: obj.opacity
+                });
+                
+                const index = canvas.getObjects().indexOf(obj);
+                canvas.remove(obj);
+                canvas.insertAt(newImg, index, true);
+                canvas.setActiveObject(newImg);
+                canvas.renderAll();
+                alert("Đã áp dụng làm nét cực đại thành công!");
+            });
+        }
+
+        function updateOpacity(val) {
+            const obj = canvas.getActiveObject();
+            if (obj && obj.type !== 'backgroundImage') {
+                obj.set('opacity', parseFloat(val));
+                canvas.renderAll();
+            }
+        }
+
+        function deleteSelected() {
+            const activeObjects = canvas.getActiveObjects();
+            canvas.discardActiveObject();
+            activeObjects.forEach(obj => canvas.remove(obj));
+        }
+
+        function exportData() {
+            const obj = canvas.getActiveObject();
+            if (!obj || obj.type === 'backgroundImage') { alert("Chọn một ảnh ghép!"); return; }
+            const data = {
+                "Rộng (mm)": ((obj.width * obj.scaleX) / ratio).toFixed(1),
+                "Cao (mm)": ((obj.height * obj.scaleY) / ratio).toFixed(1),
+                "X (mm)": (obj.left / ratio).toFixed(1),
+                "Y (mm)": (obj.top / ratio).toFixed(1)
+            };
+            document.getElementById('output').innerText = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
