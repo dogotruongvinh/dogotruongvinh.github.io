@@ -67,6 +67,15 @@
         <div id="canvas-wrapper"><canvas id="c"></canvas></div>
         <br>
         <button onclick="exportData()" style="padding:10px; background:green; color:white;">XUẤT THÔNG SỐ (mm)</button>
+<div class="box">
+    <h3>Công Cụ Đo & Nhập Khoảng Cách</h3>
+    Kích thước nhập thêm (mm): <input type="number" id="customMeasureInput" value="100" style="width: 80px;">
+    <button onclick="toggleMeasureTool()" class="btn btn-warning" id="measureBtn">Đo theo điểm (Click 2 điểm)</button>
+    <button onclick="drawCustomLine()" class="sharp-btn">Vẽ đường đo theo kích thước nhập</button>
+    <span id="measureResult" style="color: green; font-weight: bold; margin-left: 10px;"></span>
+</div>
+
+        
         <pre id="output" style="background:#000; color:#0f0; padding:10px;">Chờ dữ liệu...</pre>
     </div>
 <div class="box">
@@ -378,7 +387,109 @@ document.addEventListener('keydown', function(e) {
     }
 });   
 
+let isMeasureMode = false;
+let measurePoints = [];
 
+function toggleMeasureTool() {
+    isMeasureMode = !isMeasureMode;
+    const btn = document.getElementById('measureBtn');
+    btn.innerText = isMeasureMode ? "Đang đo... (Bấm 2 điểm trên ảnh)" : "Đo theo điểm (Click 2 điểm)";
+    btn.classList.toggle('btn-danger');
+    canvas.defaultCursor = isMeasureMode ? "crosshair" : "default";
+}
+
+// Bắt sự kiện click 2 điểm để đo khoảng cách thực tế và hiển thị kích thước
+canvas.on('mouse:down', function(options) {
+    if (!isMeasureMode) return;
+
+    const pointer = canvas.getPointer(options.e);
+    measurePoints.push(pointer);
+
+    if (measurePoints.length === 2) {
+        const x1 = measurePoints[0].x;
+        const y1 = measurePoints[0].y;
+        const x2 = measurePoints[1].x;
+        const y2 = measurePoints[1].y;
+
+        // Vẽ đường line màu đỏ
+        const line = new fabric.Line([x1, y1, x2, y2], {
+            stroke: 'red',
+            strokeWidth: 2,
+            selectable: true
+        });
+
+        // Tính khoảng cách mm
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const distPx = Math.sqrt(dx * dx + dy * dy);
+        const distMm = (distPx / ratio).toFixed(1);
+
+        // Tạo nhãn chữ hiển thị kích thước ở giữa đường đo
+        const text = new fabric.Text(distMm + " mm", {
+            left: (x1 + x2) / 2,
+            top: (y1 + y2) / 2 - 15,
+            fontSize: 14,
+            fill: 'red',
+            backgroundColor: 'white',
+            selectable: true
+        });
+
+        // Gom nhóm đường line và chữ lại để dễ dịch chuyển
+        const group = new fabric.Group([line, text], { selectable: true });
+        canvas.add(group);
+        canvas.renderAll();
+
+        document.getElementById('measureResult').innerText = "Đã đo được: " + distMm + " mm";
+        
+        // Reset trạng thái đo
+        measurePoints = [];
+        isMeasureMode = false;
+        document.getElementById('measureBtn').innerText = "Đo theo điểm (Click 2 điểm)";
+        canvas.defaultCursor = "default";
+    }
+});
+
+// Hàm vẽ đường thẳng nhanh dựa trên số mm nhập sẵn từ ô input
+function drawCustomLine() {
+    const mmVal = parseFloat(document.getElementById('customMeasureInput').value);
+    if (!mmVal || mmVal <= 0) {
+        alert("Vui lòng nhập kích thước mm hợp lệ!");
+        return;
+    }
+
+    // Đổi kích thước mm sang pixel dựa trên tỉ lệ ratio của phôi
+    const lengthPx = mmVal * ratio;
+
+    // Vẽ một đường thẳng ngang mẫu ở giữa màn hình canvas
+    const startX = 50;
+    const startY = 50;
+    const endX = startX + lengthPx;
+    const endY = 50;
+
+    const line = new fabric.Line([startX, startY, endX, endY], {
+        stroke: 'blue',
+        strokeWidth: 2,
+        selectable: true
+    });
+
+    const text = new fabric.Text(mmVal + " mm", {
+        left: (startX + endX) / 2,
+        top: startY - 20,
+        fontSize: 14,
+        fill: 'blue',
+        backgroundColor: 'white',
+        selectable: true
+    });
+
+    const group = new fabric.Group([line, text], { selectable: true });
+    canvas.add(group);
+    canvas.setActiveObject(group);
+    canvas.renderAll();
+    
+    alert("Đã tạo đường đo chuẩn kích thước " + mmVal + " mm lên bản vẽ!");
+}
+
+        
         
     </script>
 </body>
