@@ -98,6 +98,26 @@
     <canvas id="processingCanvas" style="display:none;"></canvas>
 
     <script>
+// Chặn thông báo lỗi baseline không ảnh hưởng đến hệ thống
+(function() {
+    const originalWarn = console.warn;
+    console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('CanvasTextBaseline')) {
+            return; // Bỏ qua không hiển thị lỗi này
+        }
+        originalWarn.apply(console, args);
+    };
+    const originalError = console.error;
+    console.error = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('CanvasTextBaseline')) {
+            return; // Bỏ qua không hiển thị lỗi này
+        }
+        originalError.apply(console, args);
+    };
+})();
+
+
+        
 // Vá lỗi giá trị baseline của fabric.js
 if (typeof fabric !== 'undefined' && fabric.util) {
     const originalInitialize = fabric.Text.prototype.initialize;
