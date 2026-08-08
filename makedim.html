@@ -98,6 +98,11 @@
     <canvas id="processingCanvas" style="display:none;"></canvas>
 
     <script>
+// Vá lỗi CanvasTextBaseline cho fabric.js
+if (typeof fabric !== 'undefined' && fabric.Text) {
+    fabric.Text.prototype.textBaseline = 'alphabetic';
+}
+        
         const canvas = new fabric.Canvas('c');
         let ratio = 1, cropperBg = null, cropperImg = null, bgImage = null;
 
