@@ -64,7 +64,11 @@
         <button onclick="exportData()" style="padding:10px; background:green; color:white;">XUẤT THÔNG SỐ (mm)</button>
         <pre id="output" style="background:#000; color:#0f0; padding:10px;">Chờ dữ liệu...</pre>
     </div>
-
+<div class="box">
+    <button onclick="saveToStorage()" class="btn btn-success">Lưu Phiên (Save)</button>
+    <button onclick="clearSession()" class="del-btn">Xóa/Làm mới</button>
+    <span id="status-msg" style="margin-left: 10px; font-size: 0.8em; color: green;"></span>
+</div>
     <canvas id="processingCanvas" style="display:none;"></canvas>
 
     <script>
@@ -251,6 +255,57 @@
             };
             document.getElementById('output').innerText = JSON.stringify(data, null, 2);
         }
+
+        // Sử dụng IndexedDB để lưu trữ dữ liệu lớn
+const DB_NAME = 'CNCSessionDB';
+const DB_VERSION = 1;
+
+function saveToStorage() {
+    const data = JSON.stringify(canvas.toJSON());
+    const blobSize = new Blob([data]).size / (1024 * 1024); // Tính MB
+
+    if (blobSize < 4.5) {
+        // Nếu nhỏ hơn 4.5MB, dùng localStorage cho nhanh
+        localStorage.setItem('cnc_session_data', data);
+        document.getElementById('status-msg').innerText = "Đã lưu vào LocalStorage.";
+    } else {
+        // Nếu lớn hơn, chuyển qua IndexedDB
+        saveToIndexedDB(data);
+    }
+}
+
+// Xử lý lưu vào IndexedDB khi dữ liệu quá lớn
+function saveToIndexedDB(data) {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (e) => e.target.result.createObjectStore('designs', { keyPath: 'id' });
+    request.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction('designs', 'readwrite');
+        tx.objectStore('designs').put({ id: 'current_design', content: data });
+        document.getElementById('status-msg').innerText = "Dữ liệu lớn: Đã lưu vào IndexedDB.";
+    };
+}
+
+// Khôi phục khi tải trang
+window.addEventListener('load', () => {
+    // 1. Kiểm tra LocalStorage trước
+    let localData = localStorage.getItem('cnc_session_data');
+    if (localData) {
+        canvas.loadFromJSON(localData, canvas.renderAll.bind(canvas));
+    } else {
+        // 2. Nếu không có, kiểm tra IndexedDB
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onsuccess = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('designs')) return;
+            const tx = db.transaction('designs', 'readonly');
+            tx.objectStore('designs').get('current_design').onsuccess = (event) => {
+                const res = event.target.result;
+                if (res) canvas.loadFromJSON(res.content, canvas.renderAll.bind(canvas));
+            };
+        };
+    }
+});
     </script>
 </body>
 </html>
