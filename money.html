@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phần Mềm Tính Giá CNC - Bản Chuẩn Hoàn Chỉnh</title>
+    <style>
+        :root {
+            --primary-color: #d35400;
+            --secondary-color: #e67e22;
+            --bg-color: #f5f6fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #dcdde1;
+            --success-color: #27ae60;
+            --info-color: #2980b9;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+            text-transform: uppercase;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        .section-title {
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin: 15px 0 5px 0;
+            font-size: 1rem;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        input, select {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+        }
+        .sub-panel {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px dashed var(--border-color);
+            margin-top: 8px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: #fff8f4;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 6px;
+            display: none;
+        }
+        .result-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .result-group-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            margin-top: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 3px;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-color);
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Tính Giá CNC - Bản Chuẩn Hoàn Chỉnh</h2>
+    
+    <div class="section-title">1. Số lượng phôi, Số đầu & Mẫu mã</div>
+    <div class="form-group">
+        <label for="quantity">Tổng số lượng phôi toàn đơn (bức):</label>
+        <input type="number" id="quantity" value="3" min="1">
+    </div>
+    <div class="form-group">
+        <label for="dauDucCount">Số đầu đục hoạt động đồng thời (Số phôi / mẻ):</label>
+        <input type="number" id="dauDucCount" value="6" min="1">
+    </div>
+    <div class="form-group">
+        <label for="designCount">Số lượng mẫu mã khác nhau trong đơn:</label>
+        <select id="designCount">
+            <option value="1" selected>1 Mẫu (Các phôi giống nhau hoàn toàn - Chạy đồng loạt)</option>
+            <option value="2">2 Mẫu khác nhau (Ví dụ: Cặp câu đối vế A + vế B - Chạy tuần tự)</option>
+            <option value="3">3 Mẫu khác nhau (3 file riêng biệt trong đơn - Chạy tuần tự)</option>
+        </select>
+    </div>
+
+    <div class="section-title">2. Kích thước phôi & Chiều sâu</div>
+    <div class="form-group">
+        <label for="length">Chiều dài một phôi (mm):</label>
+        <input type="number" id="length" value="290">
+    </div>
+    <div class="form-group">
+        <label for="width">Chiều rộng một phôi (mm):</label>
+        <input type="number" id="width" value="285">
+    </div>
+    <div class="form-group">
+        <label for="phanTramDuc">Phần trăm đục hoa văn trên phôi (%):</label>
+        <input type="number" id="phanTramDuc" value="100" min="1" max="100">
+    </div>
+
+    <div class="section-title">3. Quy trình chạy máy JDPaint</div>
+    <div class="form-group">
+        <label for="processType">Quy trình gia công:</label>
+        <select id="processType" onchange="toggleRoughingPanel()">
+            <option value="tinh_luon" selected>Đục tinh luôn (Phôi mỏng, ăn dao 1 lần ra hình)</option>
+            <option value="tho_tinh">Phá thô trước + Đục tinh sau (Phôi dày, gỗ cứng)</option>
+        </select>
+    </div>
+
+    <!-- PANEL PHÁ THÔ -->
+    <div id="roughingPanel" class="sub-panel" style="display: none;">
+        <div style="font-weight: bold; color: var(--info-color); margin-bottom: 8px; font-size: 0.9rem;">⚙️ Cấu hình chạy phá thô:</div>
+        <div class="form-group">
+            <label for="thoLayers">Số lớp phá thô (tùy chọn):</label>
+            <input type="number" id="thoLayers" value="2" min="1">
+        </div>
+        <div class="form-group">
+            <label for="thoStepover">Bước dịch dao thô / Stepover thô (mm):</label>
+            <input type="number" id="thoStepover" value="2.5" step="0.1">
+        </div>
+        <div class="form-group">
+            <label for="thoFeedrate">Tốc độ chạy dao thô đặt trong file (mm/min):</label>
+            <input type="number" id="thoFeedrate" value="5000">
+        </div>
+    </div>
+
+    <!-- PANEL ĐỤC TINH -->
+    <div class="sub-panel">
+        <div style="font-weight: bold; color: var(--success-color); margin-bottom: 8px; font-size: 0.9rem;">✨ Cấu hình đục tinh:</div>
+        <div class="form-group">
+            <label for="tinhStepover">Bước dịch dao tinh / Stepover tinh (mm):</label>
+            <input type="number" id="tinhStepover" value="0.26" step="0.01">
+        </div>
+        <div class="form-group">
+            <label for="tinhFeedrate">Tốc độ Feedrate tinh trong file (mm/min):</label>
+            <input type="number" id="tinhFeedrate" value="8000">
+        </div>
+    </div>
+
+    <div class="sub-panel" style="background-color: #f1f2f6; margin-top: 10px;">
+        <label for="setupTimePerPiece">Thời gian rà tâm + gốc cho 1 tấm phôi (phút):</label>
+        <input type="number" id="setupTimePerPiece" value="8">
+    </div>
+
+    <div class="section-title">4. Chi phí xưởng & Lợi nhuận</div>
+    <div class="form-group">
+        <label for="khauHao">Khấu hao máy & Điện nước (VNĐ/giờ):</label>
+        <input type="number" id="khauHao" value="25000">
+    </div>
+    <div class="form-group">
+        <label for="vanHanh">Tiền công đứng xưởng vận hành (VNĐ/giờ):</label>
+        <input type="number" id="vanHanh" value="35000">
+    </div>
+    <div class="form-group">
+        <label for="profit">Tỷ lệ tiền lời mong muốn (%):</label>
+        <input type="number" id="profit" value="30">
+    </div>
+
+    <button onclick="tinhToanGiaXuan()">Tính Toán Báo Giá</button>
+
+    <div class="result-box" id="resultBox">
+        <h3>Kết Quả Tính Toán Thực Tế</h3>
+        
+        <div class="result-group-title">⏱️ Phân tích thời gian máy chạy</div>
+        <div class="result-row">
+            <span>Tổng số mẻ chạy cần thiết:</span>
+            <span id="resBatch" style="font-weight: bold;">-</span>
+        </div>
+        <div class="result-row" id="rowThoTime" style="display: none; color: var(--info-color);">
+            <span>Thời gian phá thô thực tế / mẻ:</span>
+            <span id="resThoTime">-</span>
+        </div>
+        <div class="result-row">
+            <span>Thời gian đục tinh thực tế máy chạy / mẻ:</span>
+            <span id="resTinhTime" style="color: #d35400; font-weight: bold;">-</span>
+        </div>
+        <div class="result-row" style="color: #7f8c8d;">
+            <span>Tổng thời gian rà gá tâm phôi cả đơn:</span>
+            <span id="resSetupTimeTong">-</span>
+        </div>
+        <div class="result-row">
+            <span>Tổng thời gian làm việc (Chạy + Gá):</span>
+            <span id="resTotalTime" style="color: #c0392b; font-weight: bold;">-</span>
+        </div>
+
+        <div class="result-group-title">💰 Chi phí & Tiền lời ròng</div>
+        <div class="result-row">
+            <span>Chi phí hao mòn & tiền điện xưởng:</span>
+            <span id="resTongChiPhiGoc">-</span>
+        </div>
+        <div class="result-row">
+            <span>TIỀN LỜI RÒNG THỰC TẾ (Bỏ túi):</span>
+            <span id="resLoiNhuan" style="color: var(--success-color); font-weight: bold;">-</span>
+        </div>
+        <div class="result-row" style="color: #c0392b; font-size: 1.25rem; font-weight: bold; padding-top: 15px; border-top: 1px solid var(--border-color);">
+            <span>TỔNG GIÁ BÁO KHÁCH (Trọn gói):</span>
+            <span id="resTongGia">-</span>
+        </div>
+        <div class="result-row" style="color: var(--success-color); font-size: 1.1rem; font-weight: bold;">
+            <span>Giá đục trung bình / 1 bức:</span>
+            <span id="resGiaMoiBuc">-</span>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleRoughingPanel() {
+    const processType = document.getElementById('processType').value;
+    const panel = document.getElementById('roughingPanel');
+    panel.style.display = (processType === 'tho_tinh') ? 'block' : 'none';
+}
+
+function dinhDangTien(so) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(so);
+}
+
+function tinhToanGiaXuan() {
+    const qty = parseInt(document.getElementById('quantity').value) || 1;
+    const dauDucCount = parseInt(document.getElementById('dauDucCount').value) || 6;
+    const length = parseFloat(document.getElementById('length').value);
+    const width = parseFloat(document.getElementById('width').value);
+    const phanTramDuc = parseFloat(document.getElementById('phanTramDuc').value) / 100;
+    
+    const designCount = parseInt(document.getElementById('designCount').value) || 1;
+    const setupTimePerPiece = parseFloat(document.getElementById('setupTimePerPiece').value) || 0;
+    const tinhStepover = parseFloat(document.getElementById('tinhStepover').value);
+    const tinhFeedrate = parseFloat(document.getElementById('tinhFeedrate').value);
+    
+    const khauHaoGio = parseFloat(document.getElementById('khauHao').value);
+    const vanHanhGio = parseFloat(document.getElementById('vanHanh').value);
+    const profitPercent = parseFloat(document.getElementById('profit').value);
+    const processType = document.getElementById('processType').value;
+
+    // Hệ số hiệu chuẩn dựa trên thực tế 100% = 120 phút (2 giờ) với step 0.26
+    // (290*285)/(0.26*8000) ~ 39.75. Để bằng 120 phút => K_HIEU_CHUAN ~ 3.02
+    const K_HIEU_CHUAN_TINH = 3.02;
+    const K_HIEU_CHUAN_THO = 1.35; 
+
+    const thoiGianTinhMotMe = (((length * width) / (tinhStepover * tinhFeedrate)) * K_HIEU_CHUAN_TINH * phanTramDuc) * designCount;
+
+    let thoiGianThoMotMe = 0;
+    if (processType === 'tho_tinh') {
+        const thoLayers = parseInt(document.getElementById('thoLayers').value) || 1;
+        const thoStepover = parseFloat(document.getElementById('thoStepover').value);
+        const thoFeedrate = parseFloat(document.getElementById('thoFeedrate').value);
+        
+        thoiGianThoMotMe = (((length * width) / (thoStepover * thoFeedrate)) * K_HIEU_CHUAN_THO * phanTramDuc) * thoLayers * designCount;
+    }
+
+    const soMeChay = Math.ceil(qty / dauDucCount);
+    const tongThoiGianChayMayPhut = (thoiGianTinhMotMe + thoiGianThoMotMe) * soMeChay;
+    const tongThoiGianSetupPhut = setupTimePerPiece * qty;
+    const tongThoiGianToanDonPhut = tongThoiGianChayMayPhut + tongThoiGianSetupPhut;
+    const tongThoiGianToanDonGio = tongThoiGianToanDonPhut / 60;
+
+    const chiPhiGoc = tongThoiGianToanDonGio * (khauHaoGio + vanHanhGio);
+    const tienLoiRong = chiPhiGoc * (profitPercent / 100);
+    const tongGiaBaoKhach = chiPhiGoc + tienLoiRong;
+    const giaMoiBuc = tongGiaBaoKhach / qty;
+
+    document.getElementById('resBatch').innerText = soMeChay + " mẻ chạy";
+    document.getElementById('resTinhTime').innerText = Math.round(thoiGianTinhMotMe) + " phút / mẻ";
+    
+    if (processType === 'tho_tinh') {
+        document.getElementById('resThoTime').innerText = Math.round(thoiGianThoMotMe) + " phút / mẻ";
+        document.getElementById('rowThoTime').style.display = 'flex';
+    } else {
+        document.getElementById('rowThoTime').style.display = 'none';
+    }
+
+    document.getElementById('resSetupTimeTong').innerText = Math.round(tongThoiGianSetupPhut) + " phút (Tính cho " + qty + " phôi)";
+    document.getElementById('resTotalTime').innerText = tongThoiGianToanDonGio.toFixed(1) + " giờ (" + Math.round(tongThoiGianToanDonPhut) + " phút)";
+    
+    document.getElementById('resTongChiPhiGoc').innerText = dinhDangTien(chiPhiGoc);
+    document.getElementById('resLoiNhuan').innerText = dinhDangTien(tienLoiRong);
+    document.getElementById('resTongGia').innerText = dinhDangTien(tongGiaBaoKhach);
+    document.getElementById('resGiaMoiBuc').innerText = dinhDangTien(giaMoiBuc);
+
+    document.getElementById('resultBox').style.display = 'block';
+}
+</script>
+</body>
+</html>
