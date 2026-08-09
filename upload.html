@@ -117,8 +117,28 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz_UBN4UqpWTXbQ7QrTlaDG
             }
         }
 
+       async function checkAuth() {
+            let p = prompt("Nhập mật khẩu để truy cập trang tải ảnh:");
+            if (!p) { location.href = "index.html"; return; }
+
+            try {
+                const res = await fetch(API_URL + "?action=checkPass&pass=" + encodeURIComponent(p));
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    sessionStorage.setItem("upload_auth_secure", "true");
+                    location.reload();
+                } else {
+                    alert("Sai mật khẩu!");
+                    location.href = "index.html";
+                }
+            } catch (err) {
+                alert("Lỗi kết nối đến máy chủ!");
+                location.href = "index.html";
+            }
+        }
+
         window.onload = () => {
-            // Kiểm tra đúng ID 'upload-panel' của trang upload
             if (sessionStorage.getItem("upload_auth_secure") === "true") {
                 document.getElementById("upload-panel").style.display = "block";
                 loadConfig();
@@ -131,6 +151,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz_UBN4UqpWTXbQ7QrTlaDG
             sessionStorage.removeItem("upload_auth_secure"); 
             location.href = "index.html"; 
         }
+       
 
         
 
