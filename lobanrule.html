@@ -29,8 +29,17 @@
         <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100 mb-8 max-w-md mx-auto">
 
 
-            <!-- Bổ sung phần cấu hình dung sai và danh sách gợi ý -->
+           <!-- Bộ tùy chọn dung sai và lọc theo loại thước -->
 <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100 mb-8 max-w-md mx-auto">
+    <div class="mb-3">
+        <label for="targetRuler" class="block text-sm font-semibold text-slate-700 mb-1">Chọn loại thước để gợi ý:</label>
+        <select id="targetRuler" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-bold text-slate-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500">
+            <option value="522">Thước 52.2 cm (Thông Thủy)</option>
+            <option value="429">Thước 42.9 cm (Dương Trạch)</option>
+            <option value="388">Thước 38.8 cm (Âm Phần)</option>
+        </select>
+    </div>
+
     <div class="mb-4 flex items-center justify-between">
         <label for="toleranceInput" class="text-sm font-semibold text-slate-700">Dung sai cho phép (± cm):</label>
         <input 
@@ -41,22 +50,20 @@
             value="2"
         >
     </div>
+    
     <button 
         id="suggestBtn"
         class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl transition-all duration-150 shadow-md mb-4"
     >
-        Gợi Ý Kích Thước Đẹp Xung Quanh
+        Gợi Ý Kích Thước Đẹp Theo Thước Đã Chọn
     </button>
     
     <!-- Khu vực hiển thị kết quả gợi ý -->
     <div id="suggestionBox" class="hidden">
         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Các kích thước thuộc cung TỐT gần nhất:</h3>
-        <div id="suggestionList" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1">
-            <!-- Kết quả gợi ý sẽ được chèn tự động vào đây bằng Javascript -->
-        </div>
+        <div id="suggestionList" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1"></div>
     </div>
 </div>
-
 
             
             <label for="sizeInput" class="block text-sm font-semibold text-slate-700 mb-2">Nhập kích thước cần đo (cm):</label>
@@ -310,9 +317,11 @@ function isGoodDimension(mm) {
     return good522 && good429; 
 }
 
+
 function findSuggestions() {
     const centerCm = parseFloat(input.value);
     const toleranceCm = parseFloat(document.getElementById('toleranceInput').value);
+    const targetType = document.getElementById('targetRuler').value;
     const suggestionBox = document.getElementById('suggestionBox');
     const suggestionList = document.getElementById('suggestionList');
 
@@ -331,7 +340,23 @@ function findSuggestions() {
 
     // Quét qua từng mm trong khoảng dung sai
     for (let mm = minMm; mm <= maxMm; mm += 1) {
-        if (isGoodDimension(mm)) {
+        let isGood = false;
+
+        if (targetType === '522') {
+            const pos = mm % 522;
+            const idx = Math.floor(pos / 65.25) % 8;
+            isGood = arcs522[idx].type === 'good';
+        } else if (targetType === '429') {
+            const pos = mm % 429;
+            const idx = Math.floor(pos / 53.625) % 8;
+            isGood = arcs429[idx].type === 'good';
+        } else if (targetType === '388') {
+            const pos = mm % 388;
+            const idx = Math.floor(pos / 38.8) % 10;
+            isGood = arcs388[idx].type === 'good';
+        }
+
+        if (isGood) {
             const cmVal = (mm / 10).toFixed(1);
             const diff = ((mm - centerMm) / 10).toFixed(1);
             const diffText = diff > 0 ? `+${diff}` : `${diff}`;
@@ -347,10 +372,12 @@ function findSuggestions() {
         suggestionList.innerHTML = html;
         suggestionBox.classList.remove('hidden');
     } else {
-        suggestionList.innerHTML = `<p class="text-xs text-slate-400 italic">Không tìm thấy kích thước đẹp nào trong khoảng dung sai ±${toleranceCm} cm này.</p>`;
+        suggestionList.innerHTML = `<p class="text-xs text-slate-400 italic">Không tìm thấy kích thước thuộc cung tốt trên loại thước này trong khoảng ±${toleranceCm} cm.</p>`;
         suggestionBox.classList.remove('hidden');
     }
 }
+
+        
 
 // Hàm hỗ trợ khi bấm vào nút gợi ý sẽ tự điền lại vào ô chính và tính toán
 function selectSuggestedSize(val) {
