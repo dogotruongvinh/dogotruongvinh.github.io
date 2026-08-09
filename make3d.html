@@ -112,7 +112,32 @@
     </style>
 </head>
 <body>
+<!-- Thêm nút này vào ngay sau thẻ <body> -->
+<a href="index.html" class="back-btn">⬅ Quay về Trang Chủ</a>
 
+<style>
+    .back-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1000; /* Đảm bảo nằm trên các phần tử khác */
+        background: #333;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 14px;
+        border: 1px solid #555;
+    }
+    .back-btn:hover {
+        background: #555;
+        color: white;
+    }
+</style>
+
+
+    
     <div id="controls">
         <h2>Silver Mirror CNC Pro</h2>
         
