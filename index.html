@@ -66,39 +66,68 @@
             object-fit: contain; /* Giữ nguyên chuẩn tỷ lệ ảnh, không méo, không cắt xén */
             width: 100%;
         }
+
+
+        /* Tùy chỉnh thanh điều hướng và liên kết mục chuyên nghiệp hơn */
+    .navbar {
+        background-color: #1a1a1a !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        padding: 12px 0;
+    }
+    .navbar-brand {
+        font-size: 1.25rem;
+        letter-spacing: 0.5px;
+    }
+    .navbar-nav .nav-link {
+        color: #e0e0e0 !important;
+        font-weight: 500;
+        padding: 8px 14px !important;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        margin: 0 2px;
+    }
+    .navbar-nav .nav-link:hover, 
+    .navbar-nav .nav-link.active {
+        color: #ffc107 !important;
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+    .navbar-nav .btn-link {
+        text-decoration: none;
+    }
+
+
+        
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+<!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">
+            <a class="navbar-brand fw-bold text-white" href="index.html">
                 <i class="fas fa-tree text-warning me-2"></i>ĐỒ GỖ TRƯỜNG VINH
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav align-items-center">
-                    <li class="nav-item"><a class="nav-link active" href="#trangchu">Trang Chủ</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#gioithieu">Giới Thiệu</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#sanpham">Sản Phẩm</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#lienhe">Liên Hệ & Zalo</a></li>
-                    <li class="nav-item"> <button class="nav-link btn btn-link" onclick="openMakedim()">Công Cụ Thiết Kế</button></li>
+                    <li class="nav-item"><a class="nav-link active" href="#trangchu"><i class="fas fa-home me-1 opacity-75"></i> Trang Chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#gioithieu"><i class="fas fa-info-circle me-1 opacity-75"></i> Giới Thiệu</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#sanpham"><i class="fas fa-couch me-1 opacity-75"></i> Sản Phẩm</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#lienhe"><i class="fas fa-address-book me-1 opacity-75"></i> Liên Hệ</a></li>
+                    <li class="nav-item"><button class="nav-link btn btn-link text-start" onclick="openMakedim()"><i class="fas fa-drafting-compass me-1 opacity-75"></i> Công Cụ Thiết Kế</button></li>
+                    <li class="nav-item"><a class="nav-link" href="make3d.html"><i class="fas fa-cube me-1 opacity-75"></i> Công Cụ 3D</a></li>
                     <li class="nav-item"><a class="nav-link text-warning fw-bold" href="lobanrule.html"><i class="fas fa-ruler-combined me-1"></i> Thước Lỗ Ban</a></li>
-                    <!-- Trong phần <ul> của navbar -->
-<li class="nav-item">
-    <a class="nav-link" href="make3d.html">Công Cụ 3D</a>
-</li>
                     <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-                        <a class="btn btn-outline-warning btn-sm" href="admin.html"><i class="fas fa-lock me-1"></i> Quản Trị</a>
+                        <a class="btn btn-outline-warning btn-sm rounded-pill px-3 py-2 fw-bold" href="admin.html"><i class="fas fa-lock me-1"></i> Quản Trị</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
+    
     <!-- SLIDER -->
     <div id="featuredCarousel" class="carousel slide shadow" data-bs-ride="carousel">
         <div class="carousel-indicators" id="carousel-indicators"></div>
