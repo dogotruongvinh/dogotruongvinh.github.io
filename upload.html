@@ -69,26 +69,49 @@
     </div>
 
     <script>
-        // Mật khẩu bảo vệ (Bạn có thể đổi chuỗi bên trong dấu nháy)
-        const PASSWORD = "Ttm20073094@"; 
-
+        
         // Kiểm tra mật khẩu ngay khi mở trang
-        window.onload = () => {
-            if (sessionStorage.getItem("upload_auth") === PASSWORD) {
-                document.getElementById("upload-panel").style.display = "block";
-                loadConfig();
-            } else {
-                let p = prompt("Nhập mật khẩu để truy cập trang tải ảnh:");
-                if (p === PASSWORD) {
-                    sessionStorage.setItem("upload_auth", PASSWORD);
-                    document.getElementById("upload-panel").style.display = "block";
-                    loadConfig();
+
+const API_URL = "https://script.google.com/macros/s/AKfycbz_UBN4UqpWTXbQ7QrTlaDGPdCKC8B0krkC2wFJ7UYAtkHVBO0tHb6MUuZIZPXpcw/exec";
+       
+        // Hàm kiểm tra mật khẩu bảo mật qua Server
+        async function checkAuth() {
+            let p = prompt("Nhập mật khẩu quản trị:");
+            if (!p) { location.href = "index.html"; return; }
+
+            try {
+                const res = await fetch(API_URL + "?action=checkPass&pass=" + encodeURIComponent(p));
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    sessionStorage.setItem("auth_secure", "true"); // Lưu trạng thái đã đăng nhập an toàn
+                    location.reload();
                 } else {
                     alert("Sai mật khẩu!");
-                    location.href = "index.html"; // Sai thì đá về trang chủ
+                    location.href = "index.html";
                 }
+            } catch (err) {
+                alert("Lỗi kết nối đến máy chủ!");
+                location.href = "index.html";
+            }
+        }
+
+        window.onload = () => {
+            // Kiểm tra trạng thái đã đăng nhập trước đó trên trình duyệt
+            if (sessionStorage.getItem("auth_secure") === "true") {
+                document.getElementById("admin-panel").style.display = "block";
+                loadData(); // (hoặc loadConfig() tùy file)
+            } else {
+                checkAuth();
             }
         };
+
+        function logout() { 
+            sessionStorage.removeItem("auth_secure"); 
+            location.href = "index.html"; 
+        }
+
+        
 
         function logout() {
             sessionStorage.removeItem("upload_auth");
