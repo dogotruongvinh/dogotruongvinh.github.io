@@ -155,30 +155,36 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+
+
             <ul class="navbar-nav">
                 <li class="nav-item"><a class="nav-link active" href="#trangchu"><i class="fas fa-home text-warning"></i> Trang Chủ</a></li>
                 <li class="nav-item"><a class="nav-link" href="#gioithieu"><i class="fas fa-info-circle text-info"></i> Giới Thiệu</a></li>
                 <li class="nav-item"><a class="nav-link" href="#sanpham"><i class="fas fa-couch text-success"></i> Sản Phẩm</a></li>
                 <li class="nav-item"><a class="nav-link" href="#lienhe"><i class="fas fa-address-book text-danger"></i> Liên Hệ</a></li>
-                <!-- Nút mở công cụ Tỷ Lệ Đồ Gỗ (tyledogo.html) -->
-                <li class="nav-item">
-                    <button class="nav-link btn btn-link text-white text-decoration-none" onclick="openTyleDogo()">
-                        <i class="fas fa-ruler text-warning"></i> Tỷ Lệ Đồ Gỗ
-                    </button>
-                </li>
                 
-                <li class="nav-item"><button class="nav-link btn btn-link text-white text-decoration-none text-start w-100" onclick="openMakedim()"><i class="fas fa-tools text-primary"></i> Công Cụ</button></li>
-             <li class="nav-item">
-    <button class="nav-link btn btn-link text-white text-decoration-none" onclick="openMoney()">
-        <i class="fas fa-calculator text-info"></i> Tính Giá
-    </button>
-</li>
-                <li class="nav-item"><a class="nav-link" href="make3d.html"><i class="fas fa-cube text-warning"></i> 3D</a></li>
-                <li class="nav-item"><a class="nav-link text-warning fw-bold" href="lobanrule.html"><i class="fas fa-ruler-combined"></i> Thước Lỗ Ban</a></li>
+                <!-- Menu Dropdown gom các công cụ lại -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-warning" href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-tools"></i> Tiện Ích & Công Cụ
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="toolsDropdown">
+                        <li><button class="dropdown-item text-white py-2" onclick="openTyleDogo()"><i class="fas fa-ruler text-warning me-2"></i> Tỷ Lệ Đồ Gỗ</button></li>
+                        <li><button class="dropdown-item text-white py-2" onclick="openMakedim()"><i class="fas fa-tools text-primary me-2"></i> Thiết Kế Không Gian</button></li>
+                        <li><button class="dropdown-item text-white py-2" onclick="openMoney()"><i class="fas fa-calculator text-info me-2"></i> Tính Giá CNC</button></li>
+                        <li><a class="dropdown-item text-white py-2" href="make3d.html"><i class="fas fa-cube text-warning me-2"></i> Xem 3D</a></li>
+                        <li><a class="dropdown-item text-white py-2" href="lobanrule.html"><i class="fas fa-ruler-combined text-warning me-2"></i> Thước Lỗ Ban</a></li>
+                    </ul>
+                </li>
+
                 <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
                     <a class="btn btn-outline-warning btn-sm px-3 w-100" href="admin.html"><i class="fas fa-lock me-1"></i> Quản Trị</a>
                 </li>
             </ul>
+
+
+
+            
         </div>
     </div>
 </nav>
