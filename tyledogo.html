@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ Tính Diện Tích & Gợi Ý Đồ Gỗ Phù Hợp - Đồ Gỗ Trường Vinh</title>
+    <!-- Sử dụng Tailwind CSS từ CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-amber-50 text-gray-800 font-sans">
+
+    <div class="max-w-2xl mx-auto px-4 py-8">
+        <!-- Tiêu đề trang -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-amber-900 mb-2">Tính Diện Tích & Gợi Ý Đồ Gỗ</h1>
+            <p class="text-gray-600">Nhập kích thước không gian phòng khách, phòng ngủ hoặc phòng thờ để xem gợi ý mẫu sản phẩm đồ gỗ phù hợp nhất.</p>
+        </div>
+
+        <!-- Khung công cụ -->
+        <div class="bg-white shadow-lg rounded-xl p-6 md:p-8 border border-amber-200">
+            
+            <!-- Chọn loại phòng -->
+            <div class="mb-5">
+                <label class="block font-semibold text-amber-900 mb-2">1. Chọn không gian cần bố trí:</label>
+                <select id="roomType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <option value="living">Phòng Khách (Gợi ý bàn ghế, kệ tivi)</option>
+                    <option value="bedroom">Phòng Ngủ (Gợi ý giường ngủ, tủ quần áo)</option>
+                    <option value="worship">Phòng Thờ (Gợi ý án gian, sập thờ, tủ thờ)</option>
+                </select>
+            </div>
+
+            <!-- Nhập kích thước -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block font-semibold text-amber-900 mb-2">Chiều dài phòng (mét):</label>
+                    <input type="number" id="roomLength" step="0.1" placeholder="Ví dụ: 4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-amber-900 mb-2">Chiều rộng phòng (mét):</label>
+                    <input type="number" id="roomWidth" step="0.1" placeholder="Ví dụ: 3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Nút tính toán -->
+            <button onclick="calculateFurniture()" class="w-full bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md">
+                Xem Gợi Ý Kích Thước & Hình Ảnh Thực Tế
+            </button>
+
+            <!-- Khu vực hiển thị kết quả (Ẩn ban đầu) -->
+            <div id="resultArea" class="hidden mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-xl font-bold text-amber-900 mb-3">Kết quả tư vấn & Mẫu sản phẩm phù hợp:</h3>
+                <p class="text-xs text-gray-500 mb-3 italic">👉 Vuốt hoặc kéo sang ngang để xem thêm các góc chụp/mẫu khác</p>
+                
+                <!-- Khu vực hiển thị danh sách ảnh dạng cuộn ngang -->
+                <div id="imageGallery" class="flex overflow-x-auto space-x-4 mb-6 pb-3 scrollbar-thin scrollbar-thumb-amber-300">
+                    <!-- Các thẻ ảnh sẽ được chèn tự động bằng JavaScript ở đây -->
+                </div>
+
+                <div class="bg-amber-50 p-4 rounded-lg border border-amber-200 space-y-2 mb-6">
+                    <p id="areaResult" class="font-medium text-gray-700"></p>
+                    <p id="suggestionResult" class="text-amber-900 font-semibold text-base md:text-lg"></p>
+                </div>
+
+                <!-- Nút chuyển đổi hành động (Lead Magnet) -->
+                <div class="text-center">
+                    <p class="text-sm text-gray-600 mb-3">Bạn muốn đặt đóng mẫu tương tự theo kích thước riêng?</p>
+                    <a href="https://zalo.me/sdt_cua_ban" target="_blank" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-200 shadow">
+                        💬 Nhận tư vấn & Báo giá qua Zalo
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Chân trang nhỏ -->
+        <div class="text-center mt-6 text-sm text-gray-500">
+            &copy; 2026 Đồ Gỗ Trường Vinh - Xưởng sản xuất đồ gỗ tự nhiên
+        </div>
+    </div>
+
+    <!-- Đoạn mã logic JavaScript -->
+    <script>
+        function calculateFurniture() {
+            const length = parseFloat(document.getElementById('roomLength').value);
+            const width = parseFloat(document.getElementById('roomWidth').value);
+            const roomType = document.getElementById('roomType').value;
+
+            if (!length || !width || length <= 0 || width <= 0) {
+                alert('Vui lòng nhập chiều dài và chiều rộng hợp lệ!');
+                return;
+            }
+
+            const area = (length * width).toFixed(1);
+            let suggestion = "";
+            let folderPrefix = "";
+            let count = 2; // Số lượng ảnh muốn hiển thị (ví dụ: mỗi loại có 2 ảnh mẫu)
+
+            // Phân loại không gian, đưa ra gợi ý và chọn tiền tố tên file ảnh
+            if (roomType === 'living') {
+                folderPrefix = 'living';
+                if (area < 15) {
+                    suggestion = "👉 Gợi ý: Không gian phòng khách nhỏ (< 15m²). Nên chọn <strong>Bộ bàn ghế tay 8</strong> hoặc sofa gọn, kết hợp <strong>kệ tivi dài 1m6 - 1m8</strong>.";
+                    folderPrefix += '-small';
+                } else if (area >= 15 && area <= 25) {
+                    suggestion = "👉 Gợi ý: Không gian phòng khách vừa (15m² - 25m²). Phù hợp nhất với <strong>Bộ bàn ghế tay 10 hoặc tay 12</strong> kết hợp <strong>kệ tivi dài 2m - 2m2</strong>.";
+                    folderPrefix += '-medium';
+                } else {
+                    suggestion = "👉 Gợi ý: Không gian phòng khách rộng (> 25m²). Rất thích hợp với <strong>Bộ bàn ghế tay 14 trở lên</strong> hoặc sập gụ tủ chè, kết hợp <strong>kệ tivi dài từ 2m4 trở lên</strong>.";
+                    folderPrefix += '-large';
+                }
+            } else if (roomType === 'bedroom') {
+                folderPrefix = 'bed';
+                if (area < 12) {
+                    suggestion = "👉 Gợi ý: Phòng ngủ nhỏ (< 12m²). Nên chọn <strong>Giường ngủ 1m4 x 2m</strong> hoặc <strong>1m6 x 2m</strong> kết hợp <strong>tủ quần áo rộng 1m2 - 1m6 sát trần</strong>.";
+                    folderPrefix += '-small';
+                } else if (area >= 12 && area <= 20) {
+                    suggestion = "👉 Gợi ý: Phòng ngủ vừa (12m² - 20m²). Phù hợp hoàn hảo với <strong>Giường 1m8 x 2m</strong> cùng <strong>tủ quần áo 3 - 4 cánh</strong> đồng bộ.";
+                    folderPrefix += '-medium';
+                } else {
+                    suggestion = "👉 Gợi ý: Phòng ngủ rộng lớn (> 20m²). Thích hợp lắp <strong>Giường ngủ cỡ lớn 2m x 2m2</strong>, kết hợp <strong>tủ quần áo lớn trên 2m4</strong> và bàn trang điểm.";
+                    folderPrefix += '-large';
+                }
+            } else if (roomType === 'worship') {
+                folderPrefix = 'worship';
+                if (area < 8) {
+                    suggestion = "👉 Gợi ý: Không gian thờ nhỏ (< 8m²). Nên chọn <strong>Bàn thờ đứng ngang 1m27 hoặc 1m53, sâu 61cm, cao 1m27</strong> chuẩn phong thủy Lỗ Ban.";
+                    folderPrefix += '-small';
+                } else if (area >= 8 && area <= 15) {
+                    suggestion = "👉 Gợi ý: Phòng thờ vừa (8m² - 15m²). Rất phù hợp với <strong>Án gian thờ ngang 1m75 hoặc 1m97, sâu 87cm</strong> kèm bàn cơm nhỏ tiện lợi.";
+                    folderPrefix += '-medium';
+                } else {
+                    suggestion = "👉 Gợi ý: Phòng thờ rộng lớn (> 15m²). Thích hợp đặt <strong>Sập thờ lớn ngang 2m17 hoặc 2m55, sâu 1m07 hoặc 1m27</strong> kết hợp hoành phi câu đối.";
+                    folderPrefix += '-large';
+                }
+            }
+
+            // Tự động sinh danh sách đường dẫn ảnh dựa trên quy tắc tên file: images/ten-phan-loai-1.jpg
+            const galleryContainer = document.getElementById('imageGallery');
+            galleryContainer.innerHTML = ""; 
+
+            for (let i = 1; i <= count; i++) {
+                const imgUrl = `images/${folderPrefix}-${i}.jpg`; // Tự động ghép link ảnh
+
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = "flex-shrink-0 w-64 md:w-72 h-48 rounded-lg overflow-hidden border border-amber-200 shadow-sm bg-amber-100";
+                
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.alt = `Mẫu sản phẩm ${folderPrefix} ${i}`;
+                img.className = "w-full h-full object-cover hover:scale-105 transition duration-300";
+                
+                // Dự phòng trường hợp bạn chưa kịp up ảnh nào đó thì ẩn khung đi hoặc hiện thông báo
+                img.onerror = function() {
+                    this.parentElement.style.display = 'none'; 
+                };
+
+                imgWrapper.appendChild(img);
+                galleryContainer.appendChild(imgWrapper);
+            }
+
+            // Hiển thị kết quả lên màn hình
+            document.getElementById('areaResult').innerText = `Tổng diện tích không gian của bạn là: ${area} m² (${length}m x ${width}m)`;
+            document.getElementById('suggestionResult').innerHTML = suggestion;
+            document.getElementById('resultArea').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
