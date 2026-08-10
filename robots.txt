@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dogotruongvinh.github.io/sitemap.xml
