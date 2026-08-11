@@ -49,7 +49,7 @@
             <!-- Khu vực hiển thị kết quả (Ẩn ban đầu) -->
             <div id="resultArea" class="hidden mt-8 pt-6 border-t border-gray-200">
                 <h3 class="text-xl font-bold text-amber-900 mb-3">Kết quả tư vấn & Mẫu sản phẩm phù hợp:</h3>
-                <p class="text-xs text-gray-500 mb-3 italic">👉 Vuốt hoặc kéo sang ngang để xem thêm các góc chụp/mẫu khác</p>
+                <p class="text-xs text-gray-500 mb-3 italic">👉 Vuốt hoặc kéo sang ngang để xem thêm các góc chụp/mẫu khác. Click vào ảnh để xem kích thước lớn.</p>
                 
                 <!-- Khu vực hiển thị danh sách ảnh dạng cuộn ngang -->
                 <div id="imageGallery" class="flex overflow-x-auto space-x-4 mb-6 pb-3 scrollbar-thin scrollbar-thumb-amber-300">
@@ -75,6 +75,14 @@
         <!-- Chân trang nhỏ -->
         <div class="text-center mt-6 text-sm text-gray-500">
             &copy; 2026 Đồ Gỗ Trường Vinh - Xưởng sản xuất đồ gỗ tự nhiên
+        </div>
+    </div>
+
+    <!-- Modal hiển thị ảnh Full (Ẩn ban đầu) -->
+    <div id="imageModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-80 flex items-center justify-center p-4" onclick="closeModal()">
+        <div class="relative max-w-4xl max-h-full">
+            <span class="absolute -top-10 right-0 text-white text-3xl font-bold cursor-pointer hover:text-gray-300">&times;</span>
+            <img id="modalImg" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" src="" alt="Full Image">
         </div>
     </div>
 
@@ -142,14 +150,19 @@
                 const imgUrl = `images/${folderPrefix}-${i}.jpg`; // Tự động ghép link ảnh
 
                 const imgWrapper = document.createElement('div');
-                imgWrapper.className = "flex-shrink-0 w-64 md:w-72 h-48 rounded-lg overflow-hidden border border-amber-200 shadow-sm bg-amber-100";
+                imgWrapper.className = "flex-shrink-0 w-64 md:w-72 h-48 rounded-lg overflow-hidden border border-amber-200 shadow-sm bg-amber-100 cursor-pointer";
                 
                 const img = document.createElement('img');
                 img.src = imgUrl;
                 img.alt = `Mẫu sản phẩm ${folderPrefix} ${i}`;
                 img.className = "w-full h-full object-cover hover:scale-105 transition duration-300";
                 
-                // Dự phòng trường hợp bạn chưa kịp up ảnh nào đó thì ẩn khung đi hoặc hiện thông báo
+                // Sự kiện click để mở full ảnh
+                img.onclick = function() {
+                    openModal(imgUrl);
+                };
+
+                // Dự phòng trường hợp bạn chưa kịp up ảnh nào đó thì ẩn khung đi
                 img.onerror = function() {
                     this.parentElement.style.display = 'none'; 
                 };
@@ -162,6 +175,19 @@
             document.getElementById('areaResult').innerText = `Tổng diện tích không gian của bạn là: ${area} m² (${length}m x ${width}m)`;
             document.getElementById('suggestionResult').innerHTML = suggestion;
             document.getElementById('resultArea').classList.remove('hidden');
+        }
+
+        // Các hàm xử lý Modal phóng to ảnh
+        function openModal(url) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImg');
+            modalImg.src = url;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
         }
     </script>
 </body>
