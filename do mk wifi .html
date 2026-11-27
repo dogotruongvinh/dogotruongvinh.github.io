@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Định Vị GPS & Tìm Điểm Wi-Fi Công Cộng</title>
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; padding: 16px; background: #f3f4f6; color: #1f2937; }
+    .container { max-width: 720px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    h1 { margin: 0 0 12px; font-size: 1.35rem; color: #111827; }
+
+    .perm-box {
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+    }
+    .perm-granted { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+    .perm-denied { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+    .perm-warn { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+
+    .gps-info {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      margin-bottom: 14px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .gps-info strong { color: #1e3a8a; }
+
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    input, select, button { padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 0.95rem; }
+    input { flex: 1; min-width: 200px; }
+    button { background: #2563eb; color: #fff; border: none; cursor: pointer; font-weight: 600; }
+    button:hover { background: #1d4ed8; }
+    button.gps-btn { background: #0f766e; }
+    button.gps-btn:hover { background: #115e59; }
+
+    .quick-links { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 14px; align-items: center; font-size: 0.9rem; }
+    .quick-links a { text-decoration: none; background: #fff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 6px; font-weight: 500; }
+
+    .status { font-size: 0.9rem; color: #4b5563; margin-bottom: 12px; }
+    .list { display: grid; gap: 10px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; background: #fafafa; }
+    .card-header { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .card-title { font-weight: 700; color: #111827; }
+    .badge { font-size: 0.78rem; padding: 2px 8px; border-radius: 999px; background: #dcfce7; color: #166534; font-weight: 600; }
+    .meta { margin-top: 6px; font-size: 0.88rem; color: #4b5563; line-height: 1.5; }
+    .meta a { color: #2563eb; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Định vị GPS & Tra cứu Wi-Fi công cộng</h1>
+
+    <!-- Trạng thái quyền GPS -->
+    <div id="permBox" class="perm-box">Đang kiểm tra trạng thái quyền vị trí...</div>
+
+    <!-- Hiển thị địa chỉ & tọa độ GPS sau khi lấy thành công -->
+    <div id="gpsInfo" class="gps-info"></div>
+
+    <div class="quick-links">
+      <span><strong>Kho cộng đồng:</strong></span>
+      <a href="https://www.wifimap.io/map" target="_blank" rel="noopener">Mở WiFi Map</a>
+      <a href="https://instabridge.com/free-wifi/" target="_blank" rel="noopener">Mở Instabridge</a>
+    </div>
+
+    <div class="controls">
+      <button class="gps-btn" onclick="requestGPSLocation()">Cấp quyền & Lấy địa chỉ GPS</button>
+      <select id="radiusSelect">
+        <option value="500">Bán kính 500m</option>
+        <option value="1500" selected>Bán kính 1.5km</option>
+        <option value="3000">Bán kính 3km</option>
+      </select>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="placeInput" placeholder="Địa chỉ GPS sẽ tự điền tại đây, hoặc bạn tự nhập..." />
+      <button onclick="searchByAddress()">Tìm theo địa chỉ</button>
+    </div>
+
+    <div id="status" class="status">Nhấn "Cấp quyền & Lấy địa chỉ GPS" để trình duyệt bật hộp thoại xin quyền vị trí.</div>
+    <div id="results" class="list"></div>
+  </div>
+
+  <script>
+    const permBox = document.getElementById("permBox");
+    const gpsInfoEl = document.getElementById("gpsInfo");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+    const placeInput = document.getElementById("placeInput");
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function calcDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const toRad = d => d * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    }
+
+    // 1. Kiểm tra ngữ cảnh bảo mật & trạng thái quyền GPS khi tải trang
+    async function checkPermissionStatus() {
+      if (!navigator.geolocation) {
+        permBox.className = "perm-box perm-denied";
+        permBox.textContent = "Trình duyệt này không hỗ trợ API định vị GPS.";
+        return;
+      }
+
+      if (!window.isSecureContext) {
+        permBox.className = "perm-box perm-warn";
+        permBox.innerHTML =
+          "<strong>Lưu ý bảo mật:</strong> Bạn đang mở file qua kết nối không phải HTTPS (hoặc mở trực tiếp <code>file://</code> trên điện thoại). Một số trình duyệt sẽ tự động chặn hộp thoại xin quyền GPS trừ khi chạy qua <strong>HTTPS</strong> hoặc <strong>localhost</strong>.";
+        return;
+      }
+
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const result = await navigator.permissions.query({ name: "geolocation" });
+          renderPermissionState(result.state);
+          result.onchange = () => renderPermissionState(result.state);
+        } catch {
+          permBox.className = "perm-box";
+          permBox.textContent = "Sẵn sàng yêu cầu quyền vị trí. Nhấn nút bên dưới để cấp quyền.";
+        }
+      } else {
+        permBox.className = "perm-box";
+        permBox.textContent = "Sẵn sàng yêu cầu quyền vị trí. Nhấn nút bên dưới để cấp quyền.";
+      }
+    }
+
+    function renderPermissionState(state) {
+      if (state === "granted") {
+        permBox.className = "perm-box perm-granted";
+        permBox.textContent = "Trạng thái quyền vị trí: Đã cấp quyền. Bạn có thể bấm lấy vị trí GPS ngay.";
+      } else if (state === "denied") {
+        permBox.className = "perm-box perm-denied";
+        permBox.innerHTML =
+          "<strong>Trạng thái quyền vị trí: Đã bị chặn.</strong> Hãy bấm vào biểu tượng ổ khóa (hoặc Cài đặt trang web) trên thanh địa chỉ trình duyệt, chuyển mục <strong>Vị trí (Location)</strong> sang <strong>Cho phép (Allow)</strong> rồi tải lại trang.";
+      } else {
+        permBox.className = "perm-box";
+        permBox.textContent = "Trạng thái quyền vị trí: Chưa cấp quyền. Nhấn nút \"Cấp quyền & Lấy địa chỉ GPS\" để trình duyệt hiển thị hộp thoại cho phép.";
+      }
+    }
+
+    // 2. Xin quyền và lấy tọa độ GPS độ chính xác cao
+    function requestGPSLocation() {
+      if (!navigator.geolocation) {
+        statusEl.textContent = "Trình duyệt không hỗ trợ định vị GPS.";
+        return;
+      }
+
+      statusEl.textContent = "Đang xin quyền và xác định tọa độ GPS...";
+      resultsEl.innerHTML = "";
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const accuracy = Math.round(pos.coords.accuracy);
+
+          renderPermissionState("granted");
+          gpsInfoEl.style.display = "block";
+          gpsInfoEl.innerHTML = `
+            <strong>Tọa độ GPS:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)} (sai số khoảng ${accuracy}m)<br/>
+            <strong>Địa chỉ hiện tại:</strong> Đang dịch tọa độ sang tên đường...
+          `;
+
+          // Dịch tọa độ sang địa chỉ thực tế (Reverse Geocoding)
+          const address = await reverseGeocode(lat, lon);
+          placeInput.value = address;
+          gpsInfoEl.innerHTML = `
+            <strong>Tọa độ GPS:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)} (sai số khoảng ${accuracy}m)<br/>
+            <strong>Địa chỉ hiện tại:</strong> ${escapeHtml(address)}<br/>
+            <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" rel="noopener">Mở vị trí của bạn trên Google Maps</a>
+          `;
+
+          fetchWifiSpots(lat, lon, address);
+        },
+        (err) => {
+          if (err.code === err.PERMISSION_DENIED) {
+            renderPermissionState("denied");
+            statusEl.textContent = "Bạn đã từ chối cấp quyền vị trí hoặc trình duyệt đang chặn quyền GPS.";
+          } else if (err.code === err.POSITION_UNAVAILABLE) {
+            statusEl.textContent = "Không xác định được vị trí. Hãy kiểm tra xem GPS/Dịch vụ vị trí trên thiết bị đã bật chưa.";
+          } else if (err.code === err.TIMEOUT) {
+            statusEl.textContent = "Hết thời gian chờ tín hiệu GPS. Hãy thử di chuyển ra gần cửa sổ hoặc bấm thử lại.";
+          } else {
+            statusEl.textContent = "Lỗi không xác định khi lấy vị trí GPS.";
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    // 3. Chuyển tọa độ (lat, lon) sang địa chỉ tiếng Việt qua Nominatim
+    async function reverseGeocode(lat, lon) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=vi`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      } catch {
+        return `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      }
+    }
+
+    // 4. Tìm kiếm thủ công theo địa chỉ nhập tay
+    async function searchByAddress() {
+      const query = placeInput.value.trim();
+      if (!query) {
+        statusEl.textContent = "Vui lòng nhập địa chỉ hoặc bấm nút lấy GPS.";
+        return;
+      }
+      statusEl.textContent = "Đang xác định tọa độ địa chỉ...";
+      resultsEl.innerHTML = "";
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (!data.length) {
+          statusEl.textContent = "Không tìm thấy địa chỉ này. Hãy thử rút gọn tên phường/quận/tỉnh.";
+          return;
+        }
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        fetchWifiSpots(lat, lon, data[0].display_name);
+      } catch {
+        statusEl.textContent = "Lỗi kết nối khi tra cứu tọa độ.";
+      }
+    }
+
+    // 5. Quét các điểm Wi-Fi công cộng quanh tọa độ từ OpenStreetMap
+    async function fetchWifiSpots(lat, lon, label) {
+      const radius = document.getElementById("radiusSelect").value;
+      statusEl.textContent = `Đang tìm điểm Wi-Fi công cộng trong bán kính ${radius}m quanh: ${label}...`;
+
+      const overpassQuery = `
+        [out:json][timeout:20];
+        (
+          node["internet_access"~"wlan|yes"](around:${radius},${lat},${lon});
+          way["internet_access"~"wlan|yes"](around:${radius},${lat},${lon});
+        );
+        out center;
+      `;
+
+      try {
+        const res = await fetch("https://overpass-api.de/api/interpreter", {
+          method: "POST",
+          body: "data=" + encodeURIComponent(overpassQuery)
+        });
+        const data = await res.json();
+        const items = (data.elements || []).map(el => {
+          const elLat = el.lat || (el.center && el.center.lat);
+          const elLon = el.lon || (el.center && el.center.lon);
+          const tags = el.tags || {};
+          return {
+            name: tags.name || "Điểm công cộng không tên",
+            type: tags.amenity || tags.shop || tags.tourism || "Khác",
+            ssid: tags["internet_access:ssid"] || "Không ghi nhận trên bản đồ",
+            fee: tags["internet_access:fee"] === "no" ? "Miễn phí" : (tags["internet_access:fee"] || "Chưa rõ"),
+            lat: elLat,
+            lon: elLon,
+            dist: calcDistance(lat, lon, elLat, elLon)
+          };
+        }).sort((a, b) => a.dist - b.dist);
+
+        if (!items.length) {
+          statusEl.textContent = "Không có điểm nào gắn thẻ Wi-Fi trên OpenStreetMap ở bán kính này. Hãy tăng bán kính hoặc mở WiFi Map phía trên.";
+          return;
+        }
+
+        statusEl.textContent = `Tìm thấy ${items.length} điểm có Wi-Fi công cộng gần vị trí của bạn.`;
+        resultsEl.innerHTML = items.map(item => `
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">${escapeHtml(item.name)}</span>
+              <span class="badge">${item.dist} m</span>
+            </div>
+            <div class="meta">
+              Loại: ${escapeHtml(item.type)} &bull; Phí: ${escapeHtml(item.fee)}<br/>
+              Tên Wi-Fi (SSID): <strong>${escapeHtml(item.ssid)}</strong><br/>
+              <a href="https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lon}" target="_blank" rel="noopener">Chỉ đường trên Google Maps</a>
+            </div>
+          </div>
+        `).join("");
+      } catch {
+        statusEl.textContent = "Máy chủ bản đồ đang bận hoặc mất kết nối. Vui lòng thử lại sau vài giây.";
+      }
+    }
+
+    checkPermissionStatus();
+  </script>
+</body>
+</html>
