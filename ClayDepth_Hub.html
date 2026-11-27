@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClayDepth Master Hub — Kết nối Module 1 (Prompt &amp; Nền Đen) &amp; Module 2 (Depth V2 16-bit CNC)</title>
+  <style>
+    /* =====================================================================
+       CLAYDEPTH MASTER HUB — UNIFIED ZBRUSH / CNC DARK SHELL
+       ===================================================================== */
+    :root {
+      --bg-root: #0a0c10;
+      --bg-bar: #131720;
+      --bg-panel: #181d28;
+      --bg-well: #0e1117;
+      --border: #262e3d;
+      --border-light: #364156;
+      --text-main: #e8ecf4;
+      --text-sub: #94a0b8;
+      --text-dim: #66728a;
+      --clay: #e07a5f;
+      --clay-hover: #ec8d73;
+      --clay-dark: #b9593e;
+      --amber: #f4b942;
+      --emerald: #34b888;
+      --danger: #e25d6b;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      background: var(--bg-root);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    button {
+      font-family: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* =====================================================================
+       TOP HUB NAVIGATION BAR
+       ===================================================================== */
+    .hub-bar {
+      flex-shrink: 0;
+      min-height: 54px;
+      background: linear-gradient(180deg, #171c26 0%, #11151d 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      z-index: 30;
+    }
+
+    .hub-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-shrink: 0;
+    }
+
+    .hub-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(145deg, var(--clay-hover), var(--clay-dark));
+      border: 1px solid rgba(255, 214, 198, 0.35);
+      box-shadow: 0 4px 12px rgba(224, 122, 95, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hub-title {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      line-height: 1.15;
+    }
+
+    .hub-sub {
+      font-size: 10.5px;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bridge-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: rgba(148, 160, 184, 0.14);
+      border: 1px solid var(--border-light);
+      color: var(--text-sub);
+    }
+    .bridge-badge.active {
+      background: rgba(52, 184, 136, 0.14);
+      border-color: rgba(52, 184, 136, 0.45);
+      color: #6ee7b7;
+    }
+
+    /* Pipeline Step Switcher */
+    .pipeline-nav {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-well);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 3px;
+      flex-wrap: wrap;
+    }
+
+    .nav-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 11px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .nav-tab:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab.active {
+      background: linear-gradient(180deg, rgba(224, 122, 95, 0.28), rgba(185, 89, 62, 0.22));
+      color: #ffe2d8;
+      border: 1px solid rgba(224, 122, 95, 0.6);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-tab.gemini-link {
+      color: var(--amber);
+      border: 1px dashed rgba(244, 185, 66, 0.35);
+      padding: 5px 9px;
+      font-size: 11.5px;
+    }
+    .nav-tab.gemini-link:hover {
+      background: rgba(244, 185, 66, 0.12);
+      border-color: var(--amber);
+      color: #ffe094;
+    }
+
+    .step-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 800;
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .nav-tab.active .step-pill {
+      background: var(--clay);
+      color: #ffffff;
+    }
+
+    .nav-arrow {
+      color: var(--text-dim);
+      font-size: 11px;
+      user-select: none;
+      padding: 0 1px;
+    }
+
+    .nav-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      margin: 0 3px;
+    }
+
+    /* Right Controls */
+    .hub-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 11px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.14s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .btn-bridge {
+      background: linear-gradient(180deg, #32b283 0%, #218560 100%);
+      color: #ffffff;
+      border: 1px solid rgba(142, 245, 208, 0.3);
+      box-shadow: 0 4px 12px rgba(33, 133, 96, 0.3);
+    }
+    .btn-bridge:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+    .btn-clay {
+      background: linear-gradient(180deg, #e7866b 0%, #c66044 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 212, 196, 0.3);
+    }
+    .btn-clay:hover { filter: brightness(1.08); }
+
+    .btn-ghost {
+      background: var(--bg-panel);
+      color: var(--text-main);
+      border: 1px solid var(--border-light);
+    }
+    .btn-ghost:hover { background: #222938; border-color: #4b5a76; }
+
+    /* =====================================================================
+       MODULES WORKSPACE STAGE (KEEPS BOTH IFRAMES ALIVE)
+       ===================================================================== */
+    .modules-stage {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      position: relative;
+      background: var(--bg-root);
+    }
+
+    .module-pane {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .module-pane iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #0b0d11;
+      display: block;
+    }
+
+    /* Chế độ xem Module 1 toàn màn hình */
+    .modules-stage.view-m1 #paneM1 { flex: 1; display: flex; }
+    .modules-stage.view-m1 #paneM2 { display: none; }
+    .modules-stage.view-m1 #splitter { display: none; }
+
+    /* Chế độ xem Module 2 toàn màn hình */
+    .modules-stage.view-m2 #paneM1 { display: none; }
+    .modules-stage.view-m2 #paneM2 { flex: 1; display: flex; }
+    .modules-stage.view-m2 #splitter { display: none; }
+
+    /* Chế độ Song song (Split View) */
+    .modules-stage.view-split #paneM1 { display: flex; flex: 0 0 var(--split-left, 50%); }
+    .modules-stage.view-split #paneM2 { display: flex; flex: 1; }
+    .modules-stage.view-split #splitter { display: flex; }
+
+    /* Thanh nhãn nhỏ chỉ hiện khi bật Split View */
+    .split-pane-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 10px;
+      background: #10141c;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+    .modules-stage.view-split .split-pane-bar { display: flex; }
+
+    .splitter {
+      width: 7px;
+      background: #141923;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      cursor: col-resize;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .splitter:hover, .splitter.dragging {
+      background: rgba(224, 122, 95, 0.35);
+    }
+    .splitter-grip {
+      width: 3px;
+      height: 36px;
+      border-radius: 99px;
+      background: var(--border-light);
+    }
+    .splitter:hover .splitter-grip, .splitter.dragging .splitter-grip {
+      background: var(--clay);
+    }
+
+    /* Chặn iframe ăn sự kiện chuột khi đang kéo thanh splitter */
+    .modules-stage.is-resizing iframe {
+      pointer-events: none;
+    }
+
+    /* =====================================================================
+       MODAL CẤU HÌNH / NẠP 2 FILE MODULE
+       ===================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 8, 12, 0.82);
+      backdrop-filter: blur(5px);
+      z-index: 80;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-box {
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      background: var(--bg-bar);
+      border: 1px solid var(--border-light);
+      border-radius: 15px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.78);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-head {
+      padding: 14px 18px;
+      background: #171c26;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .config-card {
+      background: var(--bg-well);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 12px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .config-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .path-input {
+      width: 100%;
+      background: #131720;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      padding: 8px 10px;
+      outline: none;
+    }
+    .path-input:focus { border-color: var(--clay); }
+
+    .config-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .note-box {
+      background: rgba(244, 185, 66, 0.08);
+      border: 1px solid rgba(244, 185, 66, 0.3);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #f6dca0;
+    }
+
+    /* =====================================================================
+       TOAST NOTIFICATIONS
+       ===================================================================== */
+    .toast-stack {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      pointer-events: none;
+      width: min(92vw, 480px);
+    }
+
+    .toast {
+      pointer-events: auto;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7);
+      animation: toastUp 0.2s ease forwards;
+    }
+    .toast.success { background: #154938; border: 1px solid var(--emerald); color: #e9fff6; }
+    .toast.info    { background: #1e2534; border: 1px solid #495876; color: #f1f5f9; }
+    .toast.warn    { background: #5a261c; border: 1px solid var(--clay); color: #fff1ed; }
+
+    @keyframes toastUp {
+      from { opacity: 0; transform: translateY(10px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (max-width: 900px) {
+      .modules-stage.view-split { flex-direction: column; }
+      .modules-stage.view-split #paneM1 { flex: 0 0 50%; }
+      .splitter { width: 100%; height: 7px; cursor: row-resize; }
+      .splitter-grip { width: 36px; height: 3px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Stack -->
+  <div id="toastStack" class="toast-stack"></div>
+
+  <!-- =====================================================================
+       THANH ĐIỀU KHIỂN TRUNG TÂM (HUB BAR)
+       ===================================================================== -->
+  <header class="hub-bar">
+    <div class="hub-brand">
+      <div class="hub-logo" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 22 7.5 12 13 2 7.5 12 2" fill="rgba(255,255,255,0.2)"/>
+          <polyline points="2 12.5 12 18 22 12.5"/>
+          <polyline points="2 17.5 12 23 22 17.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="hub-title">ClayDepth Master Hub</div>
+        <div class="hub-sub">
+          <span>2-Module CNC Pipeline</span>
+          <span id="bridgeBadge" class="bridge-badge" title="Trạng thái cầu nối dữ liệu giữa Module 1 và Module 2">Bridge: Chờ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thanh chuyển đổi 2 Module + Lối tắt Gemini -->
+    <nav class="pipeline-nav" aria-label="Điều hướng quy trình">
+      <button id="tabM1" class="nav-tab active" type="button" title="Phím tắt: Alt+1">
+        <span class="step-pill">1</span>
+        <span>Module 1: Chuẩn bị ảnh &amp; Prompt</span>
+      </button>
+
+      <span class="nav-arrow">→</span>
+
+      <a class="nav-tab gemini-link" href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer"
+         title="Mở Gemini ở tab mới để dán ảnh nền đen &amp; Prompt từ Module 1">
+        <span>✦ Mở Gemini</span>
+        <span style="font-size:10px;">↗</span>
+      </a>
+
+      <span class="nav-arrow">→</span>
+
+      <button id="tabM2" class="nav-tab" type="button" title="Phím tắt: Alt+2">
+        <span class="step-pill">2</span>
+        <span>Module 2: Depth V2 &amp; 16-bit CNC</span>
+      </button>
+
+      <span class="nav-divider"></span>
+
+      <button id="tabSplit" class="nav-tab" type="button" title="Xem 2 module song song (Phím tắt: Alt+3)">
+        <span>◫ Song song</span>
+      </button>
+    </nav>
+
+    <!-- Hành động cầu nối & cấu hình -->
+    <div class="hub-actions">
+      <button id="btnPipeM1toM2" class="btn btn-bridge" type="button"
+              title="Lấy ảnh full-res đã xử lý ở Module 1 chuyển thẳng sang Module 2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/><path d="m13 5 7 7-7 7"/>
+        </svg>
+        <span>Chuyển ảnh M1 → M2</span>
+      </button>
+
+      <button id="btnOpenConfig" class="btn btn-ghost" type="button" title="Cấu hình đường dẫn hoặc chọn trực tiếp 2 file HTML">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span>Cấu hình Module</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       KHU VỰC HIỂN THỊ 2 MODULE (IFRAME GIỮ NGUYÊN TRẠNG THÁI)
+       ===================================================================== -->
+  <main id="modulesStage" class="modules-stage view-m1">
+    <!-- MODULE 1 -->
+    <section id="paneM1" class="module-pane" aria-label="Module 1">
+      <div class="split-pane-bar">
+        <span style="color:#ec8d73;">MODULE 01 — Chuẩn bị ảnh nền đen #000 &amp; Prompt Gemini</span>
+        <button id="btnReloadM1" class="btn btn-ghost" style="padding:2px 7px;font-size:10.5px;" type="button">↻ Tải lại</button>
+      </div>
+      <iframe id="frameM1" title="Module 1: ClayDepth Studio"></iframe>
+    </section>
+
+    <!-- THANH KÉO CHIA TỶ LỆ TRONG CHẾ ĐỘ SONG SONG -->
+    <div id="splitter" class="splitter" title="Kéo để thay đổi kích thước 2 module">
+      <div class="splitter-grip"></div>
+    </div>
+
+    <!-- MODULE 2 -->
+    <section id="paneM2" class="module-pane" aria-label="Module 2">
+      <div class="split-pane-bar">
+        <span style="color:#f4b942;">MODULE 02 — Depth Anything V2 Colab &amp; Height Map 16-bit CNC</span>
+        <button id="btnReloadM2" class="btn btn-ghost" style="padding:2px 7px;font-size:10.5px;" type="button">↻ Tải lại</button>
+      </div>
+      <iframe id="frameM2" title="Module 2: ClayDepth V2 Studio"></iframe>
+    </section>
+  </main>
+
+  <!-- =====================================================================
+       MODAL CẤU HÌNH ĐƯỜNG DẪN & NẠP TRỰC TIẾP 2 FILE MODULE
+       ===================================================================== -->
+  <div id="configModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cfgTitle">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div>
+          <div id="cfgTitle" style="font-size:15px;font-weight:800;color:#fff;">Cấu hình &amp; Kết nối 2 Module HTML</div>
+          <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;">Đặt cùng thư mục hoặc chọn trực tiếp file từ máy tính</div>
+        </div>
+        <button id="btnCloseConfig" class="btn btn-ghost" type="button">✕ Đóng</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="note-box">
+          <strong>Mẹo bật cầu nối "Chuyển ảnh M1 → M2" 1-Click (Full độ phân giải 1024/1536/2048px):</strong><br/>
+          • Nếu mở qua local server (vd: <em>VS Code Live Server</em> hoặc <code>python -m http.server</code>), cầu nối tự động hoạt động.<br/>
+          • Nếu mở trực tiếp bằng cách nhấp đúp file (<code>file://</code>), trình duyệt khóa giao tiếp chéo giữa 2 file. Bạn chỉ cần bấm nút <strong>"Chọn file .html"</strong> bên dưới cho cả 2 module để nạp vào bộ nhớ (kích hoạt cầu nối 1-Click ngay lập tức), hoặc dùng cách <strong>Copy Ảnh PNG</strong> ở M1 rồi dán <strong>Ctrl+V</strong> ở M2.
+        </div>
+
+        <!-- Cấu hình Module 1 -->
+        <div class="config-card">
+          <div class="config-label">
+            <span>Module 1 — Chuẩn bị ảnh nền đen &amp; Prompt Gemini</span>
+            <span id="statusM1" style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-sub);">Đang nạp từ thư mục</span>
+          </div>
+          <input id="inputPathM1" class="path-input" type="text" spellcheck="false" />
+          <div class="config-row">
+            <input id="pickFileM1" type="file" accept=".html,.htm" hidden />
+            <button id="btnPickM1" class="btn btn-clay" type="button">Chọn file Module 1 (.html)</button>
+            <button id="btnApplyPathM1" class="btn btn-ghost" type="button">Nạp theo tên file</button>
+          </div>
+        </div>
+
+        <!-- Cấu hình Module 2 -->
+        <div class="config-card">
+          <div class="config-label">
+            <span>Module 2 — Depth Anything V2 Colab &amp; Height Map 16-bit CNC</span>
+            <span id="statusM2" style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-sub);">Đang nạp từ thư mục</span>
+          </div>
+          <input id="inputPathM2" class="path-input" type="text" spellcheck="false" />
+          <div class="config-row">
+            <input id="pickFileM2" type="file" accept=".html,.htm" hidden />
+            <button id="btnPickM2" class="btn btn-clay" type="button">Chọn file Module 2 (.html)</button>
+            <button id="btnApplyPathM2" class="btn btn-ghost" type="button">Nạp theo tên file</button>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-top:4px;">
+          <button id="btnResetDefaults" class="btn btn-ghost" type="button">Khôi phục tên file mặc định</button>
+          <button id="btnDoneConfig" class="btn btn-bridge" type="button">Hoàn tất</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       JAVASCRIPT — MODULE LOADER, FULL-RES BRIDGE ENGINE & SPLIT RESIZER
+       ===================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // Tên file gốc mặc định khớp chính xác với 2 file đính kèm
+      const DEFAULTS = {
+        m1: 'ClayDepth Studio — Chuẩn bị ảnh Đất Sét Nền Đen cho Gemini & Depth Anything V2.html',
+        m2: 'ClayDepth V2 Studio — Depth Anything V2 Colab & 16-bit Height Map CNC.html'
+      };
+
+      const STORAGE_KEYS = {
+        m1: 'claydepth_hub_path_m1',
+        m2: 'claydepth_hub_path_m2'
+      };
+
+      const state = {
+        view: 'm1', // 'm1' | 'm2' | 'split'
+        pathM1: loadSaved(STORAGE_KEYS.m1, DEFAULTS.m1),
+        pathM2: loadSaved(STORAGE_KEYS.m2, DEFAULTS.m2),
+        bridgeReady: { 1: false, 2: false },
+        loadMode: { 1: 'src', 2: 'src' } // 'src' | 'srcdoc'
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const els = {
+        toastStack: $('toastStack'),
+        bridgeBadge: $('bridgeBadge'),
+        modulesStage: $('modulesStage'),
+        frameM1: $('frameM1'),
+        frameM2: $('frameM2'),
+        splitter: $('splitter'),
+
+        tabM1: $('tabM1'),
+        tabM2: $('tabM2'),
+        tabSplit: $('tabSplit'),
+        btnPipeM1toM2: $('btnPipeM1toM2'),
+        btnOpenConfig: $('btnOpenConfig'),
+        btnReloadM1: $('btnReloadM1'),
+        btnReloadM2: $('btnReloadM2'),
+
+        configModal: $('configModal'),
+        btnCloseConfig: $('btnCloseConfig'),
+        btnDoneConfig: $('btnDoneConfig'),
+        btnResetDefaults: $('btnResetDefaults'),
+        inputPathM1: $('inputPathM1'),
+        inputPathM2: $('inputPathM2'),
+        statusM1: $('statusM1'),
+        statusM2: $('statusM2'),
+        pickFileM1: $('pickFileM1'),
+        pickFileM2: $('pickFileM2'),
+        btnPickM1: $('btnPickM1'),
+        btnPickM2: $('btnPickM2'),
+        btnApplyPathM1: $('btnApplyPathM1'),
+        btnApplyPathM2: $('btnApplyPathM2')
+      };
+
+      function loadSaved(key, fallback) {
+        try {
+          return localStorage.getItem(key) || fallback;
+        } catch (_) {
+          return fallback;
+        }
+      }
+
+      function saveKey(key, val) {
+        try { localStorage.setItem(key, val); } catch (_) {}
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+      }
+
+      function showToast(msg, type = 'info', ms = 3400) {
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        const icon = type === 'success' ? '✓' : type === 'warn' ? '!' : 'ℹ';
+        el.innerHTML = `<span style="font-weight:900;">${icon}</span><span>${escapeHtml(msg)}</span>`;
+        els.toastStack.appendChild(el);
+        setTimeout(() => {
+          el.style.transition = 'opacity 0.2s, transform 0.2s';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+          setTimeout(() => el.remove(), 220);
+        }, ms);
+      }
+
+      /* ===================================================================
+         1. SCRIPT CẦU NỐI NHÚNG ĐỘNG (KHÔNG SỬA FILE GỐC TRÊN ĐĨA)
+         Hỗ trợ bắt PNG Full-Res (1024/1536/2048px) từ Module 1 bơm sang Module 2
+         =================================================================== */
+      function buildBridgeScriptForModule(moduleId) {
+        if (moduleId === 1) {
+          return (
+            '\n<scr' + 'ipt>(function(){' +
+            'function sendRes(hasImg,dataUrl,fileName){' +
+            '  var pr=document.getElementById("promptOutput");' +
+            '  window.parent.postMessage({ns:"CLAYDEPTH_HUB",type:"RES_M1_DATA",hasImg:hasImg,dataUrl:dataUrl,fileName:fileName||"claydepth_m1_export.png",prompt:pr?pr.value:""},"*");' +
+            '}' +
+            'window.addEventListener("message",function(ev){' +
+            '  if(!ev.data||ev.data.ns!=="CLAYDEPTH_HUB")return;' +
+            '  if(ev.data.type==="REQ_M1_DATA"){' +
+            '    var ws=document.getElementById("editorWorkspace");' +
+            '    var cv=document.getElementById("previewCanvas");' +
+            '    var dlBtn=document.getElementById("btnDownloadPng");' +
+            '    var hasImg=!!(ws&&!ws.classList.contains("hidden")&&cv&&cv.width>0);' +
+            '    if(!hasImg){sendRes(false,null);return;}' +
+            '    if(dlBtn&&!dlBtn.disabled){' +
+            '      var done=false;' +
+            '      var origCreate=URL.createObjectURL;' +
+            '      var origClick=HTMLAnchorElement.prototype.click;' +
+            '      function restore(){URL.createObjectURL=origCreate;HTMLAnchorElement.prototype.click=origClick;}' +
+            '      var timer=setTimeout(function(){' +
+            '        if(done)return;done=true;restore();' +
+            '        try{sendRes(true,cv.toDataURL("image/png"),"claydepth_m1_preview.png");}catch(e){sendRes(false,null);}' +
+            '      },2500);' +
+            '      URL.createObjectURL=function(obj){' +
+            '        if(!done&&obj instanceof Blob&&obj.type==="image/png"){' +
+            '          done=true;clearTimeout(timer);' +
+            '          var fr=new FileReader();' +
+            '          fr.onload=function(){sendRes(true,fr.result,"claydepth_m1_fullres.png");};' +
+            '          fr.readAsDataURL(obj);' +
+            '          setTimeout(restore,150);' +
+            '          return "blob:claydepth-hub-intercepted";' +
+            '        }' +
+            '        return origCreate.apply(URL,arguments);' +
+            '      };' +
+            '      HTMLAnchorElement.prototype.click=function(){' +
+            '        if(this.href&&this.href.indexOf("blob:claydepth-hub-intercepted")===0){return;}' +
+            '        return origClick.apply(this,arguments);' +
+            '      };' +
+            '      dlBtn.click();' +
+            '    }else{' +
+            '      try{sendRes(true,cv.toDataURL("image/png"),"claydepth_m1_preview.png");}catch(e){sendRes(false,null);}' +
+            '    }' +
+            '  }' +
+            '});' +
+            'window.parent.postMessage({ns:"CLAYDEPTH_HUB",type:"MODULE_READY",moduleId:1},"*");' +
+            '})();<' + '/script>\n'
+          );
+        }
+        return (
+          '\n<scr' + 'ipt>(function(){' +
+          'function dataUrlToBlob(u){' +
+          '  var p=u.split(","),m=(p[0].match(/:(.*?);/)||[])[1]||"image/png";' +
+          '  var b=atob(p[1]),n=b.length,a=new Uint8Array(n);' +
+          '  while(n--)a[n]=b.charCodeAt(n);' +
+          '  return new Blob([a],{type:m});' +
+          '}' +
+          'window.addEventListener("message",function(ev){' +
+          '  if(!ev.data||ev.data.ns!=="CLAYDEPTH_HUB")return;' +
+          '  if(ev.data.type==="PUSH_IMAGE_TO_M2"&&ev.data.dataUrl){' +
+          '    try{' +
+          '      var blob=dataUrlToBlob(ev.data.dataUrl);' +
+          '      var inp=document.getElementById("fileInputClay");' +
+          '      if(!inp)throw new Error("Không tìm thấy #fileInputClay");' +
+          '      var file=new File([blob],ev.data.fileName||"from_module1_clay.png",{type:"image/png"});' +
+          '      var dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;' +
+          '      inp.dispatchEvent(new Event("change",{bubbles:true}));' +
+          '      window.parent.postMessage({ns:"CLAYDEPTH_HUB",type:"M2_IMAGE_LOADED",ok:true},"*");' +
+          '    }catch(err){' +
+          '      window.parent.postMessage({ns:"CLAYDEPTH_HUB",type:"M2_IMAGE_LOADED",ok:false,error:String(err)},"*");' +
+          '    }' +
+          '  }' +
+          '});' +
+          'window.parent.postMessage({ns:"CLAYDEPTH_HUB",type:"MODULE_READY",moduleId:2},"*");' +
+          '})();<' + '/script>\n'
+        );
+      }
+
+      function injectBridgeIntoHtml(rawHtml, moduleId) {
+        const snippet = buildBridgeScriptForModule(moduleId);
+        if (/<\/body>/i.test(rawHtml)) {
+          return rawHtml.replace(/<\/body>/i, snippet + '</body>');
+        }
+        return rawHtml + snippet;
+      }
+
+      function canDirectDomBridge() {
+        try {
+          const d1 = els.frameM1.contentDocument;
+          const d2 = els.frameM2.contentDocument;
+          return !!(d1 && d1.getElementById('previewCanvas') && d2 && d2.getElementById('fileInputClay'));
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function updateBridgeStatusUI() {
+        const bothMsg = state.bridgeReady[1] && state.bridgeReady[2];
+        const canDom = canDirectDomBridge();
+        if (bothMsg || canDom) {
+          els.bridgeBadge.textContent = 'Bridge: 1-Click Sẵn sàng';
+          els.bridgeBadge.classList.add('active');
+        } else {
+          els.bridgeBadge.textContent = 'Bridge: Độc lập (file://)';
+          els.bridgeBadge.classList.remove('active');
+        }
+      }
+
+      /* ===================================================================
+         2. NẠP 2 MODULE (ƯU TIÊN FETCH + SRCDOC KHI CHẠY HTTP, FALLBACK SRC)
+         =================================================================== */
+      async function loadModuleFromPath(moduleId, filePath) {
+        const frame = moduleId === 1 ? els.frameM1 : els.frameM2;
+        const statusEl = moduleId === 1 ? els.statusM1 : els.statusM2;
+        state.bridgeReady[moduleId] = false;
+
+        if (window.location.protocol !== 'file:') {
+          try {
+            const res = await fetch(encodeURI(filePath), { cache: 'no-store' });
+            if (res.ok) {
+              const htmlText = await res.text();
+              frame.removeAttribute('src');
+              frame.srcdoc = injectBridgeIntoHtml(htmlText, moduleId);
+              state.loadMode[moduleId] = 'srcdoc';
+              statusEl.textContent = 'Đã nạp (Cầu nối tự động)';
+              statusEl.style.color = '#6ee7b7';
+              return;
+            }
+          } catch (_) {
+            // Rơi xuống fallback src
+          }
+        }
+
+        frame.removeAttribute('srcdoc');
+        frame.src = encodeURI(filePath);
+        state.loadMode[moduleId] = 'src';
+        statusEl.textContent = 'Nạp trực tiếp từ thư mục';
+        statusEl.style.color = '#94a0b8';
+      }
+
+      function loadModuleFromLocalFile(moduleId, file) {
+        if (!file) return;
+        const frame = moduleId === 1 ? els.frameM1 : els.frameM2;
+        const statusEl = moduleId === 1 ? els.statusM1 : els.statusM2;
+        const reader = new FileReader();
+        reader.onload = () => {
+          state.bridgeReady[moduleId] = false;
+          frame.removeAttribute('src');
+          frame.srcdoc = injectBridgeIntoHtml(String(reader.result || ''), moduleId);
+          state.loadMode[moduleId] = 'srcdoc';
+          statusEl.textContent = `Đã nạp file: ${file.name} (1-Click OK)`;
+          statusEl.style.color = '#6ee7b7';
+          showToast(`Đã nạp Module ${moduleId} từ máy tính (đã bật cầu nối 1-Click)!`, 'success');
+        };
+        reader.onerror = () => showToast(`Không thể đọc file cho Module ${moduleId}.`, 'warn');
+        reader.readAsText(file, 'utf-8');
+      }
+
+      // Lắng nghe phản hồi postMessage từ 2 iframe
+      window.addEventListener('message', (ev) => {
+        const data = ev.data;
+        if (!data || data.ns !== 'CLAYDEPTH_HUB') return;
+
+        if (data.type === 'MODULE_READY') {
+          state.bridgeReady[data.moduleId] = true;
+          updateBridgeStatusUI();
+        } else if (data.type === 'RES_M1_DATA') {
+          if (!data.hasImg || !data.dataUrl) {
+            showToast('Module 1 chưa có ảnh nào! Hãy tải ảnh hoặc bấm "Ảnh mẫu" ở Module 1 trước.', 'warn', 3800);
+            return;
+          }
+          sendDataUrlToModule2(data.dataUrl, data.fileName);
+        } else if (data.type === 'M2_IMAGE_LOADED') {
+          if (data.ok) {
+            if (state.view === 'm1') setView('m2');
+            showToast('Đã chuyển ảnh Full-Res từ Module 1 sang Module 2 thành công!', 'success', 3200);
+          } else {
+            showToast(`Không thể nạp ảnh sang Module 2: ${data.error || 'Lỗi không xác định'}`, 'warn');
+          }
+        }
+      });
+
+      els.frameM1.addEventListener('load', updateBridgeStatusUI);
+      els.frameM2.addEventListener('load', updateBridgeStatusUI);
+
+      /* ===================================================================
+         3. CẦU NỐI CHUYỂN ẢNH TỪ MODULE 1 SANG MODULE 2
+         =================================================================== */
+      function dataUrlToBlob(dataUrl) {
+        const parts = dataUrl.split(',');
+        const mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/png';
+        const bstr = atob(parts[1]);
+        let n = bstr.length;
+        const u8 = new Uint8Array(n);
+        while (n--) u8[n] = bstr.charCodeAt(n);
+        return new Blob([u8], { type: mime });
+      }
+
+      function sendDataUrlToModule2(dataUrl, fileName) {
+        if (state.bridgeReady[2] && els.frameM2.contentWindow) {
+          els.frameM2.contentWindow.postMessage({
+            ns: 'CLAYDEPTH_HUB',
+            type: 'PUSH_IMAGE_TO_M2',
+            dataUrl,
+            fileName: fileName || 'from_module1_clay.png'
+          }, '*');
+          return;
+        }
+        try {
+          const doc2 = els.frameM2.contentDocument;
+          const inp = doc2 && doc2.getElementById('fileInputClay');
+          if (!inp) throw new Error('No direct access');
+          const blob = dataUrlToBlob(dataUrl);
+          const file = new File([blob], fileName || 'from_module1_clay.png', { type: 'image/png' });
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          inp.files = dt.files;
+          inp.dispatchEvent(new Event('change', { bubbles: true }));
+          if (state.view === 'm1') setView('m2');
+          showToast('Đã chuyển ảnh từ Module 1 sang Module 2 thành công!', 'success', 3200);
+        } catch (_) {
+          openConfigForBridgeHelp();
+        }
+      }
+
+      function triggerPipeM1toM2() {
+        if (state.bridgeReady[1] && state.bridgeReady[2] && els.frameM1.contentWindow) {
+          els.frameM1.contentWindow.postMessage({ ns: 'CLAYDEPTH_HUB', type: 'REQ_M1_DATA' }, '*');
+          return;
+        }
+        if (canDirectDomBridge()) {
+          const doc1 = els.frameM1.contentDocument;
+          const ws = doc1.getElementById('editorWorkspace');
+          const cv = doc1.getElementById('previewCanvas');
+          if (!ws || ws.classList.contains('hidden') || !cv || cv.width === 0) {
+            showToast('Module 1 chưa có ảnh nào! Hãy tải ảnh hoặc bấm "Ảnh mẫu" ở Module 1 trước.', 'warn', 3800);
+            return;
+          }
+          const dataUrl = cv.toDataURL('image/png');
+          sendDataUrlToModule2(dataUrl, 'from_module1_clay.png');
+          return;
+        }
+        openConfigForBridgeHelp();
+      }
+
+      function openConfigForBridgeHelp() {
+        showToast(
+          'Trình duyệt chặn đọc chéo ở chế độ file://. Hãy chọn 2 file trong Cấu hình Module để bật 1-Click, hoặc bấm "Copy Ảnh (PNG)" ở M1 rồi dán Ctrl+V sang M2!',
+          'warn',
+          5600
+        );
+        els.configModal.classList.add('open');
+      }
+
+      /* ===================================================================
+         4. CHUYỂN TAB HIỂN THỊ & THANH KÉO SPLITTER
+         =================================================================== */
+      function setView(mode) {
+        state.view = mode;
+        els.modulesStage.classList.remove('view-m1', 'view-m2', 'view-split');
+        els.modulesStage.classList.add(`view-${mode}`);
+
+        els.tabM1.classList.toggle('active', mode === 'm1');
+        els.tabM2.classList.toggle('active', mode === 'm2');
+        els.tabSplit.classList.toggle('active', mode === 'split');
+
+        setTimeout(() => {
+          try { els.frameM2.contentWindow.dispatchEvent(new Event('resize')); } catch (_) {}
+          try { els.frameM1.contentWindow.dispatchEvent(new Event('resize')); } catch (_) {}
+        }, 50);
+      }
+
+      els.tabM1.addEventListener('click', () => setView('m1'));
+      els.tabM2.addEventListener('click', () => setView('m2'));
+      els.tabSplit.addEventListener('click', () => setView('split'));
+
+      // Phím tắt Alt+1, Alt+2, Alt+3
+      window.addEventListener('keydown', (e) => {
+        if (!e.altKey) return;
+        if (e.key === '1') { e.preventDefault(); setView('m1'); }
+        else if (e.key === '2') { e.preventDefault(); setView('m2'); }
+        else if (e.key === '3') { e.preventDefault(); setView('split'); }
+      });
+
+      // Kéo thanh chia tỷ lệ Split View
+      let isSplitting = false;
+      els.splitter.addEventListener('pointerdown', (e) => {
+        isSplitting = true;
+        els.splitter.classList.add('dragging');
+        els.modulesStage.classList.add('is-resizing');
+        try { els.splitter.setPointerCapture(e.pointerId); } catch (_) {}
+      });
+      els.splitter.addEventListener('pointermove', (e) => {
+        if (!isSplitting) return;
+        const rect = els.modulesStage.getBoundingClientRect();
+        if (window.innerWidth <= 900) return;
+        const pct = Math.max(22, Math.min(78, ((e.clientX - rect.left) / rect.width) * 100));
+        els.modulesStage.style.setProperty('--split-left', `${pct.toFixed(2)}%`);
+      });
+      function stopSplitting(e) {
+        if (!isSplitting) return;
+        isSplitting = false;
+        els.splitter.classList.remove('dragging');
+        els.modulesStage.classList.remove('is-resizing');
+        try { els.splitter.releasePointerCapture(e.pointerId); } catch (_) {}
+        try { els.frameM2.contentWindow.dispatchEvent(new Event('resize')); } catch (_) {}
+      }
+      els.splitter.addEventListener('pointerup', stopSplitting);
+      els.splitter.addEventListener('pointercancel', stopSplitting);
+
+      /* ===================================================================
+         5. SỰ KIỆN NÚT ĐIỀU KHIỂN & MODAL CẤU HÌNH
+         =================================================================== */
+      els.btnPipeM1toM2.addEventListener('click', triggerPipeM1toM2);
+      els.btnReloadM1.addEventListener('click', () => loadModuleFromPath(1, state.pathM1));
+      els.btnReloadM2.addEventListener('click', () => loadModuleFromPath(2, state.pathM2));
+
+      els.btnOpenConfig.addEventListener('click', () => {
+        els.inputPathM1.value = state.pathM1;
+        els.inputPathM2.value = state.pathM2;
+        els.configModal.classList.add('open');
+      });
+      const closeModal = () => els.configModal.classList.remove('open');
+      els.btnCloseConfig.addEventListener('click', closeModal);
+      els.btnDoneConfig.addEventListener('click', closeModal);
+      els.configModal.addEventListener('click', (e) => {
+        if (e.target === els.configModal) closeModal();
+      });
+
+      els.btnApplyPathM1.addEventListener('click', () => {
+        const val = els.inputPathM1.value.trim();
+        if (!val) return;
+        state.pathM1 = val;
+        saveKey(STORAGE_KEYS.m1, val);
+        loadModuleFromPath(1, val);
+        showToast('Đã cập nhật đường dẫn Module 1.', 'info');
+      });
+
+      els.btnApplyPathM2.addEventListener('click', () => {
+        const val = els.inputPathM2.value.trim();
+        if (!val) return;
+        state.pathM2 = val;
+        saveKey(STORAGE_KEYS.m2, val);
+        loadModuleFromPath(2, val);
+        showToast('Đã cập nhật đường dẫn Module 2.', 'info');
+      });
+
+      els.btnPickM1.addEventListener('click', () => els.pickFileM1.click());
+      els.btnPickM2.addEventListener('click', () => els.pickFileM2.click());
+      els.pickFileM1.addEventListener('change', (e) => {
+        if (e.target.files[0]) loadModuleFromLocalFile(1, e.target.files[0]);
+        e.target.value = '';
+      });
+      els.pickFileM2.addEventListener('change', (e) => {
+        if (e.target.files[0]) loadModuleFromLocalFile(2, e.target.files[0]);
+        e.target.value = '';
+      });
+
+      els.btnResetDefaults.addEventListener('click', () => {
+        state.pathM1 = DEFAULTS.m1;
+        state.pathM2 = DEFAULTS.m2;
+        saveKey(STORAGE_KEYS.m1, DEFAULTS.m1);
+        saveKey(STORAGE_KEYS.m2, DEFAULTS.m2);
+        els.inputPathM1.value = DEFAULTS.m1;
+        els.inputPathM2.value = DEFAULTS.m2;
+        loadModuleFromPath(1, state.pathM1);
+        loadModuleFromPath(2, state.pathM2);
+        showToast('Đã khôi phục tên 2 file mặc định.', 'info');
+      });
+
+      /* ===================================================================
+         6. KHỞI CHẠY BAN ĐẦU
+         =================================================================== */
+      els.inputPathM1.value = state.pathM1;
+      els.inputPathM2.value = state.pathM2;
+      loadModuleFromPath(1, state.pathM1);
+      loadModuleFromPath(2, state.pathM2);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,3859 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClayDepth V2 Studio — Depth Anything V2 Colab &amp; Height Map 16-bit CNC</title>
+  <style>
+    /* =====================================================================
+       CLAYDEPTH V2 STUDIO — ZBRUSH / CNC DARK SCULPTING DESIGN SYSTEM
+       100% tự chứa, không phụ thuộc CDN bên ngoài
+       ===================================================================== */
+    :root {
+      --bg-app: #0b0d11;
+      --bg-panel: #141820;
+      --bg-card: #1a202b;
+      --bg-well: #0f1218;
+      --bg-hover: #212836;
+      --border: #252c38;
+      --border-light: #343e50;
+      --text-main: #e8ecf4;
+      --text-sub: #98a3b8;
+      --text-dim: #677288;
+      --clay: #e07a5f;
+      --clay-hover: #ec8d73;
+      --clay-dark: #ba5b41;
+      --amber: #f4b942;
+      --emerald: #34b888;
+      --danger: #e25d6b;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+      --radius-sm: 7px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-image:
+        radial-gradient(circle at 12% 0%, rgba(224, 122, 95, 0.08), transparent 36%),
+        radial-gradient(circle at 88% 4%, rgba(244, 185, 66, 0.05), transparent 34%);
+    }
+
+    /* Thanh cuộn tinh gọn kiểu phần mềm 3D */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: var(--bg-well); }
+    ::-webkit-scrollbar-thumb { background: #2c3445; border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f4b63; }
+
+    /* =====================================================================
+       HEADER BAR
+       ===================================================================== */
+    .app-header {
+      flex-shrink: 0;
+      min-height: 58px;
+      background: linear-gradient(180deg, #161b24 0%, #12161e 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(145deg, var(--clay-hover), var(--clay-dark));
+      border: 1px solid rgba(255, 210, 195, 0.3);
+      box-shadow: 0 4px 14px rgba(224, 122, 95, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .badge-16bit {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      color: var(--amber);
+      background: rgba(244, 185, 66, 0.12);
+      border: 1px solid rgba(244, 185, 66, 0.35);
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    /* Thanh kết nối Colab trên Header */
+    .colab-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 680px;
+      min-width: 260px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .url-input-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      align-items: center;
+    }
+
+    .url-input {
+      width: 100%;
+      background: var(--bg-well);
+      border: 1px solid var(--border-light);
+      border-radius: 9px;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 8px 10px 8px 30px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .url-input:focus {
+      border-color: var(--clay);
+      box-shadow: 0 0 0 2px rgba(224, 122, 95, 0.2);
+    }
+
+    .url-input::placeholder { color: var(--text-dim); }
+
+    .status-dot {
+      position: absolute;
+      left: 11px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    .status-dot.online {
+      background: var(--emerald);
+      box-shadow: 0 0 8px rgba(52, 184, 136, 0.75);
+    }
+
+    .status-dot.offline {
+      background: var(--danger);
+      box-shadow: 0 0 8px rgba(226, 93, 107, 0.6);
+    }
+
+    .status-dot.checking {
+      background: var(--amber);
+      animation: pulse 0.9s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.4; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    .gpu-pill {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 9px;
+      border-radius: 8px;
+      background: rgba(52, 184, 136, 0.12);
+      border: 1px solid rgba(52, 184, 136, 0.35);
+      color: #6ee7b7;
+      white-space: nowrap;
+    }
+
+    .gpu-pill.visible { display: inline-flex; }
+
+    /* =====================================================================
+       BUTTONS SYSTEM
+       ===================================================================== */
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 13px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.14s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+      filter: grayscale(0.35);
+      transform: none !important;
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #e7866b 0%, #ca6448 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 212, 196, 0.28);
+      box-shadow: 0 5px 14px rgba(202, 100, 72, 0.3);
+    }
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.07);
+      transform: translateY(-1px);
+    }
+
+    .btn-amber {
+      background: linear-gradient(180deg, #f6c356 0%, #d89b24 100%);
+      color: #14110a;
+      border: 1px solid rgba(255, 240, 200, 0.4);
+      box-shadow: 0 4px 12px rgba(244, 185, 66, 0.25);
+    }
+    .btn-amber:hover:not(:disabled) {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    .btn-emerald {
+      background: linear-gradient(180deg, #32b283 0%, #228762 100%);
+      color: #ffffff;
+      border: 1px solid rgba(152, 245, 210, 0.28);
+      box-shadow: 0 4px 12px rgba(34, 135, 98, 0.28);
+    }
+    .btn-emerald:hover:not(:disabled) {
+      filter: brightness(1.07);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-light);
+    }
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--bg-hover);
+      border-color: #4a5772;
+    }
+
+    .btn-sm { padding: 6px 10px; font-size: 11.5px; border-radius: 7px; }
+    .btn-block { width: 100%; padding: 10px 14px; font-size: 13px; }
+
+    /* =====================================================================
+       MAIN 2-COLUMN WORKSPACE
+       ===================================================================== */
+    .workspace {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* Cột trái 370px cuộn độc lập */
+    .sidebar {
+      width: 370px;
+      flex-shrink: 0;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .panel-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+    }
+
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: rgba(224, 122, 95, 0.16);
+      color: var(--clay-hover);
+      border: 1px solid rgba(224, 122, 95, 0.35);
+    }
+
+    /* Dropzone */
+    .dropzone {
+      background: var(--bg-well);
+      border: 1.5px dashed var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 14px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: var(--clay);
+      background: rgba(224, 122, 95, 0.07);
+    }
+
+    .input-preview-row {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-well);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px;
+    }
+    .input-preview-row.visible { display: flex; }
+
+    .input-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 7px;
+      object-fit: contain;
+      background: #000000;
+      border: 1px solid var(--border-light);
+      flex-shrink: 0;
+    }
+
+    .input-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .input-name {
+      font-weight: 700;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .input-dims {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .btn-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    /* Form Controls */
+    .field-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-sub);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .mono-val {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--amber);
+    }
+
+    .select-box {
+      width: 100%;
+      background: var(--bg-well);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 10px;
+      outline: none;
+      cursor: pointer;
+    }
+    .select-box:focus { border-color: var(--clay); }
+
+    /* Sliders */
+    input[type="range"].studio-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--bg-well);
+      border: 1px solid var(--border-light);
+      border-radius: 99px;
+      outline: none;
+    }
+    input[type="range"].studio-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, var(--clay-hover), var(--clay-dark));
+      border: 2px solid #0b0d11;
+      box-shadow: 0 0 0 1px rgba(224, 122, 95, 0.7), 0 2px 6px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transition: transform 0.12s;
+    }
+    input[type="range"].studio-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    input[type="range"].studio-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--clay);
+      border: 2px solid #0b0d11;
+      cursor: pointer;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      background: var(--bg-well);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 11px;
+    }
+
+    /* Toggle Switch & Checkbox */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .switch {
+      width: 40px;
+      height: 22px;
+      background: #262e3d;
+      border: 1px solid var(--border-light);
+      border-radius: 99px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.18s;
+      flex-shrink: 0;
+    }
+    .switch.on {
+      background: linear-gradient(90deg, var(--clay-dark), var(--clay));
+      border-color: var(--clay-hover);
+    }
+    .switch-knob {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+    .switch.on .switch-knob { transform: translateX(18px); }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      user-select: none;
+    }
+    .checkbox-row input {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--clay);
+      cursor: pointer;
+    }
+
+    .disabled-block {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* =====================================================================
+       RIGHT VIEWPORT COLUMN
+       ===================================================================== */
+    .viewport-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-app);
+      position: relative;
+    }
+
+    /* Thanh Tab trên Viewport */
+    .viewport-tabs {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 16px;
+      background: #10141c;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .tab-group {
+      display: inline-flex;
+      background: var(--bg-well);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 3px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover { color: #ffffff; background: rgba(255,255,255,0.04); }
+
+    .tab-btn.active {
+      background: linear-gradient(180deg, rgba(224,122,95,0.24), rgba(186,91,65,0.2));
+      color: #ffd9ce;
+      border: 1px solid rgba(224,122,95,0.55);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .viewport-hint {
+      font-size: 11.5px;
+      color: var(--text-sub);
+      font-family: var(--font-mono);
+    }
+
+    /* Khung sân khấu hiển thị chính */
+    .stage-wrap {
+      flex: 1;
+      min-height: 300px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 50%, #151a24 0%, #090b0f 75%);
+    }
+
+    /* Trạng thái trống chưa có ảnh */
+    .empty-stage {
+      text-align: center;
+      max-width: 420px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--clay);
+    }
+
+    /* Canvas 2D / Split / Heatmap */
+    .stage-2d-container {
+      position: relative;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      max-width: 96%;
+      max-height: 94%;
+      user-select: none;
+    }
+    .stage-2d-container.visible { display: flex; }
+
+    #main2dCanvas {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 235px);
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      background: #000000;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      touch-action: none;
+    }
+
+    /* Thanh kéo Split Overlay */
+    .split-handle {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: var(--amber);
+      box-shadow: 0 0 10px rgba(244, 185, 66, 0.8);
+      pointer-events: none;
+      display: none;
+    }
+    .split-handle.visible { display: block; }
+
+    .split-knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--bg-panel);
+      border: 2px solid var(--amber);
+      color: var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.75);
+    }
+
+    .split-badge {
+      position: absolute;
+      top: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      background: rgba(11, 13, 17, 0.82);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      pointer-events: none;
+      display: none;
+    }
+    .split-badge.visible { display: block; }
+    .split-badge.left { left: 10px; }
+    .split-badge.right { right: 10px; color: var(--amber); }
+
+    /* Thanh chú thích Heatmap Inferno */
+    .heatmap-legend {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      background: rgba(15, 18, 24, 0.88);
+      border: 1px solid var(--border-light);
+      border-radius: 9px;
+      padding: 7px 10px;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: none;
+    }
+    .heatmap-legend.visible { display: flex; }
+    .heatmap-bar {
+      width: 150px;
+      height: 10px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #000004, #420a68, #932667, #dd513a, #fca50a, #fcffa4);
+    }
+    .heatmap-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-sub);
+    }
+
+    /* Tooltip tọa độ & Z 16-bit khi rê chuột lên 2D / Heatmap */
+    .probe-tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 45;
+      background: rgba(11, 13, 17, 0.94);
+      border: 1px solid var(--clay);
+      border-radius: 8px;
+      padding: 6px 9px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+      display: none;
+      white-space: nowrap;
+    }
+    .probe-tooltip .z-hi { color: var(--amber); font-weight: 700; }
+
+    /* Khung WebGL 3D */
+    .stage-3d-container {
+      position: absolute;
+      inset: 0;
+      display: none;
+    }
+    .stage-3d-container.visible { display: block; }
+
+    #webglCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+      touch-action: none;
+    }
+    #webglCanvas:active { cursor: grabbing; }
+
+    /* Bảng điều khiển nổi góc trên 3D Viewport */
+    .controls-3d-float {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 228px;
+      background: rgba(20, 24, 32, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+    }
+
+    .mat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+
+    .mat-btn {
+      padding: 6px 7px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--bg-well);
+      border: 1px solid var(--border);
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.14s;
+    }
+    .mat-btn:hover { color: #ffffff; border-color: var(--border-light); }
+    .mat-btn.active {
+      background: rgba(224, 122, 95, 0.2);
+      border-color: var(--clay);
+      color: #ffe2d9;
+    }
+    .mat-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    /* Overlay Loading khi gọi Colab GPU */
+    .stage-loader {
+      position: absolute;
+      inset: 0;
+      background: rgba(11, 13, 17, 0.82);
+      backdrop-filter: blur(4px);
+      z-index: 30;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+      padding: 20px;
+    }
+    .stage-loader.visible { display: flex; }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 3px solid var(--border-light);
+      border-top-color: var(--clay);
+      border-right-color: var(--amber);
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* =====================================================================
+       BOTTOM STATUS BAR & Z-HISTOGRAM
+       ===================================================================== */
+    .status-footer {
+      flex-shrink: 0;
+      background: #11151d;
+      border-top: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .metrics-strip {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .metric-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+    .metric-val {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .metric-val.accent { color: var(--amber); }
+
+    .histogram-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hist-caption {
+      font-size: 10.5px;
+      color: var(--text-sub);
+      text-align: right;
+      line-height: 1.3;
+    }
+    #histCanvas {
+      width: 220px;
+      height: 44px;
+      background: var(--bg-well);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      display: block;
+    }
+
+    /* =====================================================================
+       MODAL CODE GOOGLE COLAB
+       ===================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 8, 12, 0.82);
+      backdrop-filter: blur(5px);
+      z-index: 80;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-dialog {
+      width: 100%;
+      max-width: 900px;
+      max-height: 90vh;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #171c26;
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .colab-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+    }
+
+    .colab-step-card {
+      background: var(--bg-well);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 11px;
+      font-size: 11.5px;
+      color: var(--text-sub);
+    }
+    .colab-step-card strong {
+      display: block;
+      color: var(--amber);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      margin-bottom: 3px;
+    }
+
+    .code-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .code-pre {
+      background: #0a0c10;
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 11.8px;
+      line-height: 1.55;
+      color: #d6e1f2;
+      overflow: auto;
+      max-height: 46vh;
+      white-space: pre;
+      tab-size: 4;
+    }
+
+    /* =====================================================================
+       TOAST NOTIFICATIONS
+       ===================================================================== */
+    .toast-stack {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      width: min(92vw, 440px);
+    }
+
+    .toast {
+      pointer-events: auto;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
+      animation: toastIn 0.22s ease forwards;
+    }
+    .toast.success { background: #164838; border: 1px solid #34b888; color: #e6fff5; }
+    .toast.info { background: #1e2534; border: 1px solid #485673; color: #f1f5f9; }
+    .toast.warn { background: #5a261c; border: 1px solid #e07a5f; color: #fff1ed; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* =====================================================================
+       RESPONSIVE (TABLET & MOBILE)
+       ===================================================================== */
+    @media (max-width: 980px) {
+      body { overflow: auto; height: auto; }
+      .workspace { flex-direction: column; overflow: visible; }
+      .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        overflow-y: visible;
+      }
+      .stage-wrap { min-height: 420px; }
+      #main2dCanvas { max-height: 420px; }
+      .controls-3d-float {
+        width: 196px;
+        top: 10px;
+        right: 10px;
+        padding: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Stack -->
+  <div id="toastStack" class="toast-stack"></div>
+
+  <!-- Tooltip tọa độ & Z 16-bit -->
+  <div id="probeTooltip" class="probe-tooltip"></div>
+
+  <!-- =====================================================================
+       HEADER TRÊN CÙNG
+       ===================================================================== -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 22 7.5 12 13 2 7.5 12 2" fill="rgba(255,255,255,0.22)"/>
+          <polyline points="2 12.5 12 18 22 12.5"/>
+          <polyline points="2 17.5 12 23 22 17.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">
+          ClayDepth V2 Studio
+          <span class="badge-16bit">16-BIT CNC</span>
+        </div>
+        <div class="brand-sub">Depth Anything V2 (Google Colab GPU) → Height Map 16-bit &amp; 3D OBJ</div>
+      </div>
+    </div>
+
+    <div class="colab-bar">
+      <div class="url-input-wrap">
+        <span id="statusDot" class="status-dot" title="Chưa kiểm tra kết nối"></span>
+        <input id="colabUrlInput" class="url-input" type="url" placeholder="Dán URL Google Colab (vd: https://xxxx.trycloudflare.com)" spellcheck="false" />
+      </div>
+      <span id="gpuPill" class="gpu-pill">● GPU</span>
+      <button id="btnCheckHealth" class="btn btn-ghost" type="button" title="Kiểm tra trạng thái Server Colab (GET /health)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Kiểm tra kết nối
+      </button>
+      <button id="btnOpenColabModal" class="btn btn-amber" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Lấy Code Google Colab
+      </button>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       WORKSPACE 2 CỘT
+       ===================================================================== -->
+  <div class="workspace">
+
+    <!-- ===================================================================
+         CỘT TRÁI (370px): NẠP ẢNH, GỌI COLAB, HẬU KỲ 16-BIT, XUẤT FILE
+         =================================================================== -->
+    <aside class="sidebar">
+
+      <!-- 1. NẠP ẢNH ĐẤT SÉT NỀN ĐEN -->
+      <section class="panel-section">
+        <div class="section-head">
+          <div class="section-title"><span class="step-num">01</span>Ảnh Đất Sét Đầu Vào</div>
+          <button id="btnLoadExistingDepth" class="btn btn-ghost btn-sm" type="button" title="Nạp trực tiếp ảnh Depth Map có sẵn để hậu kỳ &amp; xem 3D">
+            Nạp sẵn Depth Map
+          </button>
+        </div>
+
+        <input id="fileInputClay" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+        <input id="fileInputDepth" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+
+        <div id="clayDropzone" class="dropzone" tabindex="0" role="button" aria-label="Chọn hoặc kéo thả ảnh đất sét">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e07a5f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <div style="font-weight:700;font-size:12.5px;">Kéo thả, chọn ảnh hoặc dán (Ctrl+V)</div>
+          <div style="font-size:11px;color:var(--text-sub);">Ưu tiên ảnh đất sét đơn sắc nền đen #000000 từ Gemini</div>
+        </div>
+
+        <div id="inputPreviewRow" class="input-preview-row">
+          <img id="inputThumb" class="input-thumb" alt="Ảnh đầu vào" />
+          <div class="input-meta">
+            <div id="inputName" class="input-name">sample_lotus.png</div>
+            <div id="inputDims" class="input-dims">768 × 768 px</div>
+          </div>
+          <button id="btnSwapClay" class="btn btn-ghost btn-sm" type="button">Đổi ảnh</button>
+        </div>
+
+        <div class="btn-row-2">
+          <button id="btnCreateSample" class="btn btn-ghost btn-sm" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f4b942" stroke-width="2.2"><polygon points="12 2 15 9 22 9.5 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.5 9 9 12 2"/></svg>
+            Tạo ảnh mẫu
+          </button>
+          <button id="btnPickClay" class="btn btn-ghost btn-sm" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+            Chọn từ máy
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. CHẠY DEPTH ANYTHING V2 TRÊN GOOGLE COLAB -->
+      <section class="panel-section">
+        <div class="section-head">
+          <div class="section-title"><span class="step-num">02</span>Depth Anything V2 AI</div>
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-sub);">Hi-Lo 16-bit</span>
+        </div>
+
+        <div>
+          <label for="modelSelect" class="field-label">
+            <span>Phiên bản mô hình (HuggingFace)</span>
+          </label>
+          <select id="modelSelect" class="select-box">
+            <option value="large">Depth-Anything-V2-Large (Khuyên dùng CNC)</option>
+            <option value="base">Depth-Anything-V2-Base (Cân bằng)</option>
+            <option value="small">Depth-Anything-V2-Small (Nhanh nhất)</option>
+          </select>
+        </div>
+
+        <button id="btnRunColab" class="btn btn-primary btn-block" type="button" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Tạo Height Map (Colab GPU)
+        </button>
+
+        <button id="btnRunLocalDemo" class="btn btn-ghost btn-block" type="button" disabled style="padding:8px 12px;font-size:12px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f4b942" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Chạy mô phỏng cục bộ (Demo không cần Colab)
+        </button>
+      </section>
+
+      <!-- 3. HẬU KỲ HEIGHT MAP CHUẨN CNC (16-BIT REALTIME) -->
+      <section class="panel-section">
+        <div class="section-head">
+          <div class="section-title"><span class="step-num">03</span>Hậu Kỳ Height Map 16-bit</div>
+          <button id="btnResetPost" class="btn btn-ghost btn-sm" type="button">Đặt lại mặc định</button>
+        </div>
+
+        <!-- Khóa nền đen về Z=0 -->
+        <div class="control-group">
+          <div class="toggle-row">
+            <div>
+              <div style="font-weight:700;font-size:12px;color:#fff;">Khóa nền đen về Z=0</div>
+              <div style="font-size:10.5px;color:var(--text-sub);">Tách vật thể đất sét &amp; ép nền về đúng 0</div>
+            </div>
+            <button id="toggleBgCutoff" class="switch on" type="button" role="switch" aria-checked="true" aria-label="Khóa nền đen về Z=0">
+              <span class="switch-knob"></span>
+            </button>
+          </div>
+
+          <div id="bgCutoffControls" style="display:flex;flex-direction:column;gap:8px;padding-top:4px;border-top:1px solid var(--border);">
+            <div>
+              <div class="field-label">
+                <span>Ngưỡng tách nền đen</span>
+                <span id="valBgThreshold" class="mono-val">15</span>
+              </div>
+              <input id="slBgThreshold" class="studio-slider" type="range" min="0" max="60" step="1" value="15" />
+            </div>
+
+            <div>
+              <div class="field-label">
+                <span>Làm mềm viền chân khối (Feather)</span>
+                <span id="valBgFeather" class="mono-val">3 px</span>
+              </div>
+              <input id="slBgFeather" class="studio-slider" type="range" min="0" max="15" step="1" value="3" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Định hình khối (Relief Shaping) -->
+        <div class="control-group">
+          <div style="font-size:11px;font-weight:800;color:var(--clay-hover);text-transform:uppercase;letter-spacing:0.04em;">
+            Định Hình Khối (Relief Shaping)
+          </div>
+
+          <div>
+            <div class="field-label">
+              <span>Điểm đen (Black Point)</span>
+              <span id="valBlackPt" class="mono-val">0%</span>
+            </div>
+            <input id="slBlackPt" class="studio-slider" type="range" min="0" max="50" step="1" value="0" />
+          </div>
+
+          <div>
+            <div class="field-label">
+              <span>Điểm trắng (White Point)</span>
+              <span id="valWhitePt" class="mono-val">100%</span>
+            </div>
+            <input id="slWhitePt" class="studio-slider" type="range" min="50" max="100" step="1" value="100" />
+          </div>
+
+          <div>
+            <div class="field-label">
+              <span>Gamma (Độ phồng khối)</span>
+              <span id="valGamma" class="mono-val">1.00</span>
+            </div>
+            <input id="slGamma" class="studio-slider" type="range" min="0.30" max="2.50" step="0.02" value="1.00" />
+          </div>
+
+          <div>
+            <div class="field-label">
+              <span>Làm mịn CNC (Khử bậc thang)</span>
+              <span id="valSmooth" class="mono-val">1</span>
+            </div>
+            <input id="slSmooth" class="studio-slider" type="range" min="0" max="8" step="1" value="1" />
+          </div>
+
+          <div>
+            <div class="field-label">
+              <span>Trộn chi tiết đất sét (Micro-Detail)</span>
+              <span id="valMicroDetail" class="mono-val">8%</span>
+            </div>
+            <input id="slMicroDetail" class="studio-slider" type="range" min="0" max="35" step="1" value="8" />
+          </div>
+
+          <label class="checkbox-row" style="padding-top:3px;">
+            <input id="chkInvert" type="checkbox" />
+            <span>Đảo ngược độ sâu (Invert Z)</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 4. XUẤT FILE CHUẨN CNC -->
+      <section class="panel-section">
+        <div class="section-head">
+          <div class="section-title"><span class="step-num">04</span>Xuất File CNC &amp; 3D</div>
+          <span style="font-size:10.5px;color:var(--emerald);font-weight:700;">100% Client-side</span>
+        </div>
+
+        <button id="btnExport16" class="btn btn-emerald btn-block" type="button" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Tải Height Map 16-bit PNG (CNC)
+        </button>
+
+        <div class="btn-row-2">
+          <button id="btnExport8" class="btn btn-ghost btn-sm" type="button" disabled>
+            Tải 8-bit PNG
+          </button>
+          <button id="btnExportObj" class="btn btn-ghost btn-sm" type="button" disabled>
+            Xuất lưới 3D (.OBJ)
+          </button>
+        </div>
+        <div style="font-size:10.5px;color:var(--text-dim);line-height:1.4;">
+          PNG 16-bit Grayscale (65.535 mức xám) mở trực tiếp trong JDpaint, ArtCAM, Aspire &amp; Blender Displacement.
+        </div>
+      </section>
+    </aside>
+
+    <!-- ===================================================================
+         CỘT PHẢI: VIEWPORT ĐA CHẾ ĐỘ + HISTOGRAM
+         =================================================================== -->
+    <main class="viewport-col">
+      <!-- Thanh Tabs -->
+      <div class="viewport-tabs">
+        <div class="tab-group" role="tablist" aria-label="Chế độ xem">
+          <button class="tab-btn active" data-view="split" role="tab" aria-selected="true" type="button">
+            ◫ So sánh (Split)
+          </button>
+          <button class="tab-btn" data-view="height2d" role="tab" aria-selected="false" type="button">
+            ◩ Height Map 2D
+          </button>
+          <button class="tab-btn" data-view="heatmap" role="tab" aria-selected="false" type="button">
+            ◐ Bản đồ nhiệt
+          </button>
+          <button class="tab-btn" data-view="view3d" role="tab" aria-selected="false" type="button">
+            ❖ Xem khối 3D (WebGL)
+          </button>
+        </div>
+        <div id="viewportHint" class="viewport-hint">Kéo thanh vàng trên ảnh để so sánh gốc / Height Map</div>
+      </div>
+
+      <!-- Khung Sân Khấu Chính -->
+      <div id="stageWrap" class="stage-wrap">
+        <!-- Trạng thái trống -->
+        <div id="emptyStage" class="empty-stage">
+          <div class="empty-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polygon points="12 2 22 7.5 12 13 2 7.5 12 2"/>
+              <polyline points="2 12.5 12 18 22 12.5"/>
+              <polyline points="2 17.5 12 23 22 17.5"/>
+            </svg>
+          </div>
+          <div style="font-size:16px;font-weight:800;color:#fff;">Chưa có ảnh đất sét đầu vào</div>
+          <p style="color:var(--text-sub);font-size:12.5px;">
+            Kéo thả ảnh đất sét nền đen từ Gemini vào cột trái, bấm <strong style="color:var(--amber);">Ctrl+V</strong>, hoặc bấm nút bên dưới để tạo ảnh phù điêu hoa sen mẫu và chạy thử ngay.
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
+            <button id="btnEmptySample" class="btn btn-primary" type="button">Tạo ảnh mẫu &amp; Demo ngay</button>
+            <button id="btnEmptyColab" class="btn btn-ghost" type="button">Xem hướng dẫn Colab GPU</button>
+          </div>
+        </div>
+
+        <!-- Khung xem 2D (Split / Height 2D / Heatmap) -->
+        <div id="stage2dContainer" class="stage-2d-container">
+          <canvas id="main2dCanvas"></canvas>
+          <div id="splitHandle" class="split-handle">
+            <div class="split-knob">⇆</div>
+          </div>
+          <div id="splitLabelLeft" class="split-badge left">Ảnh đất sét gốc</div>
+          <div id="splitLabelRight" class="split-badge right">Height Map 16-bit</div>
+        </div>
+
+        <!-- Legend Heatmap -->
+        <div id="heatmapLegend" class="heatmap-legend">
+          <div style="font-size:10.5px;font-weight:700;color:#fff;">Inferno Z-Elevation</div>
+          <div class="heatmap-bar"></div>
+          <div class="heatmap-ticks">
+            <span>0% (Z=0)</span>
+            <span>50%</span>
+            <span>100% (Max)</span>
+          </div>
+        </div>
+
+        <!-- Khung Xem Khối 3D WebGL Thuần -->
+        <div id="stage3dContainer" class="stage-3d-container">
+          <canvas id="webglCanvas"></canvas>
+
+          <div class="controls-3d-float">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;font-weight:800;text-transform:uppercase;color:#fff;">Xem Trước CNC 3D</span>
+              <button id="btnReset3dCam" class="btn btn-ghost btn-sm" style="padding:3px 7px;font-size:10.5px;" type="button">Reset góc</button>
+            </div>
+
+            <div>
+              <div class="field-label">
+                <span>Độ nổi Z</span>
+                <span id="val3dZ" class="mono-val">0.24</span>
+              </div>
+              <input id="sl3dZ" class="studio-slider" type="range" min="0.03" max="0.65" step="0.01" value="0.24" />
+            </div>
+
+            <div>
+              <div class="field-label">
+                <span>Góc đèn chiếu</span>
+                <span id="val3dLight" class="mono-val">42°</span>
+              </div>
+              <input id="sl3dLight" class="studio-slider" type="range" min="0" max="360" step="1" value="42" />
+            </div>
+
+            <div>
+              <div class="field-label" style="margin-bottom:5px;"><span>Chất liệu mô phỏng</span></div>
+              <div id="matGrid" class="mat-grid">
+                <button class="mat-btn active" data-mat="clay" type="button">
+                  <span class="mat-swatch" style="background:#d4775a;"></span>Đất sét ZBrush
+                </button>
+                <button class="mat-btn" data-mat="wood" type="button">
+                  <span class="mat-swatch" style="background:#9a4422;"></span>Gỗ hương CNC
+                </button>
+                <button class="mat-btn" data-mat="bronze" type="button">
+                  <span class="mat-swatch" style="background:#a97c3e;"></span>Đồng cổ
+                </button>
+                <button class="mat-btn" data-mat="plaster" type="button">
+                  <span class="mat-swatch" style="background:#e6eaf0;"></span>Thạch cao
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overlay Loading -->
+        <div id="stageLoader" class="stage-loader">
+          <div class="spinner"></div>
+          <div id="loaderTitle" style="font-size:14px;font-weight:800;color:#fff;">Đang gửi ảnh lên Google Colab GPU...</div>
+          <div id="loaderSub" style="font-size:12px;color:var(--text-sub);max-width:340px;">Depth Anything V2 đang tính toán bản đồ độ sâu 16-bit độ phân giải gốc.</div>
+        </div>
+      </div>
+
+      <!-- Thanh Trạng Thái & Biểu Đồ Histogram Dưới Đáy -->
+      <footer class="status-footer">
+        <div class="metrics-strip">
+          <div class="metric-item">
+            <span class="metric-label">Kích thước</span>
+            <span id="statSize" class="metric-val">—</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Độ sâu Bit</span>
+            <span id="statBit" class="metric-val accent">16-bit (65.535 mức)</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Vùng vật thể</span>
+            <span id="statFgRatio" class="metric-val">—</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Nguồn xử lý</span>
+            <span id="statSource" class="metric-val">—</span>
+          </div>
+        </div>
+
+        <div class="histogram-box">
+          <div class="hist-caption">
+            <div style="font-weight:700;color:var(--text-main);">Histogram Độ Sâu Z</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);">0 (Nền) → 65535 (Đỉnh)</div>
+          </div>
+          <canvas id="histCanvas" width="220" height="44"></canvas>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- =====================================================================
+       MODAL: LẤY CODE GOOGLE COLAB (2 TABS)
+       ===================================================================== -->
+  <div id="colabModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <div id="modalTitle" style="font-size:15px;font-weight:800;color:#fff;">Code Google Colab — Depth Anything V2 GPU</div>
+          <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;">Chạy miễn phí trên Google Colab T4 GPU — không cần tài khoản hay token ngrok</div>
+        </div>
+        <button id="btnCloseModal" class="btn btn-ghost btn-sm" type="button" aria-label="Đóng cửa sổ">✕ Đóng</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="colab-steps">
+          <div class="colab-step-card">
+            <strong>BƯỚC 1</strong>
+            Mở <em>colab.research.google.com</em> → Tạo Notebook mới.
+          </div>
+          <div class="colab-step-card">
+            <strong>BƯỚC 2</strong>
+            Chọn <em>Runtime → Change runtime type → T4 GPU</em>.
+          </div>
+          <div class="colab-step-card">
+            <strong>BƯỚC 3</strong>
+            Copy code bên dưới, dán vào <strong>1 ô (cell)</strong> duy nhất rồi bấm Run (▶).
+          </div>
+          <div class="colab-step-card">
+            <strong>BƯỚC 4</strong>
+            Với Tab 1: copy link <em>https://...trycloudflare.com</em> dán lên thanh Header trang này.
+          </div>
+        </div>
+
+        <div class="code-toolbar">
+          <div class="tab-group">
+            <button class="tab-btn active" data-colab-tab="server" type="button">
+              Tab 1: Colab API Server (Khuyên dùng)
+            </button>
+            <button class="tab-btn" data-colab-tab="inline" type="button">
+              Tab 2: Chạy trực tiếp 1-Cell trong Colab
+            </button>
+          </div>
+
+          <button id="btnCopyColabCode" class="btn btn-amber" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Code Python
+          </button>
+        </div>
+
+        <div id="colabTabDesc" style="font-size:12px;color:var(--text-sub);background:var(--bg-well);padding:9px 12px;border-radius:8px;border:1px solid var(--border);">
+          Khởi tạo API FastAPI chạy Depth Anything V2 (Large/Base/Small) trên GPU CUDA, mã hóa lossless 16-bit Hi-Lo PNG và mở đường hầm Cloudflared miễn phí.
+        </div>
+
+        <pre id="colabCodeDisplay" class="code-pre"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       CODE PYTHON GOOGLE COLAB (LƯU TRONG SCRIPT TEXT/PLAIN ĐỂ KHÔNG LỖI HTML)
+       ===================================================================== -->
+  <script type="text/plain" id="tplColabServer"># ==============================================================================
+# CLAYDEPTH V2 STUDIO — GOOGLE COLAB GPU API SERVER (FastAPI + Cloudflared)
+# Hướng dẫn: Chọn Runtime -> Change runtime type -> T4 GPU, dán toàn bộ vào 1 cell và bấm Run
+# ==============================================================================
+import os, sys, io, re, time, base64, threading, subprocess
+
+print("⏳ [1/4] Đang cài đặt thư viện AI & API server...")
+subprocess.run(
+    [sys.executable, "-m", "pip", "install", "-q",
+     "transformers", "accelerate", "fastapi", "uvicorn",
+     "python-multipart", "pillow", "opencv-python-headless"],
+    check=True
+)
+
+# Tải binary cloudflared (miễn phí, không cần token)
+CLOUDFLARED_BIN = "/usr/local/bin/cloudflared"
+if not os.path.exists(CLOUDFLARED_BIN):
+    print("⏳ [2/4] Đang tải cloudflared tunnel...")
+    subprocess.run(
+        ["wget", "-q", "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64",
+         "-O", CLOUDFLARED_BIN],
+        check=True
+    )
+    os.chmod(CLOUDFLARED_BIN, 0o755)
+
+import cv2
+import torch
+import torch.nn.functional as F
+import numpy as np
+from PIL import Image
+from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+GPU_NAME = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU (Nên bật T4 GPU)"
+
+MODEL_IDS = {
+    "large": "depth-anything/Depth-Anything-V2-Large-hf",
+    "base":  "depth-anything/Depth-Anything-V2-Base-hf",
+    "small": "depth-anything/Depth-Anything-V2-Small-hf",
+}
+MODEL_CACHE = {}
+
+def get_depth_model(size: str = "large"):
+    key = size.lower() if size.lower() in MODEL_IDS else "large"
+    if key not in MODEL_CACHE:
+        model_id = MODEL_IDS[key]
+        print(f"📦 Đang nạp mô hình {model_id} lên {DEVICE}...")
+        processor = AutoImageProcessor.from_pretrained(model_id)
+        model = AutoModelForDepthEstimation.from_pretrained(model_id).to(DEVICE)
+        model.eval()
+        MODEL_CACHE[key] = (processor, model)
+    return MODEL_CACHE[key]
+
+print(f"⏳ [3/4] Đang tải trước Depth-Anything-V2-Large trên {GPU_NAME}...")
+get_depth_model("large")
+
+app = FastAPI(title="ClayDepth V2 Colab API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "device": DEVICE,
+        "gpu": GPU_NAME,
+        "loaded_models": list(MODEL_CACHE.keys()),
+    }
+
+@app.post("/predict")
+async def predict(file: UploadFile = File(...), model_size: str = Form("large")):
+    t0 = time.time()
+    try:
+        raw_bytes = await file.read()
+        pil_img = Image.open(io.BytesIO(raw_bytes)).convert("RGB")
+        orig_w, orig_h = pil_img.size
+
+        processor, model = get_depth_model(model_size)
+        inputs = processor(images=pil_img, return_tensors="pt").to(DEVICE)
+
+        with torch.inference_mode():
+            outputs = model(**inputs)
+            predicted_depth = outputs.predicted_depth  # [1, H, W]
+            depth_up = F.interpolate(
+                predicted_depth.unsqueeze(1),
+                size=(orig_h, orig_w),
+                mode="bicubic",
+                align_corners=False,
+            ).squeeze().float().cpu().numpy()
+
+        # Chuẩn hóa sang 16-bit (0..65535) không mất dữ liệu
+        d_min = float(np.min(depth_up))
+        d_max = float(np.max(depth_up))
+        if d_max - d_min > 1e-8:
+            norm = (depth_up - d_min) / (d_max - d_min)
+        else:
+            norm = np.zeros_like(depth_up, dtype=np.float32)
+
+        u16 = np.clip(np.round(norm * 65535.0), 0, 65535).astype(np.uint16)
+
+        # Mã hóa lossless 16-bit vào PNG 8-bit RGB Hi-Lo (R = byte cao, G = byte thấp, B = 0)
+        # Lưu ý: OpenCV dùng thứ tự BGR -> [B=0, G=low, R=high]
+        hi_byte = (u16 >> 8).astype(np.uint8)
+        lo_byte = (u16 & 0xFF).astype(np.uint8)
+        zero_ch = np.zeros_like(hi_byte, dtype=np.uint8)
+        bgr_hilo = np.stack([zero_ch, lo_byte, hi_byte], axis=-1)
+
+        ok, png_buf = cv2.imencode(".png", bgr_hilo, [cv2.IMWRITE_PNG_COMPRESSION, 3])
+        if not ok:
+            raise RuntimeError("Không thể nén ảnh Hi-Lo PNG")
+
+        b64_png = base64.b64encode(png_buf.tobytes()).decode("ascii")
+        elapsed = round(time.time() - t0, 2)
+
+        return {
+            "status": "ok",
+            "width": orig_w,
+            "height": orig_h,
+            "model_size": model_size,
+            "inference_time": elapsed,
+            "depth_hilo_png": f"data:image/png;base64,{b64_png}",
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+# Khởi chạy Uvicorn trên luồng nền
+def run_uvicorn():
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="warning")
+
+server_thread = threading.Thread(target=run_uvicorn, daemon=True)
+server_thread.start()
+time.sleep(2)
+
+print("⏳ [4/4] Đang mở Cloudflared Tunnel công khai...")
+tunnel_proc = subprocess.Popen(
+    [CLOUDFLARED_BIN, "tunnel", "--url", "http://127.0.0.1:8000", "--no-autoupdate"],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    text=True,
+    bufsize=1,
+)
+
+url_regex = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
+public_url = None
+
+try:
+    for line in tunnel_proc.stdout:
+        match = url_regex.search(line)
+        if match and not public_url:
+            public_url = match.group(0)
+            print("\n" + "=" * 68)
+            print("✅ CLAYDEPTH V2 COLAB SERVER ĐÃ SẴN SÀNG!")
+            print(f"🖥️  GPU đang chạy : {GPU_NAME}")
+            print(f"🔗 Copy URL này  : {public_url}")
+            print("👉 Dán vào ô URL trên ClayDepth V2 Studio và bấm 'Kiểm tra kết nối'")
+            print("ℹ️  Giữ nguyên cell này đang chạy trong suốt quá trình tạo Height Map.")
+            print("=" * 68 + "\n")
+except KeyboardInterrupt:
+    tunnel_proc.terminate()
+    print("🛑 Đã dừng Colab API Server.")</script>
+
+  <script type="text/plain" id="tplColabInline"># ==============================================================================
+# CLAYDEPTH V2 — CHẠY TRỰC TIẾP 1-CELL TRONG GOOGLE COLAB (KHÔNG CẦN LINK NGOÀI)
+# Hướng dẫn: Chọn Runtime -> T4 GPU, dán vào 1 cell, bấm Run rồi thao tác ngay ở Output
+# ==============================================================================
+import sys, io, base64, subprocess
+
+print("⏳ Đang cài đặt transformers, accelerate, opencv-python-headless...")
+subprocess.run(
+    [sys.executable, "-m", "pip", "install", "-q",
+     "transformers", "accelerate", "pillow", "opencv-python-headless"],
+    check=True
+)
+
+import cv2
+import torch
+import torch.nn.functional as F
+import numpy as np
+from PIL import Image
+from transformers import AutoImageProcessor, AutoModelForDepthEstimation
+from IPython.display import display, HTML
+from google.colab import output
+
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+GPU_NAME = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
+MODEL_ID = "depth-anything/Depth-Anything-V2-Large-hf"
+
+print(f"📦 Đang nạp {MODEL_ID} lên {GPU_NAME}...")
+processor = AutoImageProcessor.from_pretrained(MODEL_ID)
+model = AutoModelForDepthEstimation.from_pretrained(MODEL_ID).to(DEVICE)
+model.eval()
+print("✅ Sẵn sàng! Sử dụng giao diện ngay bên dưới:")
+
+def colab_generate_heightmap(img_data_url: str, bg_thresh: int = 15, feather_px: int = 3, gamma: float = 1.0):
+    header, b64_data = img_data_url.split(",", 1)
+    pil_img = Image.open(io.BytesIO(base64.b64decode(b64_data))).convert("RGB")
+    orig_w, orig_h = pil_img.size
+    rgb_np = np.array(pil_img)
+
+    inputs = processor(images=pil_img, return_tensors="pt").to(DEVICE)
+    with torch.inference_mode():
+        out = model(**inputs).predicted_depth
+        depth = F.interpolate(
+            out.unsqueeze(1), size=(orig_h, orig_w), mode="bicubic", align_corners=False
+        ).squeeze().float().cpu().numpy()
+
+    # Tách nền đen #000000 từ ảnh đất sét gốc
+    gray = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2GRAY)
+    fg_mask = (gray > int(bg_thresh)).astype(np.float32)
+
+    if np.any(fg_mask > 0.5):
+        fg_vals = depth[fg_mask > 0.5]
+        d_min, d_max = float(np.percentile(fg_vals, 0.5)), float(np.percentile(fg_vals, 99.8))
+    else:
+        d_min, d_max = float(depth.min()), float(depth.max())
+
+    norm = np.clip((depth - d_min) / max(d_max - d_min, 1e-8), 0.0, 1.0)
+
+    # Làm mềm viền chân khối (Feather) tránh vách đứng CNC
+    if int(feather_px) > 0:
+        k = int(feather_px) * 2 + 1
+        fg_mask = cv2.GaussianBlur(fg_mask, (k, k), 0)
+
+    norm = np.power(norm, max(0.2, float(gamma))) * fg_mask
+    u16 = np.clip(np.round(norm * 65535.0), 0, 65535).astype(np.uint16)
+    u8_preview = (u16 >> 8).astype(np.uint8)
+
+    _, buf16 = cv2.imencode(".png", u16)
+    _, buf8 = cv2.imencode(".png", u8_preview)
+
+    return {
+        "width": orig_w,
+        "height": orig_h,
+        "preview_b64": "data:image/png;base64," + base64.b64encode(buf8.tobytes()).decode("ascii"),
+        "png16_b64": "data:image/png;base64," + base64.b64encode(buf16.tobytes()).decode("ascii"),
+    }
+
+output.register_callback("claydepth.generate", colab_generate_heightmap)
+
+ui_template = """
+<div style="font-family:sans-serif;background:#141820;color:#e8ecf4;border:1px solid #2b3344;border-radius:14px;padding:18px;max-width:780px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+    <strong style="font-size:16px;color:#fff;">ClayDepth V2 — 1-Cell Height Map 16-bit CNC</strong>
+    <span style="font-family:monospace;font-size:11px;color:#6ee7b7;background:#11392c;padding:4px 8px;border-radius:6px;">__GPU__</span>
+  </div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+    <input id="cd_file" type="file" accept="image/*" style="color:#cbd5e1;" />
+    <label style="font-size:12px;">Ngưỡng nền đen: <input id="cd_th" type="number" value="15" min="0" max="60" style="width:52px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
+    <label style="font-size:12px;">Feather: <input id="cd_fe" type="number" value="3" min="0" max="15" style="width:48px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
+    <label style="font-size:12px;">Gamma: <input id="cd_gm" type="number" value="1.0" step="0.1" min="0.3" max="2.5" style="width:54px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
+    <button id="cd_run" style="background:#e07a5f;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Tạo Height Map 16-bit</button>
+  </div>
+  <div id="cd_status" style="font-size:12px;color:#f4b942;margin-bottom:10px;">Chọn ảnh đất sét nền đen rồi bấm Tạo Height Map 16-bit.</div>
+  <div id="cd_out" style="display:none;gap:14px;flex-wrap:wrap;align-items:flex-start;">
+    <img id="cd_prev" style="max-width:340px;border-radius:8px;border:1px solid #343e50;background:#000;" />
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <a id="cd_dl16" download="heightmap_16bit_cnc.png" style="background:#289c72;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:700;text-align:center;">⬇ Tải Height Map 16-bit PNG</a>
+      <span id="cd_info" style="font-family:monospace;font-size:11px;color:#98a3b8;"></span>
+    </div>
+  </div>
+</div>
+__OPEN_SCRIPT__
+(function() {
+  let loadedDataUrl = null;
+  document.getElementById('cd_file').onchange = function(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { loadedDataUrl = r.result; document.getElementById('cd_status').textContent = 'Đã nạp: ' + f.name; };
+    r.readAsDataURL(f);
+  };
+  document.getElementById('cd_run').onclick = async function() {
+    if (!loadedDataUrl) { document.getElementById('cd_status').textContent = 'Vui lòng chọn ảnh trước!'; return; }
+    document.getElementById('cd_status').textContent = '⏳ Đang chạy Depth Anything V2 Large trên GPU...';
+    const th = Number(document.getElementById('cd_th').value) || 15;
+    const fe = Number(document.getElementById('cd_fe').value) || 3;
+    const gm = Number(document.getElementById('cd_gm').value) || 1.0;
+    const res = await google.colab.kernel.invokeFunction('claydepth.generate', [loadedDataUrl, th, fe, gm], {});
+    const data = res.data['application/json'];
+    document.getElementById('cd_prev').src = data.preview_b64;
+    document.getElementById('cd_dl16').href = data.png16_b64;
+    document.getElementById('cd_info').textContent = data.width + ' × ' + data.height + ' px • 16-bit Grayscale PNG';
+    document.getElementById('cd_out').style.display = 'flex';
+    document.getElementById('cd_status').textContent = '✅ Hoàn tất! Bấm nút xanh để tải Height Map 16-bit.';
+  };
+})();
+__CLOSE_SCRIPT__
+"""
+
+final_html = (
+    ui_template
+    .replace("__GPU__", GPU_NAME)
+    .replace("__OPEN_SCRIPT__", "<scr" + "ipt>")
+    .replace("__CLOSE_SCRIPT__", "</scr" + "ipt>")
+)
+display(HTML(final_html))</script>
+
+  <!-- =====================================================================
+       MAIN APPLICATION SCRIPT — 100% PURE JS + PURE WEBGL + 16-BIT PNG ENCODER
+       ===================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ===================================================================
+         1. TRẠNG THÁI ỨNG DỤNG (STATE)
+         =================================================================== */
+      const state = {
+        // Ảnh đầu vào gốc (RGB)
+        width: 0,
+        height: 0,
+        fileName: 'clay_relief',
+        clayImageData: null,      // ImageData ảnh gốc
+        clayLum: null,            // Float32Array [0..1] độ sáng ảnh đất sét gốc
+        clayHighPass: null,       // Float32Array [-1..1] chi tiết bề mặt high-pass
+        clayBlob: null,           // Blob PNG để gửi sang Colab
+
+        // Dữ liệu độ sâu 16-bit
+        rawDepth: null,           // Float32Array [0..1] độ sâu gốc từ Colab / Demo / Depth nạp sẵn
+        processedDepth: null,     // Float32Array [0..1] sau hậu kỳ CNC
+        processedU16: null,       // Uint16Array [0..65535] sẵn sàng xuất PNG 16-bit & probe
+        fgRatio: 0,
+        depthSourceLabel: '—',
+        isDirectDepthOnly: false, // true khi người dùng nạp sẵn Depth Map không qua ảnh đất sét
+
+        // Thông số hậu kỳ CNC
+        bgCutoff: true,
+        bgThreshold: 15,          // 0..60 (trên thang 0..255)
+        bgFeather: 3,             // 0..15 px
+        blackPoint: 0,            // 0..50 (%)
+        whitePoint: 100,          // 50..100 (%)
+        gamma: 1.0,               // 0.30..2.50
+        smooth: 1,                // 0..8
+        microDetail: 8,           // 0..35 (%)
+        invert: false,
+
+        // Trạng thái Viewport
+        activeView: 'split',      // 'split' | 'height2d' | 'heatmap' | 'view3d'
+        splitPos: 0.5,            // 0..1
+        isDraggingSplit: false,
+
+        // Trạng thái WebGL 3D
+        zScale: 0.24,
+        lightAngleDeg: 42,
+        material: 'clay',         // 'clay' | 'wood' | 'bronze' | 'plaster'
+        camYaw: -0.22,
+        camPitch: 0.42,
+        camDist: 2.55,
+
+        // Colab Modal
+        colabTab: 'server'        // 'server' | 'inline'
+      };
+
+      /* ===================================================================
+         2. THAM CHIẾU DOM
+         =================================================================== */
+      const $ = (id) => document.getElementById(id);
+      const els = {
+        toastStack: $('toastStack'),
+        probeTooltip: $('probeTooltip'),
+
+        colabUrlInput: $('colabUrlInput'),
+        statusDot: $('statusDot'),
+        gpuPill: $('gpuPill'),
+        btnCheckHealth: $('btnCheckHealth'),
+        btnOpenColabModal: $('btnOpenColabModal'),
+
+        fileInputClay: $('fileInputClay'),
+        fileInputDepth: $('fileInputDepth'),
+        clayDropzone: $('clayDropzone'),
+        inputPreviewRow: $('inputPreviewRow'),
+        inputThumb: $('inputThumb'),
+        inputName: $('inputName'),
+        inputDims: $('inputDims'),
+        btnSwapClay: $('btnSwapClay'),
+        btnCreateSample: $('btnCreateSample'),
+        btnPickClay: $('btnPickClay'),
+        btnLoadExistingDepth: $('btnLoadExistingDepth'),
+
+        modelSelect: $('modelSelect'),
+        btnRunColab: $('btnRunColab'),
+        btnRunLocalDemo: $('btnRunLocalDemo'),
+
+        toggleBgCutoff: $('toggleBgCutoff'),
+        bgCutoffControls: $('bgCutoffControls'),
+        slBgThreshold: $('slBgThreshold'),
+        valBgThreshold: $('valBgThreshold'),
+        slBgFeather: $('slBgFeather'),
+        valBgFeather: $('valBgFeather'),
+        slBlackPt: $('slBlackPt'),
+        valBlackPt: $('valBlackPt'),
+        slWhitePt: $('slWhitePt'),
+        valWhitePt: $('valWhitePt'),
+        slGamma: $('slGamma'),
+        valGamma: $('valGamma'),
+        slSmooth: $('slSmooth'),
+        valSmooth: $('valSmooth'),
+        slMicroDetail: $('slMicroDetail'),
+        valMicroDetail: $('valMicroDetail'),
+        chkInvert: $('chkInvert'),
+        btnResetPost: $('btnResetPost'),
+
+        btnExport16: $('btnExport16'),
+        btnExport8: $('btnExport8'),
+        btnExportObj: $('btnExportObj'),
+
+        viewportHint: $('viewportHint'),
+        stageWrap: $('stageWrap'),
+        emptyStage: $('emptyStage'),
+        btnEmptySample: $('btnEmptySample'),
+        btnEmptyColab: $('btnEmptyColab'),
+
+        stage2dContainer: $('stage2dContainer'),
+        main2dCanvas: $('main2dCanvas'),
+        splitHandle: $('splitHandle'),
+        splitLabelLeft: $('splitLabelLeft'),
+        splitLabelRight: $('splitLabelRight'),
+        heatmapLegend: $('heatmapLegend'),
+
+        stage3dContainer: $('stage3dContainer'),
+        webglCanvas: $('webglCanvas'),
+        sl3dZ: $('sl3dZ'),
+        val3dZ: $('val3dZ'),
+        sl3dLight: $('sl3dLight'),
+        val3dLight: $('val3dLight'),
+        matGrid: $('matGrid'),
+        btnReset3dCam: $('btnReset3dCam'),
+
+        stageLoader: $('stageLoader'),
+        loaderTitle: $('loaderTitle'),
+        loaderSub: $('loaderSub'),
+
+        statSize: $('statSize'),
+        statBit: $('statBit'),
+        statFgRatio: $('statFgRatio'),
+        statSource: $('statSource'),
+        histCanvas: $('histCanvas'),
+
+        colabModal: $('colabModal'),
+        btnCloseModal: $('btnCloseModal'),
+        colabCodeDisplay: $('colabCodeDisplay'),
+        colabTabDesc: $('colabTabDesc'),
+        btnCopyColabCode: $('btnCopyColabCode'),
+        tplColabServer: $('tplColabServer'),
+        tplColabInline: $('tplColabInline')
+      };
+
+      /* ===================================================================
+         3. TIỆN ÍCH TOAST & CLIPBOARD AN TOÀN
+         =================================================================== */
+      function showToast(msg, type = 'success', ms = 3200) {
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        const icon = type === 'success' ? '✓' : type === 'warn' ? '!' : 'ℹ';
+        el.innerHTML = `<span style="font-weight:900;">${icon}</span><span>${escapeHtml(msg)}</span>`;
+        els.toastStack.appendChild(el);
+        setTimeout(() => {
+          el.style.transition = 'opacity 0.22s, transform 0.22s';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+          setTimeout(() => el.remove(), 230);
+        }, ms);
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+      }
+
+      function copyTextSafe(text) {
+        return new Promise((resolve, reject) => {
+          const fallback = () => {
+            try {
+              const ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.top = '-9999px';
+              ta.style.left = '-9999px';
+              document.body.appendChild(ta);
+              ta.select();
+              ta.setSelectionRange(0, text.length);
+              const ok = document.execCommand('copy');
+              document.body.removeChild(ta);
+              ok ? resolve() : reject(new Error('execCommand failed'));
+            } catch (err) { reject(err); }
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(resolve).catch(fallback);
+          } else {
+            fallback();
+          }
+        });
+      }
+
+      function setLoading(active, title = '', sub = '') {
+        els.stageLoader.classList.toggle('visible', active);
+        if (title) els.loaderTitle.textContent = title;
+        if (sub) els.loaderSub.textContent = sub;
+      }
+
+      /* ===================================================================
+         4. BẢNG MÀU INFERNO LUT (256 MỨC CHO CHẾ ĐỘ HEATMAP)
+         =================================================================== */
+      const INFERNO_LUT = (function buildInfernoLUT() {
+        const stops = [
+          [0.00,   0,   0,   4],
+          [0.14,  31,  12,  72],
+          [0.29,  85,  15, 109],
+          [0.43, 136,  34, 106],
+          [0.57, 186,  54,  85],
+          [0.71, 227,  89,  51],
+          [0.86, 249, 140,  10],
+          [0.95, 249, 201,  50],
+          [1.00, 252, 255, 164]
+        ];
+        const lut = new Uint8Array(256 * 3);
+        for (let i = 0; i < 256; i++) {
+          const t = i / 255;
+          let k = 0;
+          while (k < stops.length - 2 && t > stops[k + 1][0]) k++;
+          const s0 = stops[k], s1 = stops[k + 1];
+          const f = (t - s0[0]) / Math.max(1e-6, s1[0] - s0[0]);
+          lut[i * 3]     = Math.round(s0[1] + (s1[1] - s0[1]) * f);
+          lut[i * 3 + 1] = Math.round(s0[2] + (s1[2] - s0[2]) * f);
+          lut[i * 3 + 2] = Math.round(s0[3] + (s1[3] - s0[3]) * f);
+        }
+        return lut;
+      })();
+
+      /* ===================================================================
+         5. THUẬT TOÁN XỬ LÝ MẢNG FLOAT32 NHANH (SEPARABLE BLUR & DISTANCE)
+         =================================================================== */
+      /**
+       * Làm mịn hộp 2 chiều tách trục O(W*H) độc lập với bán kính
+       * @param {Float32Array} src
+       * @param {number} w
+       * @param {number} h
+       * @param {number} radius
+       * @param {number} passes
+       */
+      function separableBlurFloat(src, w, h, radius, passes = 2) {
+        const r = Math.round(radius);
+        if (r <= 0) return new Float32Array(src);
+        let cur = new Float32Array(src);
+        let tmp = new Float32Array(w * h);
+        const winSize = 2 * r + 1;
+        const invWin = 1.0 / winSize;
+
+        for (let p = 0; p < passes; p++) {
+          // Chiều ngang
+          for (let y = 0; y < h; y++) {
+            const rowOff = y * w;
+            let sum = cur[rowOff] * (r + 1);
+            for (let x = 1; x <= r; x++) {
+              sum += cur[rowOff + Math.min(w - 1, x)];
+            }
+            for (let x = 0; x < w; x++) {
+              tmp[rowOff + x] = sum * invWin;
+              const addX = Math.min(w - 1, x + r + 1);
+              const subX = Math.max(0, x - r);
+              sum += cur[rowOff + addX] - cur[rowOff + subX];
+            }
+          }
+          // Chiều dọc
+          for (let x = 0; x < w; x++) {
+            let sum = tmp[x] * (r + 1);
+            for (let y = 1; y <= r; y++) {
+              sum += tmp[Math.min(h - 1, y) * w + x];
+            }
+            for (let y = 0; y < h; y++) {
+              cur[y * w + x] = sum * invWin;
+              const addY = Math.min(h - 1, y + r + 1);
+              const subY = Math.max(0, y - r);
+              sum += tmp[addY * w + x] - tmp[subY * w + x];
+            }
+          }
+        }
+        return cur;
+      }
+
+      /**
+       * Tính khoảng cách từ nền đen (Chamfer Distance Transform 2-pass) cho chế độ Demo cục bộ
+       */
+      function computeDistanceFromBlack(mask, w, h) {
+        const dist = new Float32Array(w * h);
+        const INF = 1e6;
+        for (let i = 0; i < w * h; i++) dist[i] = mask[i] > 0.5 ? INF : 0;
+
+        // Forward pass
+        for (let y = 0; y < h; y++) {
+          const row = y * w;
+          for (let x = 0; x < w; x++) {
+            const idx = row + x;
+            let d = dist[idx];
+            if (d === 0) continue;
+            if (x > 0) d = Math.min(d, dist[idx - 1] + 1);
+            if (y > 0) {
+              d = Math.min(d, dist[idx - w] + 1);
+              if (x > 0) d = Math.min(d, dist[idx - w - 1] + 1.414);
+              if (x < w - 1) d = Math.min(d, dist[idx - w + 1] + 1.414);
+            }
+            dist[idx] = d;
+          }
+        }
+        // Backward pass
+        for (let y = h - 1; y >= 0; y--) {
+          const row = y * w;
+          for (let x = w - 1; x >= 0; x--) {
+            const idx = row + x;
+            let d = dist[idx];
+            if (d === 0) continue;
+            if (x < w - 1) d = Math.min(d, dist[idx + 1] + 1);
+            if (y < h - 1) {
+              d = Math.min(d, dist[idx + w] + 1);
+              if (x > 0) d = Math.min(d, dist[idx + w - 1] + 1.414);
+              if (x < w - 1) d = Math.min(d, dist[idx + w + 1] + 1.414);
+            }
+            dist[idx] = d;
+          }
+        }
+        return dist;
+      }
+
+      /* ===================================================================
+         6. TẠO ẢNH ĐẤT SÉT MẪU BẰNG CANVAS (PHÙ ĐIÊU HOA SEN NỀN ĐEN #000000)
+         =================================================================== */
+      function generateSampleClayRelief() {
+        const size = 768;
+        const c = document.createElement('canvas');
+        c.width = size;
+        c.height = size;
+        const ctx = c.getContext('2d');
+
+        // Nền đen tuyệt đối #000000
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, size, size);
+
+        const cx = size * 0.5;
+        const cy = size * 0.54;
+
+        // Vẽ một cánh sen điêu khắc đất sét xám có gân nổi & khối sáng tối
+        function drawClayPetal(angleRad, distFromCenter, len, wid, baseTone, tipTone) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(angleRad);
+          ctx.translate(0, -distFromCenter);
+
+          const grad = ctx.createLinearGradient(0, 0, 0, -len);
+          grad.addColorStop(0.0, `rgb(${baseTone - 38},${baseTone - 36},${baseTone - 32})`);
+          grad.addColorStop(0.45, `rgb(${baseTone + 18},${baseTone + 20},${baseTone + 24})`);
+          grad.addColorStop(0.85, `rgb(${tipTone},${tipTone + 2},${tipTone + 6})`);
+          grad.addColorStop(1.0, `rgb(${tipTone - 30},${tipTone - 28},${tipTone - 24})`);
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(-wid, -len * 0.25, -wid * 0.85, -len * 0.78, 0, -len);
+          ctx.bezierCurveTo(wid * 0.85, -len * 0.78, wid, -len * 0.25, 0, 0);
+          ctx.closePath();
+          ctx.fill();
+
+          // Viền chuyển khối nhẹ dọc mép cánh
+          ctx.strokeStyle = `rgba(38, 42, 48, 0.55)`;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          // Sống gân chính nổi giữa cánh sen
+          const ridgeGrad = ctx.createLinearGradient(0, -len * 0.1, 0, -len * 0.9);
+          ridgeGrad.addColorStop(0, `rgba(255,255,255,0.22)`);
+          ridgeGrad.addColorStop(0.6, `rgba(255,255,255,0.34)`);
+          ridgeGrad.addColorStop(1, `rgba(255,255,255,0.06)`);
+          ctx.strokeStyle = ridgeGrad;
+          ctx.lineWidth = Math.max(3, wid * 0.11);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(0, -len * 0.12);
+          ctx.lineTo(0, -len * 0.86);
+          ctx.stroke();
+
+          // Các đường gân phụ nhỏ (để test bộ trộn Micro-Detail rất rõ!)
+          ctx.strokeStyle = 'rgba(235, 240, 248, 0.14)';
+          ctx.lineWidth = 2;
+          for (let s = -1; s <= 1; s += 2) {
+            for (let k = 1; k <= 3; k++) {
+              ctx.beginPath();
+              ctx.moveTo(0, -len * (0.22 + k * 0.14));
+              ctx.quadraticCurveTo(s * wid * 0.35, -len * (0.3 + k * 0.14), s * wid * 0.56, -len * (0.42 + k * 0.13));
+              ctx.stroke();
+            }
+          }
+          ctx.restore();
+        }
+
+        // Bệ lá sen nâng phía dưới (relief nền thấp)
+        ctx.save();
+        ctx.translate(cx, cy + 88);
+        const padGrad = ctx.createRadialGradient(0, -18, 20, 0, 0, 250);
+        padGrad.addColorStop(0, '#a6adb8');
+        padGrad.addColorStop(0.65, '#727985');
+        padGrad.addColorStop(1, '#343942');
+        ctx.fillStyle = padGrad;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 252, 72, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Gân lá sen toả ra
+        ctx.strokeStyle = 'rgba(235,240,248,0.24)';
+        ctx.lineWidth = 3;
+        for (let i = -5; i <= 5; i++) {
+          ctx.beginPath();
+          ctx.moveTo(0, -4);
+          ctx.lineTo(i * 44, 48 - Math.abs(i) * 4);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // Tầng 1: 7 cánh sen ngoài cùng (thấp hơn, xám trung bình)
+        const outerAngles = [-1.42, -0.96, -0.48, 0, 0.48, 0.96, 1.42];
+        outerAngles.forEach((ang, idx) => {
+          const len = 255 - Math.abs(idx - 3) * 16;
+          drawClayPetal(ang, 34, len, 78, 126, 168);
+        });
+
+        // Tầng 2: 5 cánh sen giữa (nổi cao hơn)
+        const midAngles = [-1.05, -0.52, 0, 0.52, 1.05];
+        midAngles.forEach((ang, idx) => {
+          const len = 228 - Math.abs(idx - 2) * 14;
+          drawClayPetal(ang, 22, len, 76, 152, 204);
+        });
+
+        // Đài sen trung tâm (nổi cao mạnh)
+        ctx.save();
+        const podGrad = ctx.createRadialGradient(cx, cy - 52, 10, cx, cy - 34, 96);
+        podGrad.addColorStop(0, '#edf1f7');
+        podGrad.addColorStop(0.55, '#bec5d0');
+        podGrad.addColorStop(1, '#58606d');
+        ctx.fillStyle = podGrad;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - 36, 86, 62, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Các hạt sen điêu khắc nổi tròn trên đài
+        const seeds = [
+          [0, -42, 14], [-34, -46, 12], [34, -46, 12],
+          [-20, -20, 12], [20, -20, 12], [-48, -24, 10], [48, -24, 10],
+          [0, -68, 11], [-28, -68, 10], [28, -68, 10]
+        ];
+        seeds.forEach(([sx, sy, sr]) => {
+          const sg = ctx.createRadialGradient(cx + sx - sr * 0.2, cy + sy - sr * 0.25, 1, cx + sx, cy + sy, sr);
+          sg.addColorStop(0, '#ffffff');
+          sg.addColorStop(0.6, '#c8cfd9');
+          sg.addColorStop(1, '#4a505b');
+          ctx.fillStyle = sg;
+          ctx.beginPath();
+          ctx.arc(cx + sx, cy + sy, sr, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
+
+        // Tầng 3: 3 cánh sen ôm phía trước (gần camera nhất — nổi cao nhất!)
+        drawClayPetal(-0.46, -10, 156, 64, 178, 228);
+        drawClayPetal(0.46, -10, 156, 64, 178, 228);
+        drawClayPetal(0, -18, 162, 68, 196, 245);
+
+        // Chấm nhẹ viền dưới cho gọn khung
+        c.toBlob((blob) => {
+          const img = new Image();
+          img.onload = () => {
+            ingestClayImage(img, 'mau_phu_dieu_hoa_sen_clay', blob);
+            runLocalDemoDepth();
+          };
+          img.src = URL.createObjectURL(blob);
+        }, 'image/png');
+      }
+
+      /* ===================================================================
+         7. NẠP ẢNH ĐẤT SÉT & NẠP SẴN DEPTH MAP
+         =================================================================== */
+      function ingestClayImage(img, fileName, originalBlob = null) {
+        // Giới hạn cạnh lớn nhất ở 2048px để xử lý thời gian thực 16-bit luôn mượt
+        const MAX_DIM = 2048;
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        if (Math.max(w, h) > MAX_DIM) {
+          const scale = MAX_DIM / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const lum = new Float32Array(w * h);
+        const d = imgData.data;
+        for (let i = 0, p = 0; i < d.length; i += 4, p++) {
+          lum[p] = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255.0;
+        }
+
+        // Tạo lớp High-Pass chi tiết bề mặt đất sét cho bộ trộn Micro-Detail
+        const blurRadius = Math.max(2, Math.round(Math.min(w, h) * 0.008));
+        const blurredLum = separableBlurFloat(lum, w, h, blurRadius, 2);
+        const highPass = new Float32Array(w * h);
+        for (let i = 0; i < w * h; i++) {
+          highPass[i] = lum[i] - blurredLum[i];
+        }
+
+        state.width = w;
+        state.height = h;
+        state.fileName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') || 'clay_relief';
+        state.clayImageData = imgData;
+        state.clayLum = lum;
+        state.clayHighPass = highPass;
+        state.isDirectDepthOnly = false;
+        state.rawDepth = null;
+        state.processedDepth = null;
+        state.processedU16 = null;
+
+        // Lưu blob gửi sang Colab
+        if (originalBlob) {
+          state.clayBlob = originalBlob;
+        } else {
+          c.toBlob((b) => { state.clayBlob = b; }, 'image/png');
+        }
+
+        // Cập nhật UI cột trái & viewport
+        els.inputThumb.src = c.toDataURL('image/jpeg', 0.85);
+        els.inputName.textContent = `${state.fileName}.png`;
+        els.inputDims.textContent = `${w} × ${h} px`;
+        els.inputPreviewRow.classList.add('visible');
+        els.emptyStage.style.display = 'none';
+
+        els.btnRunColab.disabled = false;
+        els.btnRunLocalDemo.disabled = false;
+        setExportButtonsEnabled(false);
+
+        els.statSize.textContent = `${w} × ${h} px`;
+        els.statFgRatio.textContent = 'Chưa tạo Depth';
+        els.statSource.textContent = 'Ảnh đất sét gốc';
+
+        // Hiển thị ảnh đất sét gốc ngay trên canvas 2D
+        renderViewport();
+      }
+
+      function handleClayFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          showToast('Vui lòng chọn tệp ảnh hợp lệ (JPG, PNG, WebP).', 'warn');
+          return;
+        }
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          ingestClayImage(img, file.name || 'clay_input', file);
+          URL.revokeObjectURL(url);
+          showToast(`Đã nạp ảnh đất sét (${state.width}×${state.height}px). Bấm "Tạo Height Map" để chạy!`, 'success');
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          showToast('Không thể đọc ảnh này.', 'warn');
+        };
+        img.src = url;
+      }
+
+      function handleDirectDepthFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          showToast('Vui lòng chọn ảnh Depth Map hợp lệ.', 'warn');
+          return;
+        }
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          ingestClayImage(img, file.name || 'loaded_depth', file);
+          state.isDirectDepthOnly = true;
+          // Dùng chính độ sáng của ảnh Depth Map đã nạp làm rawDepth
+          state.rawDepth = new Float32Array(state.clayLum);
+          state.depthSourceLabel = 'Nạp sẵn Depth Map';
+          URL.revokeObjectURL(url);
+          runPostProcessPipeline();
+          showToast('Đã nạp Depth Map có sẵn! Bạn có thể tinh chỉnh CNC, xem 3D và xuất 16-bit.', 'success');
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          showToast('Không thể đọc tệp Depth Map.', 'warn');
+        };
+        img.src = url;
+      }
+
+      /* ===================================================================
+         8. KẾT NỐI & GỌI GOOGLE COLAB API (GET /health & POST /predict)
+         =================================================================== */
+      function normalizeColabUrl(raw) {
+        return (raw || '').trim().replace(/\/+$/, '');
+      }
+
+      async function checkColabHealth() {
+        const baseUrl = normalizeColabUrl(els.colabUrlInput.value);
+        if (!baseUrl) {
+          showToast('Hãy dán đường link Cloudflared từ Google Colab vào ô URL trước.', 'warn');
+          els.colabUrlInput.focus();
+          return;
+        }
+        try { localStorage.setItem('claydepth_v2_colab_url', baseUrl); } catch (_) {}
+
+        els.statusDot.className = 'status-dot checking';
+        els.gpuPill.classList.remove('visible');
+        els.btnCheckHealth.disabled = true;
+
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 12000);
+          const res = await fetch(`${baseUrl}/health`, {
+            method: 'GET',
+            mode: 'cors',
+            signal: controller.signal
+          });
+          clearTimeout(timer);
+
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          els.statusDot.className = 'status-dot online';
+          const gpuName = data.gpu || data.device || 'Colab GPU';
+          els.gpuPill.textContent = `● ${gpuName}`;
+          els.gpuPill.classList.add('visible');
+          showToast(`Kết nối thành công! Đang chạy trên ${gpuName}`, 'success');
+        } catch (err) {
+          els.statusDot.className = 'status-dot offline';
+          els.gpuPill.classList.remove('visible');
+          showToast('Không thể kết nối Colab Server. Kiểm tra xem cell Colab còn đang chạy và URL có đúng không.', 'warn', 4500);
+        } finally {
+          els.btnCheckHealth.disabled = false;
+        }
+      }
+
+      /**
+       * Giải mã ảnh PNG Hi-Lo RGB (R = byte cao, G = byte thấp) thành Float32Array [0..1] chuẩn 16-bit
+       */
+      function decodeHiLoPngToFloat32(dataUrl, expectedW, expectedH) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const c = document.createElement('canvas');
+            c.width = expectedW;
+            c.height = expectedH;
+            const ctx = c.getContext('2d', { willReadFrequently: true });
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, 0, 0, expectedW, expectedH);
+            const px = ctx.getImageData(0, 0, expectedW, expectedH).data;
+            const out = new Float32Array(expectedW * expectedH);
+            for (let i = 0, p = 0; i < px.length; i += 4, p++) {
+              const u16 = (px[i] << 8) | px[i + 1];
+              out[p] = u16 / 65535.0;
+            }
+            resolve(out);
+          };
+          img.onerror = () => reject(new Error('Không thể giải mã ảnh Hi-Lo 16-bit từ Colab'));
+          img.src = dataUrl;
+        });
+      }
+
+      async function runColabPrediction() {
+        if (!state.clayImageData) {
+          showToast('Hãy nạp ảnh đất sét trước khi chạy.', 'warn');
+          return;
+        }
+        const baseUrl = normalizeColabUrl(els.colabUrlInput.value);
+        if (!baseUrl) {
+          showToast('Chưa có URL Colab! Hãy bấm "Lấy Code Google Colab" hoặc dùng nút Demo cục bộ.', 'warn', 4200);
+          return;
+        }
+        try { localStorage.setItem('claydepth_v2_colab_url', baseUrl); } catch (_) {}
+
+        const modelSize = els.modelSelect.value;
+        setLoading(
+          true,
+          `Đang chạy Depth-Anything-V2-${modelSize.toUpperCase()} trên Colab GPU...`,
+          `Đang gửi ảnh ${state.width}×${state.height}px tới ${baseUrl}/predict`
+        );
+
+        try {
+          // Đảm bảo có Blob PNG để gửi
+          let blobToSend = state.clayBlob;
+          if (!blobToSend) {
+            const tmp = document.createElement('canvas');
+            tmp.width = state.width;
+            tmp.height = state.height;
+            tmp.getContext('2d').putImageData(state.clayImageData, 0, 0);
+            blobToSend = await new Promise((res) => tmp.toBlob(res, 'image/png'));
+          }
+
+          const fd = new FormData();
+          fd.append('file', blobToSend, `${state.fileName}.png`);
+          fd.append('model_size', modelSize);
+
+          const res = await fetch(`${baseUrl}/predict`, {
+            method: 'POST',
+            mode: 'cors',
+            body: fd
+          });
+
+          if (!res.ok) {
+            const txt = await res.text().catch(() => '');
+            throw new Error(`HTTP ${res.status} ${txt.slice(0, 120)}`);
+          }
+
+          const json = await res.json();
+          if (!json.depth_hilo_png) throw new Error('Phản hồi thiếu trường depth_hilo_png');
+
+          const depthFloat = await decodeHiLoPngToFloat32(json.depth_hilo_png, state.width, state.height);
+          state.rawDepth = depthFloat;
+          state.isDirectDepthOnly = false;
+          state.depthSourceLabel = `Colab V2-${modelSize.toUpperCase()} (${json.inference_time ?? '?'}s)`;
+
+          els.statusDot.className = 'status-dot online';
+          runPostProcessPipeline();
+          showToast(`Tạo Height Map 16-bit thành công trong ${json.inference_time ?? '?'}s!`, 'success');
+        } catch (err) {
+          console.error(err);
+          showToast(`Lỗi kết nối Colab: ${err.message}. Hãy kiểm tra lại server Colab hoặc thử Demo cục bộ.`, 'warn', 5000);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      /* ===================================================================
+         9. CHẠY MÔ PHỎNG CỤC BỘ (DEMO KHÔNG CẦN COLAB)
+         =================================================================== */
+      function runLocalDemoDepth() {
+        if (!state.clayLum) return;
+        setLoading(true, 'Đang ước lượng độ sâu phù điêu cục bộ (Demo)...', 'Kết hợp bản đồ khoảng cách nền đen & khối sáng tối đa tỷ lệ');
+
+        setTimeout(() => {
+          try {
+            const w = state.width;
+            const h = state.height;
+            const n = w * h;
+            const lum = state.clayLum;
+            const thresh = Math.max(0.025, state.bgThreshold / 255.0);
+
+            // 1. Mặt nạ vùng vật thể đất sét
+            const mask = new Float32Array(n);
+            for (let i = 0; i < n; i++) mask[i] = lum[i] > thresh ? 1.0 : 0.0;
+
+            // 2. Khoảng cách từ biên nền đen tạo độ vồng khối 3D tự nhiên
+            const dist = computeDistanceFromBlack(mask, w, h);
+            let maxD = 1;
+            for (let i = 0; i < n; i++) if (dist[i] > maxD) maxD = dist[i];
+
+            const env = new Float32Array(n);
+            const capD = Math.max(12, maxD * 0.72);
+            for (let i = 0; i < n; i++) {
+              env[i] = Math.pow(Math.min(1.0, dist[i] / capD), 0.52);
+            }
+            const smoothEnv = separableBlurFloat(env, w, h, Math.max(2, Math.round(Math.min(w, h) * 0.015)), 2);
+
+            // 3. Độ sáng khối đa tỷ lệ từ ảnh đất sét
+            const broadR = Math.max(3, Math.round(Math.min(w, h) * 0.028));
+            const midR = Math.max(2, Math.round(Math.min(w, h) * 0.008));
+            const lumBroad = separableBlurFloat(lum, w, h, broadR, 2);
+            const lumMid = separableBlurFloat(lum, w, h, midR, 2);
+
+            // 4. Trộn thành bản đồ độ sâu phù điêu giàu khối
+            const raw = new Float32Array(n);
+            let minV = 1e9, maxV = -1e9;
+            for (let i = 0; i < n; i++) {
+              if (mask[i] < 0.5) {
+                raw[i] = 0;
+              } else {
+                const v = 0.48 * smoothEnv[i] + 0.30 * lumBroad[i] + 0.14 * lumMid[i] + 0.08 * lum[i];
+                raw[i] = v;
+                if (v < minV) minV = v;
+                if (v > maxV) maxV = v;
+              }
+            }
+            const span = Math.max(1e-6, maxV - minV);
+            for (let i = 0; i < n; i++) {
+              if (mask[i] >= 0.5) raw[i] = 0.03 + 0.97 * ((raw[i] - minV) / span);
+            }
+
+            state.rawDepth = raw;
+            state.depthSourceLabel = 'Mô phỏng cục bộ (Demo)';
+            runPostProcessPipeline();
+            showToast('Đã tạo Height Map Demo! Bạn có thể thử hậu kỳ, xem 3D & xuất file ngay.', 'info');
+          } catch (err) {
+            console.error(err);
+            showToast('Có lỗi khi chạy mô phỏng cục bộ.', 'warn');
+          } finally {
+            setLoading(false);
+          }
+        }, 30);
+      }
+
+      /* ===================================================================
+         10. PIPELINE HẬU KỲ HEIGHT MAP 16-BIT CHUẨN CNC (REAL-TIME FLOAT32)
+         =================================================================== */
+      let postRaf = null;
+      function schedulePostProcess() {
+        if (!state.rawDepth) return;
+        if (postRaf) cancelAnimationFrame(postRaf);
+        postRaf = requestAnimationFrame(() => {
+          postRaf = null;
+          runPostProcessPipeline();
+        });
+      }
+
+      function runPostProcessPipeline() {
+        if (!state.rawDepth) return;
+        const w = state.width;
+        const h = state.height;
+        const n = w * h;
+        const raw = state.rawDepth;
+
+        // Bước 1: Tạo mặt nạ nền đen (Black Background Cutoff) & Chuẩn hóa vùng vật thể
+        let mask = null;
+        let fgCount = n;
+        let out = new Float32Array(n);
+
+        if (state.bgCutoff) {
+          const threshNorm = state.bgThreshold / 255.0;
+          const srcRef = state.isDirectDepthOnly ? raw : state.clayLum;
+          mask = new Float32Array(n);
+          fgCount = 0;
+
+          let minFg = 1e9, maxFg = -1e9;
+          for (let i = 0; i < n; i++) {
+            if (srcRef[i] > threshNorm) {
+              mask[i] = 1.0;
+              fgCount++;
+              const v = raw[i];
+              if (v < minFg) minFg = v;
+              if (v > maxFg) maxFg = v;
+            } else {
+              mask[i] = 0.0;
+            }
+          }
+
+          const span = Math.max(1e-6, maxFg - minFg);
+          if (fgCount > 0) {
+            for (let i = 0; i < n; i++) {
+              out[i] = mask[i] > 0.5 ? Math.max(0, Math.min(1, (raw[i] - minFg) / span)) : 0;
+            }
+          } else {
+            out.fill(0);
+          }
+
+          // Làm mềm viền chân khối (Feather) tránh vách đứng CNC
+          if (state.bgFeather > 0 && fgCount > 0) {
+            // Làm mượt mặt nạ biên rồi giữ nền ngoài vẫn chạm sát 0
+            const feathered = separableBlurFloat(mask, w, h, state.bgFeather, 2);
+            // Kéo dốc mượt tập trung ở vùng chân khối (ramp từ 0..1)
+            for (let i = 0; i < n; i++) {
+              mask[i] = feathered[i] < 0.008 ? 0 : feathered[i];
+            }
+          }
+        } else {
+          // Không cắt nền -> giữ nguyên độ sâu chuẩn hóa toàn khung
+          let minV = 1e9, maxV = -1e9;
+          for (let i = 0; i < n; i++) {
+            const v = raw[i];
+            if (v < minV) minV = v;
+            if (v > maxV) maxV = v;
+          }
+          const span = Math.max(1e-6, maxV - minV);
+          for (let i = 0; i < n; i++) out[i] = (raw[i] - minV) / span;
+        }
+
+        // Bước 2: Làm mịn CNC (Khử bậc thang)
+        if (state.smooth > 0) {
+          out = separableBlurFloat(out, w, h, state.smooth, 2);
+        }
+
+        // Bước 3: Định hình khối (Black Point, White Point, Gamma, Invert, Micro-Detail)
+        const bp = state.blackPoint / 100.0;
+        const wp = Math.max(bp + 0.02, state.whitePoint / 100.0);
+        const invRange = 1.0 / (wp - bp);
+        const invGamma = 1.0 / state.gamma;
+        const detailStrength = state.isDirectDepthOnly ? 0 : (state.microDetail / 100.0) * 0.45;
+        const highPass = state.clayHighPass;
+
+        const u16 = new Uint16Array(n);
+        for (let i = 0; i < n; i++) {
+          const m = mask ? mask[i] : 1.0;
+          if (m <= 0.0) {
+            out[i] = 0;
+            u16[i] = 0;
+            continue;
+          }
+
+          let v = (out[i] - bp) * invRange;
+          if (v < 0) v = 0;
+          else if (v > 1) v = 1;
+
+          // Đảo ngược độ sâu (chỉ đảo vùng vật thể nếu đang khóa nền đen Z=0)
+          if (state.invert) v = 1.0 - v;
+
+          // Gamma tạo độ phồng khối CNC (gamma > 1 -> phồng nổi hơn)
+          v = Math.pow(v, invGamma);
+
+          // Trộn chi tiết bề mặt đất sét (High-pass micro-detail)
+          if (detailStrength > 0 && highPass) {
+            v += highPass[i] * detailStrength;
+          }
+
+          // Nhân mặt nạ chân khối mượt để dốc tự nhiên xuống Z=0
+          v *= m;
+
+          if (v < 0) v = 0;
+          else if (v > 1) v = 1;
+
+          out[i] = v;
+          u16[i] = Math.round(v * 65535.0);
+        }
+
+        state.processedDepth = out;
+        state.processedU16 = u16;
+        state.fgRatio = (fgCount / n) * 100.0;
+
+        setExportButtonsEnabled(true);
+        els.statSize.textContent = `${w} × ${h} px`;
+        els.statFgRatio.textContent = `${state.fgRatio.toFixed(1)}% khung`;
+        els.statSource.textContent = state.depthSourceLabel;
+
+        drawHistogram(u16);
+        renderViewport();
+        if (webglEngine.initialized) {
+          webglEngine.updateMeshFromHeight();
+        }
+      }
+
+      function setExportButtonsEnabled(enabled) {
+        els.btnExport16.disabled = !enabled;
+        els.btnExport8.disabled = !enabled;
+        els.btnExportObj.disabled = !enabled;
+      }
+
+      /* ===================================================================
+         11. VẼ BIỂU ĐỒ HISTOGRAM ĐỘ SÂU Z
+         =================================================================== */
+      function drawHistogram(u16) {
+        const c = els.histCanvas;
+        const ctx = c.getContext('2d');
+        const W = c.width;
+        const H = c.height;
+        ctx.clearRect(0, 0, W, H);
+
+        if (!u16) return;
+        const BINS = 64;
+        const bins = new Uint32Array(BINS);
+        const step = Math.max(1, Math.floor(u16.length / 80000)); // lấy mẫu siêu nhanh
+        for (let i = 0; i < u16.length; i += step) {
+          const b = Math.min(BINS - 1, (u16[i] * BINS) >> 16);
+          bins[b]++;
+        }
+
+        // Bỏ qua cột Z=0 khi tìm đỉnh để thấy rõ phân bố chiều cao của vật thể đất sét
+        let maxBin = 1;
+        for (let i = 1; i < BINS; i++) {
+          if (bins[i] > maxBin) maxBin = bins[i];
+        }
+        const z0Ratio = Math.min(1, bins[0] / (maxBin * 1.5));
+
+        const barW = W / BINS;
+        for (let i = 0; i < BINS; i++) {
+          const hNorm = i === 0 ? z0Ratio : Math.min(1, bins[i] / maxBin);
+          const barH = Math.max(1, Math.round(hNorm * (H - 4)));
+          ctx.fillStyle = i === 0 ? '#3a455a' : (i > BINS * 0.85 ? '#f4b942' : '#e07a5f');
+          ctx.fillRect(Math.floor(i * barW), H - barH, Math.max(1, Math.ceil(barW) - 1), barH);
+        }
+      }
+
+      /* ===================================================================
+         12. HIỂN THỊ VIEWPORT 2D (SPLIT / HEIGHT 2D / HEATMAP)
+         =================================================================== */
+      function renderViewport() {
+        const hasClay = !!state.clayImageData;
+        const hasDepth = !!state.processedDepth;
+        const is3D = state.activeView === 'view3d';
+
+        els.stage2dContainer.classList.toggle('visible', hasClay && !is3D);
+        els.stage3dContainer.classList.toggle('visible', hasDepth && is3D);
+        els.heatmapLegend.classList.toggle('visible', hasDepth && state.activeView === 'heatmap');
+
+        const showSplitUI = hasClay && hasDepth && state.activeView === 'split';
+        els.splitHandle.classList.toggle('visible', showSplitUI);
+        els.splitLabelLeft.classList.toggle('visible', showSplitUI);
+        els.splitLabelRight.classList.toggle('visible', showSplitUI);
+
+        if (is3D && !hasDepth && hasClay) {
+          // Chưa có depth nhưng user bấm tab 3D -> vẫn giữ thông báo nhẹ
+          els.stage2dContainer.classList.add('visible');
+        }
+
+        if (!hasClay) return;
+
+        if (is3D && hasDepth) {
+          webglEngine.ensureInit();
+          webglEngine.resize();
+          webglEngine.updateMeshFromHeight();
+          webglEngine.render();
+          return;
+        }
+
+        // Vẽ lên main2dCanvas
+        const w = state.width;
+        const h = state.height;
+        const canvas = els.main2dCanvas;
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        const ctx = canvas.getContext('2d');
+
+        if (!hasDepth) {
+          ctx.putImageData(state.clayImageData, 0, 0);
+          return;
+        }
+
+        const outImg = ctx.createImageData(w, h);
+        const dst = outImg.data;
+        const srcClay = state.clayImageData.data;
+        const depth = state.processedDepth;
+
+        if (state.activeView === 'split') {
+          const splitX = Math.round(state.splitPos * w);
+          els.splitHandle.style.left = `${(state.splitPos * 100).toFixed(2)}%`;
+
+          for (let y = 0; y < h; y++) {
+            const row = y * w;
+            for (let x = 0; x < w; x++) {
+              const p = row + x;
+              const idx = p * 4;
+              if (x < splitX) {
+                dst[idx] = srcClay[idx];
+                dst[idx + 1] = srcClay[idx + 1];
+                dst[idx + 2] = srcClay[idx + 2];
+                dst[idx + 3] = 255;
+              } else {
+                const g = Math.round(depth[p] * 255);
+                dst[idx] = g;
+                dst[idx + 1] = g;
+                dst[idx + 2] = g;
+                dst[idx + 3] = 255;
+              }
+            }
+          }
+        } else if (state.activeView === 'height2d') {
+          for (let i = 0, idx = 0; i < depth.length; i++, idx += 4) {
+            const g = Math.round(depth[i] * 255);
+            dst[idx] = g;
+            dst[idx + 1] = g;
+            dst[idx + 2] = g;
+            dst[idx + 3] = 255;
+          }
+        } else if (state.activeView === 'heatmap') {
+          for (let i = 0, idx = 0; i < depth.length; i++, idx += 4) {
+            const k = Math.min(255, Math.max(0, Math.round(depth[i] * 255))) * 3;
+            dst[idx] = INFERNO_LUT[k];
+            dst[idx + 1] = INFERNO_LUT[k + 1];
+            dst[idx + 2] = INFERNO_LUT[k + 2];
+            dst[idx + 3] = 255;
+          }
+        }
+        ctx.putImageData(outImg, 0, 0);
+      }
+
+      // Tương tác kéo Split & Hover Probe 16-bit trên main2dCanvas
+      function updateSplitFromPointer(clientX) {
+        const rect = els.main2dCanvas.getBoundingClientRect();
+        if (rect.width <= 0) return;
+        state.splitPos = Math.max(0.02, Math.min(0.98, (clientX - rect.left) / rect.width));
+        renderViewport();
+      }
+
+      els.main2dCanvas.addEventListener('pointerdown', (e) => {
+        if (state.activeView !== 'split' || !state.processedDepth) return;
+        state.isDraggingSplit = true;
+        try { els.main2dCanvas.setPointerCapture(e.pointerId); } catch (_) {}
+        updateSplitFromPointer(e.clientX);
+      });
+
+      els.main2dCanvas.addEventListener('pointermove', (e) => {
+        if (state.isDraggingSplit && state.activeView === 'split') {
+          updateSplitFromPointer(e.clientX);
+        }
+
+        // Hiển thị Tooltip tọa độ & Z 16-bit trên Height Map 2D và Heatmap
+        if ((state.activeView === 'height2d' || state.activeView === 'heatmap') && state.processedU16) {
+          const rect = els.main2dCanvas.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            const x = Math.max(0, Math.min(state.width - 1, Math.floor(((e.clientX - rect.left) / rect.width) * state.width)));
+            const y = Math.max(0, Math.min(state.height - 1, Math.floor(((e.clientY - rect.top) / rect.height) * state.height)));
+            const u16Val = state.processedU16[y * state.width + x];
+            const pct = ((u16Val / 65535) * 100).toFixed(1);
+
+            els.probeTooltip.style.display = 'block';
+            els.probeTooltip.style.left = `${Math.min(window.innerWidth - 190, e.clientX + 14)}px`;
+            els.probeTooltip.style.top = `${Math.max(10, e.clientY - 46)}px`;
+            els.probeTooltip.innerHTML =
+              `X:${x} Y:${y}<br>16-bit: <span class="z-hi">${u16Val}</span> / 65535 (<span class="z-hi">${pct}%</span>)`;
+          }
+        } else {
+          els.probeTooltip.style.display = 'none';
+        }
+      });
+
+      els.main2dCanvas.addEventListener('pointerup', (e) => {
+        state.isDraggingSplit = false;
+        try { els.main2dCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
+      });
+      els.main2dCanvas.addEventListener('pointerleave', () => {
+        els.probeTooltip.style.display = 'none';
+      });
+
+      /* ===================================================================
+         13. TRÌNH DỰNG 3D RELIEF BẰNG WEBGL THUẦN (200x200 MESH, ZERO CDN)
+         =================================================================== */
+      const webglEngine = (function createWebGLEngine() {
+        const GRID = 200; // 200x200 = 40.000 đỉnh (< 65.535 nên chạy mượt với UNSIGNED_SHORT mọi GPU)
+        let gl = null;
+        let program = null;
+        let posBuf = null, normBuf = null, uvBuf = null, idxBuf = null;
+        let positions = new Float32Array(GRID * GRID * 3);
+        let normals = new Float32Array(GRID * GRID * 3);
+        let uvs = new Float32Array(GRID * GRID * 2);
+        let indexCount = 0;
+        let uniforms = {};
+        let isDragging = false, lastX = 0, lastY = 0;
+
+        const VS_SRC = `
+          attribute vec3 aPos;
+          attribute vec3 aNormal;
+          attribute vec2 aUv;
+          uniform mat4 uMvp;
+          uniform mat4 uModel;
+          varying vec3 vNormal;
+          varying vec3 vWorldPos;
+          varying vec2 vUv;
+          varying float vHeight;
+          void main() {
+            vec4 world = uModel * vec4(aPos, 1.0);
+            vWorldPos = world.xyz;
+            vNormal = normalize(mat3(uModel) * aNormal);
+            vUv = aUv;
+            vHeight = aPos.z;
+            gl_Position = uMvp * vec4(aPos, 1.0);
+          }
+        `;
+
+        const FS_SRC = `
+          precision mediump float;
+          varying vec3 vNormal;
+          varying vec3 vWorldPos;
+          varying vec2 vUv;
+          varying float vHeight;
+          uniform vec3 uLightDir;
+          uniform vec3 uCamPos;
+          uniform int uMatType;
+          uniform float uZScale;
+
+          // Vân gỗ hương thủ công CNC (procedural rosewood grain)
+          vec3 rosewoodColor(vec2 uv, float h) {
+            float wave = sin(uv.y * 42.0 + sin(uv.x * 11.0 + h * 16.0) * 1.8) * 0.5 + 0.5;
+            float fine = sin(uv.y * 140.0 + uv.x * 15.0) * 0.5 + 0.5;
+            float g = mix(wave, fine, 0.25);
+            vec3 darkWood = vec3(0.36, 0.14, 0.08);
+            vec3 warmWood = vec3(0.68, 0.30, 0.15);
+            return mix(darkWood, warmWood, g);
+          }
+
+          void main() {
+            vec3 N = normalize(vNormal);
+            vec3 L = normalize(uLightDir);
+            vec3 V = normalize(uCamPos - vWorldPos);
+            vec3 H = normalize(L + V);
+
+            // Đèn phụ ngược sáng (rim/fill) để thấy rõ độ dày phù điêu
+            vec3 L2 = normalize(vec3(-L.x, -L.y * 0.4, 0.65));
+
+            float diff1 = max(dot(N, L), 0.0);
+            float diff2 = max(dot(N, L2), 0.0) * 0.28;
+            float nh = max(dot(N, H), 0.0);
+
+            // Hiệu ứng tối hốc tự nhiên (AO giả lập theo chiều cao + góc nghiêng)
+            float hNorm = clamp(vHeight / max(0.001, uZScale), 0.0, 1.0);
+            float ao = mix(0.62, 1.0, smoothstep(0.0, 0.18, hNorm)) * (0.82 + 0.18 * max(N.z, 0.0));
+
+            vec3 baseColor;
+            vec3 specColor;
+            float shininess;
+            float specStrength;
+
+            if (uMatType == 0) {
+              // Đất sét ZBrush
+              baseColor = mix(vec3(0.58, 0.27, 0.20), vec3(0.84, 0.46, 0.34), 0.45 + 0.55 * hNorm);
+              specColor = vec3(1.0, 0.88, 0.82);
+              shininess = 24.0;
+              specStrength = 0.20;
+            } else if (uMatType == 1) {
+              // Gỗ hương CNC
+              baseColor = rosewoodColor(vUv, vHeight);
+              specColor = vec3(1.0, 0.86, 0.72);
+              shininess = 42.0;
+              specStrength = 0.28;
+            } else if (uMatType == 2) {
+              // Đồng cổ (Antique Bronze)
+              baseColor = mix(vec3(0.24, 0.18, 0.11), vec3(0.62, 0.46, 0.24), 0.35 + 0.65 * hNorm);
+              specColor = vec3(1.0, 0.85, 0.52);
+              shininess = 56.0;
+              specStrength = 0.72;
+            } else {
+              // Thạch cao trắng
+              baseColor = vec3(0.86, 0.88, 0.91);
+              specColor = vec3(1.0, 1.0, 1.0);
+              shininess = 18.0;
+              specStrength = 0.12;
+            }
+
+            // Mặt phẳng nền Z=0 tối sâu gọn gàng như bàn CNC
+            if (hNorm < 0.004) {
+              baseColor *= 0.26;
+              specStrength *= 0.15;
+            }
+
+            float spec = pow(nh, shininess) * specStrength;
+            vec3 color = baseColor * (0.20 + diff1 * 0.84 + diff2) * ao + specColor * spec;
+            gl_FragColor = vec4(color, 1.0);
+          }
+        `;
+
+        function compileShader(type, src) {
+          const sh = gl.createShader(type);
+          gl.shaderSource(sh, src);
+          gl.compileShader(sh);
+          if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+            console.error(gl.getShaderInfoLog(sh));
+            return null;
+          }
+          return sh;
+        }
+
+        // Tiện ích ma trận 4x4 gọn nhẹ (Column-Major cho WebGL)
+        function mat4Mul(a, b) {
+          const out = new Float32Array(16);
+          for (let c = 0; c < 4; c++) {
+            for (let r = 0; r < 4; r++) {
+              out[c * 4 + r] =
+                a[0 * 4 + r] * b[c * 4 + 0] +
+                a[1 * 4 + r] * b[c * 4 + 1] +
+                a[2 * 4 + r] * b[c * 4 + 2] +
+                a[3 * 4 + r] * b[c * 4 + 3];
+            }
+          }
+          return out;
+        }
+
+        function mat4Perspective(fovRad, aspect, near, far) {
+          const f = 1.0 / Math.tan(fovRad / 2);
+          const nf = 1 / (near - far);
+          const m = new Float32Array(16);
+          m[0] = f / aspect;
+          m[5] = f;
+          m[10] = (far + near) * nf;
+          m[11] = -1;
+          m[14] = 2 * far * near * nf;
+          return m;
+        }
+
+        function mat4LookAt(eye, target, up) {
+          let zx = eye[0] - target[0], zy = eye[1] - target[1], zz = eye[2] - target[2];
+          let len = Math.hypot(zx, zy, zz) || 1;
+          zx /= len; zy /= len; zz /= len;
+
+          let xx = up[1] * zz - up[2] * zy;
+          let xy = up[2] * zx - up[0] * zz;
+          let xz = up[0] * zy - up[1] * zx;
+          len = Math.hypot(xx, xy, xz) || 1;
+          xx /= len; xy /= len; xz /= len;
+
+          const yx = zy * xz - zz * xy;
+          const yy = zz * xx - zx * xz;
+          const yz = zx * xy - zy * xx;
+
+          const m = new Float32Array(16);
+          m[0] = xx; m[4] = xy; m[8] = xz;  m[12] = -(xx * eye[0] + xy * eye[1] + xz * eye[2]);
+          m[1] = yx; m[5] = yy; m[9] = yz;  m[13] = -(yx * eye[0] + yy * eye[1] + yz * eye[2]);
+          m[2] = zx; m[6] = zy; m[10] = zz; m[14] = -(zx * eye[0] + zy * eye[1] + zz * eye[2]);
+          m[3] = 0;  m[7] = 0;  m[11] = 0;  m[15] = 1;
+          return m;
+        }
+
+        function mat4Identity() {
+          const m = new Float32Array(16);
+          m[0] = m[5] = m[10] = m[15] = 1;
+          return m;
+        }
+
+        const api = {
+          initialized: false,
+          ensureInit() {
+            if (this.initialized) return;
+            const canvas = els.webglCanvas;
+            gl = canvas.getContext('webgl', { antialias: true, preserveDrawingBuffer: false });
+            if (!gl) {
+              showToast('Trình duyệt không hỗ trợ WebGL 3D.', 'warn');
+              return;
+            }
+
+            const vs = compileShader(gl.VERTEX_SHADER, VS_SRC);
+            const fs = compileShader(gl.FRAGMENT_SHADER, FS_SRC);
+            program = gl.createProgram();
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
+            gl.useProgram(program);
+
+            // Khởi tạo UV và Index buffer cố định cho lưới 200x200
+            for (let iy = 0; iy < GRID; iy++) {
+              for (let ix = 0; ix < GRID; ix++) {
+                const v = iy * GRID + ix;
+                uvs[v * 2] = ix / (GRID - 1);
+                uvs[v * 2 + 1] = iy / (GRID - 1);
+              }
+            }
+
+            const indices = new Uint16Array((GRID - 1) * (GRID - 1) * 6);
+            let ptr = 0;
+            for (let iy = 0; iy < GRID - 1; iy++) {
+              for (let ix = 0; ix < GRID - 1; ix++) {
+                const a = iy * GRID + ix;
+                const b = a + 1;
+                const c = a + GRID;
+                const d = c + 1;
+                indices[ptr++] = a; indices[ptr++] = c; indices[ptr++] = b;
+                indices[ptr++] = b; indices[ptr++] = c; indices[ptr++] = d;
+              }
+            }
+            indexCount = indices.length;
+
+            posBuf = gl.createBuffer();
+            normBuf = gl.createBuffer();
+            uvBuf = gl.createBuffer();
+            idxBuf = gl.createBuffer();
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+            gl.bufferData(gl.ARRAY_BUFFER, positions.byteLength, gl.DYNAMIC_DRAW);
+            const locPos = gl.getAttribLocation(program, 'aPos');
+            gl.enableVertexAttribArray(locPos);
+            gl.vertexAttribPointer(locPos, 3, gl.FLOAT, false, 0, 0);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+            gl.bufferData(gl.ARRAY_BUFFER, normals.byteLength, gl.DYNAMIC_DRAW);
+            const locNorm = gl.getAttribLocation(program, 'aNormal');
+            gl.enableVertexAttribArray(locNorm);
+            gl.vertexAttribPointer(locNorm, 3, gl.FLOAT, false, 0, 0);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+            gl.bufferData(gl.ARRAY_BUFFER, uvs, gl.STATIC_DRAW);
+            const locUv = gl.getAttribLocation(program, 'aUv');
+            gl.enableVertexAttribArray(locUv);
+            gl.vertexAttribPointer(locUv, 2, gl.FLOAT, false, 0, 0);
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+            uniforms = {
+              uMvp: gl.getUniformLocation(program, 'uMvp'),
+              uModel: gl.getUniformLocation(program, 'uModel'),
+              uLightDir: gl.getUniformLocation(program, 'uLightDir'),
+              uCamPos: gl.getUniformLocation(program, 'uCamPos'),
+              uMatType: gl.getUniformLocation(program, 'uMatType'),
+              uZScale: gl.getUniformLocation(program, 'uZScale')
+            };
+
+            gl.enable(gl.DEPTH_TEST);
+            gl.clearColor(0.045, 0.055, 0.075, 1.0);
+
+            // Gắn sự kiện xoay/zoom 3D
+            canvas.addEventListener('pointerdown', (e) => {
+              isDragging = true;
+              lastX = e.clientX;
+              lastY = e.clientY;
+              try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            });
+            canvas.addEventListener('pointermove', (e) => {
+              if (!isDragging) return;
+              const dx = e.clientX - lastX;
+              const dy = e.clientY - lastY;
+              lastX = e.clientX;
+              lastY = e.clientY;
+              state.camYaw -= dx * 0.008;
+              state.camPitch = Math.max(-1.35, Math.min(1.35, state.camPitch + dy * 0.008));
+              api.render();
+            });
+            canvas.addEventListener('pointerup', (e) => {
+              isDragging = false;
+              try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+            });
+            canvas.addEventListener('wheel', (e) => {
+              e.preventDefault();
+              state.camDist = Math.max(1.15, Math.min(5.2, state.camDist + e.deltaY * 0.002));
+              api.render();
+            }, { passive: false });
+            canvas.addEventListener('dblclick', () => {
+              state.camYaw = -0.22;
+              state.camPitch = 0.42;
+              state.camDist = 2.55;
+              api.render();
+            });
+
+            this.initialized = true;
+          },
+
+          resize() {
+            if (!gl) return;
+            const canvas = els.webglCanvas;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const rect = els.stage3dContainer.getBoundingClientRect();
+            const cw = Math.max(1, Math.floor(rect.width * dpr));
+            const ch = Math.max(1, Math.floor(rect.height * dpr));
+            if (canvas.width !== cw || canvas.height !== ch) {
+              canvas.width = cw;
+              canvas.height = ch;
+            }
+            gl.viewport(0, 0, cw, ch);
+          },
+
+          updateMeshFromHeight() {
+            if (!gl || !state.processedDepth) return;
+            const depth = state.processedDepth;
+            const w = state.width;
+            const h = state.height;
+            const aspect = w / h;
+            const planeW = aspect >= 1 ? 2.0 : 2.0 * aspect;
+            const planeH = aspect >= 1 ? 2.0 / aspect : 2.0;
+            const zScale = state.zScale;
+
+            // 1. Lấy mẫu nội suy song tuyến (bilinear) từ mảng 16-bit Float32
+            for (let iy = 0; iy < GRID; iy++) {
+              const fy = (iy / (GRID - 1)) * (h - 1);
+              const y0 = Math.floor(fy), y1 = Math.min(h - 1, y0 + 1);
+              const ty = fy - y0;
+              const py = (0.5 - iy / (GRID - 1)) * planeH;
+
+              for (let ix = 0; ix < GRID; ix++) {
+                const fx = (ix / (GRID - 1)) * (w - 1);
+                const x0 = Math.floor(fx), x1 = Math.min(w - 1, x0 + 1);
+                const tx = fx - x0;
+                const px = (ix / (GRID - 1) - 0.5) * planeW;
+
+                const z00 = depth[y0 * w + x0];
+                const z10 = depth[y0 * w + x1];
+                const z01 = depth[y1 * w + x0];
+                const z11 = depth[y1 * w + x1];
+                const z = (z00 * (1 - tx) + z10 * tx) * (1 - ty) + (z01 * (1 - tx) + z11 * tx) * ty;
+
+                const idx = (iy * GRID + ix) * 3;
+                positions[idx] = px;
+                positions[idx + 1] = py;
+                positions[idx + 2] = z * zScale;
+              }
+            }
+
+            // 2. Tính vector pháp tuyến mượt bằng sai phân trung tâm
+            const stepX = planeW / (GRID - 1);
+            const stepY = planeH / (GRID - 1);
+            for (let iy = 0; iy < GRID; iy++) {
+              const yPrev = Math.max(0, iy - 1);
+              const yNext = Math.min(GRID - 1, iy + 1);
+              for (let ix = 0; ix < GRID; ix++) {
+                const xPrev = Math.max(0, ix - 1);
+                const xNext = Math.min(GRID - 1, ix + 1);
+
+                const zL = positions[(iy * GRID + xPrev) * 3 + 2];
+                const zR = positions[(iy * GRID + xNext) * 3 + 2];
+                const zU = positions[(yPrev * GRID + ix) * 3 + 2];
+                const zD = positions[(yNext * GRID + ix) * 3 + 2];
+
+                const dzdx = (zR - zL) / ((xNext - xPrev) * stepX);
+                const dzdy = (zU - zD) / ((yNext - yPrev) * stepY);
+
+                let nx = -dzdx, ny = -dzdy, nz = 1.0;
+                const len = Math.hypot(nx, ny, nz) || 1;
+                const idx = (iy * GRID + ix) * 3;
+                normals[idx] = nx / len;
+                normals[idx + 1] = ny / len;
+                normals[idx + 2] = nz / len;
+              }
+            }
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+            gl.bufferSubData(gl.ARRAY_BUFFER, 0, positions);
+            gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+            gl.bufferSubData(gl.ARRAY_BUFFER, 0, normals);
+
+            if (state.activeView === 'view3d') this.render();
+          },
+
+          render() {
+            if (!gl || !this.initialized) return;
+            this.resize();
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.useProgram(program);
+
+            const canvas = els.webglCanvas;
+            const aspect = canvas.width / Math.max(1, canvas.height);
+
+            // Vị trí camera theo tọa độ cầu (Yaw/Pitch/Dist) nhìn về gốc phù điêu
+            const cx = Math.sin(state.camYaw) * Math.cos(state.camPitch) * state.camDist;
+            const cy = -Math.sin(state.camPitch) * state.camDist;
+            const cz = Math.cos(state.camYaw) * Math.cos(state.camPitch) * state.camDist;
+
+            const proj = mat4Perspective(42 * Math.PI / 180, aspect, 0.1, 20.0);
+            const view = mat4LookAt([cx, cy, cz], [0, 0, state.zScale * 0.35], [0, 1, 0]);
+            const model = mat4Identity();
+            const mvp = mat4Mul(proj, mat4Mul(view, model));
+
+            const rad = (state.lightAngleDeg * Math.PI) / 180;
+            const lx = Math.cos(rad) * 0.75;
+            const ly = Math.sin(rad) * 0.75;
+            const lz = 0.85;
+
+            const matMap = { clay: 0, wood: 1, bronze: 2, plaster: 3 };
+
+            gl.uniformMatrix4fv(uniforms.uMvp, false, mvp);
+            gl.uniformMatrix4fv(uniforms.uModel, false, model);
+            gl.uniform3f(uniforms.uLightDir, lx, ly, lz);
+            gl.uniform3f(uniforms.uCamPos, cx, cy, cz);
+            gl.uniform1i(uniforms.uMatType, matMap[state.material] ?? 0);
+            gl.uniform1f(uniforms.uZScale, state.zScale);
+
+            gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
+          }
+        };
+        return api;
+      })();
+
+      /* ===================================================================
+         14. BỘ MÃ HÓA PNG 16-BIT GRAYSCALE THUẦN JS (CHUẨN RFC 1950/1951)
+         =================================================================== */
+      const CRC32_TABLE = (function () {
+        const tbl = new Uint32Array(256);
+        for (let n = 0; n < 256; n++) {
+          let c = n;
+          for (let k = 0; k < 8; k++) {
+            c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+          }
+          tbl[n] = c >>> 0;
+        }
+        return tbl;
+      })();
+
+      function crc32(bytes, start, len) {
+        let c = 0xffffffff;
+        const end = start + len;
+        for (let i = start; i < end; i++) {
+          c = CRC32_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+        }
+        return (c ^ 0xffffffff) >>> 0;
+      }
+
+      function adler32(bytes) {
+        let s1 = 1, s2 = 0;
+        const MOD = 65521;
+        let i = 0;
+        const len = bytes.length;
+        while (i < len) {
+          let blockEnd = Math.min(len, i + 5552);
+          for (; i < blockEnd; i++) {
+            s1 += bytes[i];
+            s2 += s1;
+          }
+          s1 %= MOD;
+          s2 %= MOD;
+        }
+        return ((s2 << 16) | s1) >>> 0;
+      }
+
+      function makePngChunk(typeStr, dataBytes) {
+        const len = dataBytes.length;
+        const chunk = new Uint8Array(12 + len);
+        const dv = new DataView(chunk.buffer);
+        dv.setUint32(0, len, false);
+        chunk[4] = typeStr.charCodeAt(0);
+        chunk[5] = typeStr.charCodeAt(1);
+        chunk[6] = typeStr.charCodeAt(2);
+        chunk[7] = typeStr.charCodeAt(3);
+        chunk.set(dataBytes, 8);
+        const crc = crc32(chunk, 4, 4 + len);
+        dv.setUint32(8 + len, crc, false);
+        return chunk;
+      }
+
+      /**
+       * Mã hóa Uint16Array (0..65535) thành Blob PNG 16-bit Grayscale chuẩn (bitDepth=16, colorType=0)
+       */
+      function encodeGrayscale16Png(u16Data, width, height) {
+        // 1. Tạo raw scanlines: mỗi dòng [filter=0, hi0, lo0, hi1, lo1, ...]
+        const rowStride = 1 + width * 2;
+        const raw = new Uint8Array(height * rowStride);
+        for (let y = 0; y < height; y++) {
+          let dst = y * rowStride;
+          raw[dst++] = 0; // Filter type 0 (None)
+          const srcRow = y * width;
+          for (let x = 0; x < width; x++) {
+            const val = u16Data[srcRow + x];
+            raw[dst++] = (val >>> 8) & 0xff; // Big-endian byte cao
+            raw[dst++] = val & 0xff;         // Big-endian byte thấp
+          }
+        }
+
+        // 2. Gói Zlib (RFC 1950) + Deflate Stored Blocks (RFC 1951) + Adler-32
+        const MAX_BLOCK = 65535;
+        const numBlocks = Math.max(1, Math.ceil(raw.length / MAX_BLOCK));
+        const zlibLen = 2 + raw.length + numBlocks * 5 + 4;
+        const zlib = new Uint8Array(zlibLen);
+        zlib[0] = 0x78; // CMF
+        zlib[1] = 0x01; // FLG (0x7801 % 31 === 0)
+
+        let zp = 2;
+        let rp = 0;
+        for (let b = 0; b < numBlocks; b++) {
+          const isLast = b === numBlocks - 1;
+          const bLen = Math.min(MAX_BLOCK, raw.length - rp);
+          const nLen = (~bLen) & 0xffff;
+          zlib[zp++] = isLast ? 0x01 : 0x00;
+          zlib[zp++] = bLen & 0xff;
+          zlib[zp++] = (bLen >>> 8) & 0xff;
+          zlib[zp++] = nLen & 0xff;
+          zlib[zp++] = (nLen >>> 8) & 0xff;
+          zlib.set(raw.subarray(rp, rp + bLen), zp);
+          zp += bLen;
+          rp += bLen;
+        }
+
+        const checksum = adler32(raw);
+        const zdv = new DataView(zlib.buffer);
+        zdv.setUint32(zp, checksum, false);
+
+        // 3. Tạo các chunk PNG: Signature + IHDR + IDAT + IEND
+        const sig = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+        const ihdrData = new Uint8Array(13);
+        const ihdrDv = new DataView(ihdrData.buffer);
+        ihdrDv.setUint32(0, width, false);
+        ihdrDv.setUint32(4, height, false);
+        ihdrData[8] = 16; // bitDepth = 16
+        ihdrData[9] = 0;  // colorType = 0 (Grayscale)
+        ihdrData[10] = 0; // compression
+        ihdrData[11] = 0; // filter
+        ihdrData[12] = 0; // interlace
+
+        const ihdr = makePngChunk('IHDR', ihdrData);
+        const idat = makePngChunk('IDAT', zlib);
+        const iend = makePngChunk('IEND', new Uint8Array(0));
+
+        return new Blob([sig, ihdr, idat, iend], { type: 'image/png' });
+      }
+
+      function triggerDownloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      /* ===================================================================
+         15. XUẤT FILE: 16-BIT PNG, 8-BIT PNG & LƯỚI 3D (.OBJ)
+         =================================================================== */
+      els.btnExport16.addEventListener('click', () => {
+        if (!state.processedU16) return;
+        try {
+          const blob = encodeGrayscale16Png(state.processedU16, state.width, state.height);
+          const fname = `${state.fileName}_heightmap_16bit_${state.width}x${state.height}.png`;
+          triggerDownloadBlob(blob, fname);
+          showToast(`Đã xuất chuẩn 16-bit Grayscale PNG (${fname})!`, 'success', 3600);
+        } catch (err) {
+          console.error(err);
+          showToast('Lỗi khi mã hóa PNG 16-bit.', 'warn');
+        }
+      });
+
+      els.btnExport8.addEventListener('click', () => {
+        if (!state.processedDepth) return;
+        const c = document.createElement('canvas');
+        c.width = state.width;
+        c.height = state.height;
+        const ctx = c.getContext('2d');
+        const imgData = ctx.createImageData(state.width, state.height);
+        const dst = imgData.data;
+        const depth = state.processedDepth;
+        for (let i = 0, p = 0; i < depth.length; i++, p += 4) {
+          const v = Math.round(depth[i] * 255);
+          dst[p] = v; dst[p + 1] = v; dst[p + 2] = v; dst[p + 3] = 255;
+        }
+        ctx.putImageData(imgData, 0, 0);
+        c.toBlob((blob) => {
+          triggerDownloadBlob(blob, `${state.fileName}_heightmap_8bit_${state.width}x${state.height}.png`);
+          showToast('Đã tải Height Map 8-bit PNG!', 'success');
+        }, 'image/png');
+      });
+
+      els.btnExportObj.addEventListener('click', () => {
+        if (!state.processedDepth) return;
+        try {
+          const GRID = 200;
+          const depth = state.processedDepth;
+          const w = state.width;
+          const h = state.height;
+          const aspect = w / h;
+          const sizeX = aspect >= 1 ? 100.0 : 100.0 * aspect;
+          const sizeY = aspect >= 1 ? 100.0 / aspect : 100.0;
+          const sizeZ = state.zScale * 50.0; // tỉ lệ mm phù hợp cho ArtCAM / Blender / ZBrush
+
+          const lines = [
+            `# ClayDepth V2 Studio - 3D Relief Mesh (${GRID}x${GRID})`,
+            `# Source: ${state.fileName} (${w}x${h})`,
+            `o ClayRelief`
+          ];
+
+          for (let iy = 0; iy < GRID; iy++) {
+            const fy = (iy / (GRID - 1)) * (h - 1);
+            const y0 = Math.floor(fy), y1 = Math.min(h - 1, y0 + 1), ty = fy - y0;
+            const py = (0.5 - iy / (GRID - 1)) * sizeY;
+
+            for (let ix = 0; ix < GRID; ix++) {
+              const fx = (ix / (GRID - 1)) * (w - 1);
+              const x0 = Math.floor(fx), x1 = Math.min(w - 1, x0 + 1), tx = fx - x0;
+              const px = (ix / (GRID - 1) - 0.5) * sizeX;
+
+              const z00 = depth[y0 * w + x0], z10 = depth[y0 * w + x1];
+              const z01 = depth[y1 * w + x0], z11 = depth[y1 * w + x1];
+              const z = ((z00 * (1 - tx) + z10 * tx) * (1 - ty) + (z01 * (1 - tx) + z11 * tx) * ty) * sizeZ;
+              lines.push(`v ${px.toFixed(4)} ${py.toFixed(4)} ${z.toFixed(4)}`);
+            }
+          }
+
+          for (let iy = 0; iy < GRID - 1; iy++) {
+            for (let ix = 0; ix < GRID - 1; ix++) {
+              const a = iy * GRID + ix + 1;
+              const b = a + 1;
+              const c = a + GRID;
+              const d = c + 1;
+              lines.push(`f ${a} ${c} ${b}`);
+              lines.push(`f ${b} ${c} ${d}`);
+            }
+          }
+
+          const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+          triggerDownloadBlob(blob, `${state.fileName}_relief_200x200.obj`);
+          showToast('Đã xuất lưới phù điêu 3D (.OBJ 200×200) mở ngay trong Blender/ZBrush/ArtCAM!', 'success', 3800);
+        } catch (err) {
+          console.error(err);
+          showToast('Có lỗi khi tạo file .OBJ.', 'warn');
+        }
+      });
+
+      /* ===================================================================
+         16. GẮN SỰ KIỆN GIAO DIỆN (EVENTS)
+         =================================================================== */
+      // Khôi phục URL Colab đã lưu
+      try {
+        const savedUrl = localStorage.getItem('claydepth_v2_colab_url');
+        if (savedUrl) els.colabUrlInput.value = savedUrl;
+      } catch (_) {}
+
+      els.btnCheckHealth.addEventListener('click', checkColabHealth);
+      els.colabUrlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') checkColabHealth();
+      });
+
+      // Chọn / Kéo thả / Dán ảnh
+      els.clayDropzone.addEventListener('click', () => els.fileInputClay.click());
+      els.btnPickClay.addEventListener('click', () => els.fileInputClay.click());
+      els.btnSwapClay.addEventListener('click', () => els.fileInputClay.click());
+      els.btnLoadExistingDepth.addEventListener('click', () => els.fileInputDepth.click());
+
+      els.fileInputClay.addEventListener('change', (e) => {
+        if (e.target.files[0]) handleClayFile(e.target.files[0]);
+        e.target.value = '';
+      });
+      els.fileInputDepth.addEventListener('change', (e) => {
+        if (e.target.files[0]) handleDirectDepthFile(e.target.files[0]);
+        e.target.value = '';
+      });
+
+      ['dragenter', 'dragover'].forEach((ev) => {
+        els.clayDropzone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          els.clayDropzone.classList.add('drag-over');
+        });
+      });
+      ['dragleave', 'drop'].forEach((ev) => {
+        els.clayDropzone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          els.clayDropzone.classList.remove('drag-over');
+        });
+      });
+      els.clayDropzone.addEventListener('drop', (e) => {
+        const f = e.dataTransfer && e.dataTransfer.files[0];
+        if (f) handleClayFile(f);
+      });
+
+      window.addEventListener('paste', (e) => {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type && items[i].type.startsWith('image/')) {
+            const blob = items[i].getAsFile();
+            if (blob) {
+              e.preventDefault();
+              handleClayFile(blob);
+              return;
+            }
+          }
+        }
+      });
+
+      els.btnCreateSample.addEventListener('click', generateSampleClayRelief);
+      els.btnEmptySample.addEventListener('click', generateSampleClayRelief);
+
+      // Chạy AI Colab & Demo cục bộ
+      els.btnRunColab.addEventListener('click', runColabPrediction);
+      els.btnRunLocalDemo.addEventListener('click', runLocalDemoDepth);
+
+      // Các thanh trượt Hậu kỳ CNC
+      els.toggleBgCutoff.addEventListener('click', () => {
+        state.bgCutoff = !state.bgCutoff;
+        els.toggleBgCutoff.classList.toggle('on', state.bgCutoff);
+        els.toggleBgCutoff.setAttribute('aria-checked', String(state.bgCutoff));
+        els.bgCutoffControls.classList.toggle('disabled-block', !state.bgCutoff);
+        schedulePostProcess();
+      });
+
+      els.slBgThreshold.addEventListener('input', (e) => {
+        state.bgThreshold = Number(e.target.value);
+        els.valBgThreshold.textContent = String(state.bgThreshold);
+        schedulePostProcess();
+      });
+      els.slBgFeather.addEventListener('input', (e) => {
+        state.bgFeather = Number(e.target.value);
+        els.valBgFeather.textContent = `${state.bgFeather} px`;
+        schedulePostProcess();
+      });
+      els.slBlackPt.addEventListener('input', (e) => {
+        state.blackPoint = Number(e.target.value);
+        els.valBlackPt.textContent = `${state.blackPoint}%`;
+        schedulePostProcess();
+      });
+      els.slWhitePt.addEventListener('input', (e) => {
+        state.whitePoint = Number(e.target.value);
+        els.valWhitePt.textContent = `${state.whitePoint}%`;
+        schedulePostProcess();
+      });
+      els.slGamma.addEventListener('input', (e) => {
+        state.gamma = Number(e.target.value);
+        els.valGamma.textContent = state.gamma.toFixed(2);
+        schedulePostProcess();
+      });
+      els.slSmooth.addEventListener('input', (e) => {
+        state.smooth = Number(e.target.value);
+        els.valSmooth.textContent = String(state.smooth);
+        schedulePostProcess();
+      });
+      els.slMicroDetail.addEventListener('input', (e) => {
+        state.microDetail = Number(e.target.value);
+        els.valMicroDetail.textContent = `${state.microDetail}%`;
+        schedulePostProcess();
+      });
+      els.chkInvert.addEventListener('change', (e) => {
+        state.invert = e.target.checked;
+        schedulePostProcess();
+      });
+
+      els.btnResetPost.addEventListener('click', () => {
+        state.bgCutoff = true;
+        state.bgThreshold = 15;
+        state.bgFeather = 3;
+        state.blackPoint = 0;
+        state.whitePoint = 100;
+        state.gamma = 1.0;
+        state.smooth = 1;
+        state.microDetail = 8;
+        state.invert = false;
+
+        els.toggleBgCutoff.classList.add('on');
+        els.toggleBgCutoff.setAttribute('aria-checked', 'true');
+        els.bgCutoffControls.classList.remove('disabled-block');
+        els.slBgThreshold.value = 15; els.valBgThreshold.textContent = '15';
+        els.slBgFeather.value = 3; els.valBgFeather.textContent = '3 px';
+        els.slBlackPt.value = 0; els.valBlackPt.textContent = '0%';
+        els.slWhitePt.value = 100; els.valWhitePt.textContent = '100%';
+        els.slGamma.value = 1.0; els.valGamma.textContent = '1.00';
+        els.slSmooth.value = 1; els.valSmooth.textContent = '1';
+        els.slMicroDetail.value = 8; els.valMicroDetail.textContent = '8%';
+        els.chkInvert.checked = false;
+
+        schedulePostProcess();
+        showToast('Đã đặt lại thông số hậu kỳ CNC về mặc định.', 'info', 2000);
+      });
+
+      // Chuyển đổi 4 Tab Viewport
+      const VIEW_HINTS = {
+        split: 'Kéo thanh vàng trên ảnh để so sánh gốc / Height Map',
+        height2d: 'Di chuột lên ảnh để đọc giá trị 16-bit (0–65535) & chiều cao Z',
+        heatmap: 'Bản đồ nhiệt Inferno — kiểm tra vùng cháy sáng hoặc bệt nền',
+        view3d: 'Kéo chuột xoay 3D • Cuộn để thu phóng • Nhấn đúp đặt lại góc nhìn'
+      };
+
+      document.querySelectorAll('.tab-btn[data-view]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.activeView = btn.dataset.view;
+          document.querySelectorAll('.tab-btn[data-view]').forEach((b) => {
+            const act = b === btn;
+            b.classList.toggle('active', act);
+            b.setAttribute('aria-selected', String(act));
+          });
+          els.viewportHint.textContent = VIEW_HINTS[state.activeView] || '';
+          els.probeTooltip.style.display = 'none';
+          renderViewport();
+        });
+      });
+
+      // Điều khiển 3D nổi
+      els.sl3dZ.addEventListener('input', (e) => {
+        state.zScale = Number(e.target.value);
+        els.val3dZ.textContent = state.zScale.toFixed(2);
+        webglEngine.updateMeshFromHeight();
+      });
+      els.sl3dLight.addEventListener('input', (e) => {
+        state.lightAngleDeg = Number(e.target.value);
+        els.val3dLight.textContent = `${state.lightAngleDeg}°`;
+        webglEngine.render();
+      });
+      els.matGrid.addEventListener('click', (e) => {
+        const btn = e.target.closest('.mat-btn');
+        if (!btn) return;
+        state.material = btn.dataset.mat;
+        els.matGrid.querySelectorAll('.mat-btn').forEach((b) => b.classList.toggle('active', b === btn));
+        webglEngine.render();
+      });
+      els.btnReset3dCam.addEventListener('click', () => {
+        state.camYaw = -0.22;
+        state.camPitch = 0.42;
+        state.camDist = 2.55;
+        webglEngine.render();
+      });
+
+      window.addEventListener('resize', () => {
+        if (state.activeView === 'view3d' && webglEngine.initialized) {
+          webglEngine.render();
+        }
+      });
+
+      // Modal Code Google Colab
+      function renderColabModalCode() {
+        const isServer = state.colabTab === 'server';
+        els.colabCodeDisplay.textContent = isServer
+          ? els.tplColabServer.textContent.trim()
+          : els.tplColabInline.textContent.trim();
+        els.colabTabDesc.textContent = isServer
+          ? 'Tab 1 (Khuyên dùng): Chạy FastAPI + Depth Anything V2 GPU + Cloudflared Tunnel miễn phí (không cần token), trả ảnh 16-bit lossless về trực tiếp ứng dụng này.'
+          : 'Tab 2 (Chạy 1-Cell tại chỗ): Không cần mở tunnel hay copy link — hiện giao diện tải ảnh, chỉnh ngưỡng nền đen & tải thẳng Height Map 16-bit PNG ngay trong Google Colab.';
+      }
+
+      function openColabModal() {
+        renderColabModalCode();
+        els.colabModal.classList.add('open');
+      }
+      function closeColabModal() {
+        els.colabModal.classList.remove('open');
+      }
+
+      els.btnOpenColabModal.addEventListener('click', openColabModal);
+      els.btnEmptyColab.addEventListener('click', openColabModal);
+      els.btnCloseModal.addEventListener('click', closeColabModal);
+      els.colabModal.addEventListener('click', (e) => {
+        if (e.target === els.colabModal) closeColabModal();
+      });
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && els.colabModal.classList.contains('open')) closeColabModal();
+      });
+
+      document.querySelectorAll('[data-colab-tab]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.colabTab = btn.dataset.colabTab;
+          document.querySelectorAll('[data-colab-tab]').forEach((b) => b.classList.toggle('active', b === btn));
+          renderColabModalCode();
+        });
+      });
+
+      els.btnCopyColabCode.addEventListener('click', async () => {
+        try {
+          await copyTextSafe(els.colabCodeDisplay.textContent);
+          showToast('Đã copy Code Python! Dán vào 1 cell trên Google Colab (T4 GPU) rồi bấm Run.', 'success', 3800);
+        } catch (err) {
+          showToast('Không thể tự động copy. Hãy bôi đen khung code và bấm Ctrl+C.', 'warn');
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClayDepth Studio — Chuẩn bị ảnh Đất Sét Nền Đen cho Gemini &amp; Depth Anything V2 (Height Map)</title>
+
+  <!-- Google Fonts: Inter (Tiếng Việt sắc nét) & JetBrains Mono (Thông số kỹ thuật) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            studio: {
+              bg: '#0D0F14',
+              panel: '#151922',
+              card: '#1B202C',
+              well: '#0F1219',
+              border: '#2A3142',
+              borderLight: '#394258',
+              text: '#E6EAF2',
+              muted: '#94A0B8',
+            },
+            clay: {
+              DEFAULT: '#D97757',
+              light: '#EB9274',
+              dark: '#B85A3C',
+              glow: 'rgba(217, 119, 87, 0.25)',
+              sand: '#D4B99E',
+              zgray: '#8D95A5',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* =================================================================
+       CLAYDEPTH STUDIO — ZBRUSH DARK SCULPTING THEME & CUSTOM CONTROLS
+       ================================================================= */
+    :root {
+      --bg-main: #0D0F14;
+      --panel-bg: #151922;
+      --clay-accent: #D97757;
+      --clay-accent-bright: #EA8C6E;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      background-image:
+        radial-gradient(circle at 15% 0%, rgba(217, 119, 87, 0.11) 0%, transparent 42%),
+        radial-gradient(circle at 85% 10%, rgba(110, 130, 175, 0.08) 0%, transparent 40%);
+      color: #E6EAF2;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Thẻ Panel xưởng điêu khắc tối chuyên nghiệp */
+    .studio-panel {
+      background: linear-gradient(180deg, #181D27 0%, #141821 100%);
+      border: 1px solid #283042;
+      border-radius: 20px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    /* Vùng lõm điều khiển */
+    .studio-well {
+      background: #0F1219;
+      border: 1px solid #242B3B;
+      border-radius: 14px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Nút bấm chính màu đất sét điêu khắc (ZBrush Clay Red-Terracotta) */
+    .btn-clay-primary {
+      background: linear-gradient(180deg, #E48262 0%, #C86343 100%);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 200, 180, 0.28);
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(200, 99, 67, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transition: transform 0.14s ease, filter 0.14s ease, box-shadow 0.14s ease;
+    }
+    .btn-clay-primary:hover:not(:disabled) {
+      filter: brightness(1.07);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(200, 99, 67, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    .btn-clay-primary:active:not(:disabled) {
+      transform: translateY(1px) scale(0.99);
+    }
+    .btn-clay-primary:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+      filter: grayscale(0.35);
+    }
+
+    /* Nút bấm phụ xanh ngọc / kỹ thuật */
+    .btn-studio-emerald {
+      background: linear-gradient(180deg, #2D8A6B 0%, #206C53 100%);
+      color: #FFFFFF;
+      border: 1px solid rgba(130, 240, 200, 0.25);
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(32, 108, 83, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      transition: transform 0.14s ease, filter 0.14s ease;
+    }
+    .btn-studio-emerald:hover:not(:disabled) {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+    .btn-studio-emerald:active:not(:disabled) {
+      transform: translateY(1px) scale(0.99);
+    }
+    .btn-studio-emerald:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    /* Nút tối tiêu chuẩn */
+    .btn-studio-ghost {
+      background: #1D2330;
+      color: #CBD5E1;
+      border: 1px solid #30394E;
+      border-radius: 12px;
+      transition: all 0.15s ease;
+    }
+    .btn-studio-ghost:hover:not(:disabled) {
+      background: #252D3E;
+      border-color: #475470;
+      color: #FFFFFF;
+    }
+    .btn-studio-ghost:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Chip lựa chọn (Active trạng thái Clay) */
+    .studio-chip {
+      background: #1A202C;
+      color: #A6B2C8;
+      border: 1px solid #2C3448;
+      border-radius: 11px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .studio-chip:hover {
+      background: #222938;
+      border-color: #434F69;
+      color: #F1F5F9;
+    }
+    .studio-chip.is-active {
+      background: linear-gradient(180deg, rgba(217, 119, 87, 0.24) 0%, rgba(184, 90, 60, 0.22) 100%);
+      color: #FFD5C7;
+      border-color: #D97757;
+      box-shadow: 0 0 0 1px rgba(217, 119, 87, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* Card chọn dạng điêu khắc */
+    .sculpt-card {
+      background: #171C26;
+      border: 1.5px solid #2A3245;
+      border-radius: 14px;
+      transition: all 0.16s ease;
+      cursor: pointer;
+    }
+    .sculpt-card:hover {
+      background: #1D2432;
+      border-color: #44506B;
+    }
+    .sculpt-card.is-selected {
+      background: linear-gradient(145deg, rgba(217, 119, 87, 0.17) 0%, rgba(27, 32, 44, 0.95) 100%);
+      border-color: #D97757;
+      box-shadow: 0 6px 20px rgba(217, 119, 87, 0.15), inset 0 1px 0 rgba(255, 200, 180, 0.15);
+    }
+
+    /* Thanh trượt kiểu ZBrush */
+    input[type="range"].z-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: #232A3A;
+      border: 1px solid #30394E;
+      outline: none;
+    }
+    input[type="range"].z-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #F09779, #C96444);
+      border: 2px solid #151922;
+      box-shadow: 0 0 0 1px rgba(235, 146, 116, 0.6), 0 3px 8px rgba(0, 0, 0, 0.55);
+      cursor: pointer;
+      transition: transform 0.12s ease;
+    }
+    input[type="range"].z-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    input[type="range"].z-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #F09779, #C96444);
+      border: 2px solid #151922;
+      cursor: pointer;
+    }
+
+    /* Nút gạt Toggle Switch tối */
+    .z-toggle {
+      width: 44px;
+      height: 24px;
+      border-radius: 999px;
+      background: #232A3B;
+      border: 1px solid #343E54;
+      position: relative;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .z-toggle.is-on {
+      background: linear-gradient(90deg, #C86343, #E48262);
+      border-color: #EB9274;
+    }
+    .z-toggle-knob {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #F8FAFC;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .z-toggle.is-on .z-toggle-knob {
+      transform: translateX(20px);
+    }
+
+    /* Khung Canvas nền đen tuyệt đối #000000 */
+    #previewCanvas {
+      background-color: #000000;
+      touch-action: none;
+      display: block;
+    }
+    .mode-pan #previewCanvas {
+      cursor: grab;
+    }
+    .mode-pan #previewCanvas:active {
+      cursor: grabbing;
+    }
+    .mode-brush #previewCanvas {
+      cursor: none;
+    }
+
+    /* Vòng tròn con trỏ cọ tô đen */
+    #brushCursor {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 50%;
+      border: 1.5px solid #EB9274;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.85), inset 0 0 6px rgba(0, 0, 0, 0.6);
+      transform: translate(-50%, -50%);
+      z-index: 60;
+      display: none;
+      background: rgba(0, 0, 0, 0.28);
+    }
+    #brushCursorInner {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 255, 255, 0.55);
+    }
+
+    /* Trạng thái kéo thả file */
+    .drop-active {
+      border-color: #D97757 !important;
+      background-color: rgba(217, 119, 87, 0.1) !important;
+    }
+
+    /* Hiệu ứng Toast */
+    @keyframes toastSlideUp {
+      from { opacity: 0; transform: translateY(14px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast-enter {
+      animation: toastSlideUp 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Thanh cuộn tối tinh gọn */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0F1219;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2D364B;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #44506E;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-clay/40 selection:text-white">
+
+  <!-- Vòng tròn hiển thị kích thước cọ tô đen khi di chuột lên Canvas -->
+  <div id="brushCursor" aria-hidden="true">
+    <div id="brushCursorInner"></div>
+  </div>
+
+  <!-- Khung thông báo Toast mượt mà (không dùng alert/confirm) -->
+  <div id="toastContainer" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center gap-2 w-[92vw] max-w-md"></div>
+
+  <!-- =================================================================
+       HEADER GỌN GÀNG + 3 BƯỚC QUY TRÌNH NHANH
+       ================================================================= -->
+  <header class="w-full max-w-[1440px] mx-auto px-3.5 sm:px-6 pt-4 pb-3">
+    <div class="studio-panel px-4 sm:px-6 py-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <!-- Thương hiệu & Mô tả -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shrink-0 relative"
+             style="background: linear-gradient(145deg, #E58565, #A84C30); box-shadow: 0 8px 20px rgba(217,119,87,0.32), inset 0 1px 2px rgba(255,255,255,0.4);">
+          <!-- Icon khối điêu khắc 3D / Depth Layers -->
+          <svg class="w-7 h-7 text-white" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 4L24 9.5L14 15L4 9.5L14 4Z" fill="white" fill-opacity="0.95"/>
+            <path d="M4 14.5L14 20L24 14.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.82"/>
+            <path d="M4 19.2L14 24.5L24 19.2" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.52"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">ClayDepth Studio</h1>
+            <span class="px-2 py-0.5 text-[11px] font-mono font-bold rounded-md bg-clay/20 text-clay-light border border-clay/40">#000000 → Depth Anything V2</span>
+          </div>
+          <p class="text-xs sm:text-[13px] text-studio-muted mt-0.5">
+            Chuẩn bị ảnh Đất Sét Nền Đen cho Gemini &amp; tạo Height Map sạch trên Google Colab
+          </p>
+        </div>
+      </div>
+
+      <!-- 3 Bước Quy Trình Nhanh -->
+      <nav aria-label="Quy trình 3 bước" class="grid grid-cols-1 sm:grid-cols-3 gap-2 xl:max-w-2xl w-full">
+        <div class="studio-well px-3 py-2 flex items-center gap-2.5">
+          <span class="w-6 h-6 rounded-lg bg-clay/20 border border-clay/50 text-clay-light font-mono font-bold text-xs flex items-center justify-center shrink-0">1</span>
+          <span class="text-xs font-semibold text-studio-text leading-tight">Xử lý &amp; tô đen nền ảnh</span>
+        </div>
+        <div class="studio-well px-3 py-2 flex items-center gap-2.5">
+          <span class="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-400/40 text-amber-300 font-mono font-bold text-xs flex items-center justify-center shrink-0">2</span>
+          <span class="text-xs font-semibold text-studio-text leading-tight">Copy Ảnh + Prompt sang Gemini</span>
+        </div>
+        <div class="studio-well px-3 py-2 flex items-center gap-2.5">
+          <span class="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-400/40 text-emerald-300 font-mono font-bold text-xs flex items-center justify-center shrink-0">3</span>
+          <span class="text-xs font-semibold text-studio-text leading-tight">Chạy Depth Anything V2 Colab</span>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- =================================================================
+       NỘI DUNG CHÍNH — BỐ CỤC 2 CỘT RESPONSIVE
+       ================================================================= -->
+  <main class="w-full max-w-[1440px] mx-auto px-3.5 sm:px-6 pb-12">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+      <!-- ===============================================================
+           CỘT TRÁI — XỬ LÝ ẢNH ĐẦU VÀO (HTML5 CANVAS EDITOR)
+           =============================================================== -->
+      <section class="lg:col-span-6 studio-panel p-4 sm:p-5 flex flex-col gap-4" aria-label="Trình xử lý ảnh nền đen">
+
+        <!-- Tiêu đề cột trái & nút nhanh -->
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-clay/20 text-clay-light font-mono font-bold text-xs flex items-center justify-center border border-clay/40">01</span>
+            <div>
+              <h2 class="text-base font-bold text-white leading-tight">Xử Lý Ảnh Đầu Vào (Nền Đen #000000)</h2>
+              <p class="text-[11px] text-studio-muted">Căn khung, tô đen xóa nền thừa &amp; tối ưu khối sáng tối</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button id="btnLoadSample" type="button" class="btn-studio-ghost px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5" title="Tải ảnh chân dung mẫu để thử công cụ ngay">
+              <svg class="w-3.5 h-3.5 text-clay-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/><path d="M5 19l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/></svg>
+              <span>Ảnh mẫu</span>
+            </button>
+            <button id="btnChangePhoto" type="button" class="btn-studio-ghost px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5" title="Chọn ảnh mới từ thiết bị">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <span>Chọn ảnh</span>
+            </button>
+            <button id="btnResetAll" type="button" class="btn-studio-ghost px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 text-rose-300 hover:text-rose-200" title="Đặt lại toàn bộ thông số và nét cọ">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+              <span>Reset</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Input file ẩn -->
+        <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" />
+
+        <!-- Vùng Dropzone khi chưa có ảnh -->
+        <div id="uploadDropzone"
+             class="studio-well border-2 border-dashed border-studio-borderLight hover:border-clay/80 p-7 sm:p-10 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-3 min-h-[290px]">
+          <div class="w-14 h-14 rounded-2xl bg-studio-card border border-studio-borderLight flex items-center justify-center shadow-lg">
+            <svg class="w-7 h-7 text-clay-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm sm:text-base font-bold text-white">Kéo thả ảnh vào đây, chọn file hoặc dán trực tiếp</p>
+            <p class="text-xs text-studio-muted mt-1">
+              Hỗ trợ <strong class="text-studio-text">JPG, PNG, WebP</strong> • Dán nhanh từ Clipboard bằng
+              <kbd class="px-1.5 py-0.5 bg-studio-card border border-studio-borderLight rounded text-[11px] font-mono text-clay-light">Ctrl+V</kbd> /
+              <kbd class="px-1.5 py-0.5 bg-studio-card border border-studio-borderLight rounded text-[11px] font-mono text-clay-light">Cmd+V</kbd>
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-2.5 mt-1">
+            <span class="btn-clay-primary px-4 py-2 text-xs sm:text-sm font-bold inline-flex items-center gap-1.5">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+              Tải ảnh từ máy
+            </span>
+            <button id="btnDropzoneSample" type="button" class="btn-studio-ghost px-3.5 py-2 text-xs sm:text-sm font-semibold">
+              Hoặc dùng ảnh mẫu test ngay
+            </button>
+          </div>
+        </div>
+
+        <!-- Khu vực Canvas Preview + Công cụ tương tác (hiện khi có ảnh) -->
+        <div id="editorWorkspace" class="hidden flex flex-col gap-3">
+
+          <!-- Thanh chuyển chế độ tương tác (Pan vs Black Brush) + Bật/tắt lưới căn tâm -->
+          <div class="flex flex-wrap items-center justify-between gap-2 bg-studio-well p-2 rounded-xl border border-studio-border">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <button id="modePanBtn" type="button" class="studio-chip is-active px-3 py-1.5 text-xs font-bold flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+                <span>Di chuyển / Căn khung</span>
+              </button>
+              <button id="modeBrushBtn" type="button" class="studio-chip px-3 py-1.5 text-xs font-bold flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>
+                <span>Cọ tô đen nền (#000)</span>
+              </button>
+            </div>
+
+            <button id="btnToggleGrid" type="button" class="studio-chip is-active px-2.5 py-1.5 text-[11px] font-bold flex items-center gap-1.5" title="Bật/tắt lưới căn tâm trên khung xem trước (không lưu vào ảnh xuất)">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+              <span>Lưới căn tâm</span>
+            </button>
+          </div>
+
+          <!-- Bảng điều khiển Cọ tô đen nền (hiện rõ khi đang ở chế độ Cọ) -->
+          <div id="brushControlsBar" class="hidden studio-well p-3 border border-clay/40 bg-clay/[0.06] flex flex-col gap-2.5">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="text-xs font-bold text-clay-light flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-clay animate-pulse"></span>
+                Quẹt trực tiếp trên ảnh để tô đen (#000000) che nền thừa
+              </span>
+              <div class="flex items-center gap-1.5">
+                <button id="btnUndoBrush" type="button" disabled class="btn-studio-ghost px-2.5 py-1 text-[11px] font-bold flex items-center gap-1">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+                  Hoàn tác (<span id="strokeCountBadge">0</span>)
+                </button>
+                <button id="btnClearMask" type="button" disabled class="btn-studio-ghost px-2.5 py-1 text-[11px] font-bold text-rose-300">
+                  Xóa hết cọ
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <div class="flex justify-between text-[11px] font-semibold mb-1">
+                  <span class="text-studio-muted">Kích thước cọ (Brush Size)</span>
+                  <span id="valBrushSize" class="font-mono text-clay-light">42px</span>
+                </div>
+                <input id="sliderBrushSize" type="range" min="8" max="150" value="42" class="z-slider" />
+              </div>
+              <div>
+                <div class="flex justify-between text-[11px] font-semibold mb-1">
+                  <span class="text-studio-muted">Độ mềm viền cọ (Feather)</span>
+                  <span id="valBrushFeather" class="font-mono text-clay-light">45%</span>
+                </div>
+                <input id="sliderBrushFeather" type="range" min="0" max="100" value="45" class="z-slider" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Khung Canvas xem trước nền đen tuyệt đối #000000 -->
+          <div id="canvasStageDrop" class="studio-well p-3 relative flex flex-col items-center justify-center mode-pan">
+            <!-- Thanh thông tin trên Canvas -->
+            <div class="w-full flex items-center justify-between gap-2 mb-2 text-[11px]">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span id="exportDimBadge" class="font-mono font-bold px-2.5 py-0.5 rounded-md bg-black text-clay-light border border-studio-borderLight">
+                  1024 × 1024 px
+                </span>
+                <span class="font-mono px-2 py-0.5 rounded-md bg-black text-studio-muted border border-studio-border">
+                  BG #000000
+                </span>
+              </div>
+              <span id="canvasModeHint" class="text-studio-muted hidden sm:inline">
+                Kéo để di chuyển • Cuộn chuột để zoom
+              </span>
+            </div>
+
+            <!-- Vùng chứa Canvas & Lưới căn tâm SVG Overlay -->
+            <div class="relative inline-flex items-center justify-center max-w-full rounded-xl overflow-hidden border border-dashed border-studio-borderLight/90 bg-black shadow-2xl">
+              <canvas id="previewCanvas" class="max-w-full max-h-[390px] w-auto h-auto"></canvas>
+
+              <!-- Lưới tỷ lệ + tâm (chỉ hiển thị preview, không dính vào ảnh xuất) -->
+              <svg id="gridOverlay" class="pointer-events-none absolute inset-0 w-full h-full opacity-55" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <!-- Rule of thirds -->
+                <line x1="33.33" y1="0" x2="33.33" y2="100" stroke="#94A3B8" stroke-width="0.25" stroke-dasharray="1.5 1.5"/>
+                <line x1="66.66" y1="0" x2="66.66" y2="100" stroke="#94A3B8" stroke-width="0.25" stroke-dasharray="1.5 1.5"/>
+                <line x1="0" y1="33.33" x2="100" y2="33.33" stroke="#94A3B8" stroke-width="0.25" stroke-dasharray="1.5 1.5"/>
+                <line x1="0" y1="66.66" x2="100" y2="66.66" stroke="#94A3B8" stroke-width="0.25" stroke-dasharray="1.5 1.5"/>
+                <!-- Tâm trục đứng/ngang cho CNC -->
+                <line x1="50" y1="0" x2="50" y2="100" stroke="#D97757" stroke-width="0.3" stroke-opacity="0.7"/>
+                <line x1="0" y1="50" x2="100" y2="50" stroke="#D97757" stroke-width="0.3" stroke-opacity="0.7"/>
+                <circle cx="50" cy="50" r="2.2" fill="none" stroke="#D97757" stroke-width="0.35" stroke-opacity="0.85"/>
+              </svg>
+
+              <!-- Badge báo Grayscale đang bật -->
+              <div id="grayscaleBadge" class="hidden pointer-events-none absolute bottom-2.5 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full bg-black/85 border border-studio-borderLight text-[10px] font-mono font-bold text-studio-text whitespace-nowrap">
+                GRAYSCALE ACTIVE
+              </div>
+            </div>
+
+            <!-- Thanh Zoom trực tiếp dưới Canvas -->
+            <div class="w-full mt-2.5 pt-2.5 border-t border-studio-border flex items-center gap-3">
+              <span class="text-[11px] font-semibold text-studio-muted whitespace-nowrap">Thu phóng</span>
+              <input id="sliderZoom" type="range" min="35" max="300" value="100" step="1" class="z-slider flex-1" aria-label="Thu phóng ảnh" />
+              <span id="valZoom" class="font-mono text-xs font-bold text-clay-light w-11 text-right">100%</span>
+              <button id="btnCenterFrame" type="button" class="btn-studio-ghost px-2.5 py-1 text-[11px] font-semibold shrink-0">
+                Căn giữa
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cài đặt Khung hình, Chế độ khớp & Độ phân giải -->
+        <div class="space-y-3.5">
+          <!-- Tỷ lệ khung hình -->
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-studio-muted mb-1.5">Tỷ lệ khung hình (Aspect Ratio)</label>
+            <div id="aspectRatioGroup" class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+              <button type="button" data-ratio="1:1" class="studio-chip is-active py-2 px-1.5 text-xs font-bold text-center">
+                1:1 <span class="block text-[9px] font-normal opacity-80">Chuẩn CNC</span>
+              </button>
+              <button type="button" data-ratio="3:4" class="studio-chip py-2 px-1.5 text-xs font-bold text-center">3:4</button>
+              <button type="button" data-ratio="4:3" class="studio-chip py-2 px-1.5 text-xs font-bold text-center">4:3</button>
+              <button type="button" data-ratio="4:5" class="studio-chip py-2 px-1.5 text-xs font-bold text-center">4:5</button>
+              <button type="button" data-ratio="16:9" class="studio-chip py-2 px-1.5 text-xs font-bold text-center">16:9</button>
+              <button type="button" data-ratio="original" class="studio-chip py-2 px-1.5 text-xs font-bold text-center">Gốc ảnh</button>
+            </div>
+          </div>
+
+          <!-- Chế độ khớp khung & Độ phân giải xuất -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="block text-[11px] font-bold uppercase tracking-wider text-studio-muted mb-1.5">Chế độ khớp khung</label>
+              <div id="fitModeGroup" class="grid grid-cols-2 gap-1.5">
+                <button type="button" data-fit="contain" class="studio-chip is-active py-2 px-2 text-xs font-bold text-center">
+                  Contain
+                  <span class="block text-[9px] font-normal opacity-80">Lấp nền #000</span>
+                </button>
+                <button type="button" data-fit="cover" class="studio-chip py-2 px-2 text-xs font-bold text-center">
+                  Cover
+                  <span class="block text-[9px] font-normal opacity-80">Lấp đầy khung</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold uppercase tracking-wider text-studio-muted mb-1.5">Độ phân giải xuất PNG</label>
+              <div id="resolutionGroup" class="grid grid-cols-3 gap-1.5">
+                <button type="button" data-res="1024" class="studio-chip is-active py-2 px-1.5 text-center font-mono text-xs font-bold">
+                  1024<span class="block font-sans text-[9px] font-normal opacity-80">Nhanh</span>
+                </button>
+                <button type="button" data-res="1536" class="studio-chip py-2 px-1.5 text-center font-mono text-xs font-bold">
+                  1536<span class="block font-sans text-[9px] font-normal opacity-80">Nét cao</span>
+                </button>
+                <button type="button" data-res="2048" class="studio-chip py-2 px-1.5 text-center font-mono text-xs font-bold">
+                  2048<span class="block font-sans text-[9px] font-normal opacity-80">CNC 2K</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tinh chỉnh quang học cho đầu vào -->
+          <div class="studio-well p-3.5 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-[11px] font-bold uppercase tracking-wider text-studio-text">Tinh chỉnh quang học &amp; gom nền đen</h3>
+              <button id="btnAutoOptical" type="button" class="text-[11px] font-bold text-clay-light hover:underline cursor-pointer">
+                ✦ Gợi ý chuẩn Depth
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
+              <!-- Độ sáng -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-studio-muted font-medium">Độ sáng (Brightness)</span>
+                  <span id="valBrightness" class="font-mono font-bold text-clay-light">100%</span>
+                </div>
+                <input id="sliderBrightness" type="range" min="50" max="150" value="100" class="z-slider" />
+              </div>
+
+              <!-- Tương phản -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-studio-muted font-medium">Tương phản (Contrast)</span>
+                  <span id="valContrast" class="font-mono font-bold text-clay-light">100%</span>
+                </div>
+                <input id="sliderContrast" type="range" min="50" max="150" value="100" class="z-slider" />
+              </div>
+
+              <!-- Độ nét chi tiết -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-studio-muted font-medium">Độ nét chi tiết (Sharpen)</span>
+                  <span id="valSharpen" class="font-mono font-bold text-clay-light">0%</span>
+                </div>
+                <input id="sliderSharpen" type="range" min="0" max="100" value="0" class="z-slider" />
+              </div>
+
+              <!-- Làm tối viền/nền đen (Black Vignette) -->
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-studio-muted font-medium">Gom viền đen (Black Vignette)</span>
+                  <span id="valVignette" class="font-mono font-bold text-clay-light">0%</span>
+                </div>
+                <input id="sliderVignette" type="range" min="0" max="100" value="0" class="z-slider" />
+              </div>
+            </div>
+
+            <!-- Nút gạt Xem thử đơn sắc (Grayscale Preview) -->
+            <div class="pt-2.5 border-t border-studio-border flex items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-bold text-studio-text">Xem thử đơn sắc (Grayscale Preview)</div>
+                <div class="text-[11px] text-studio-muted">Kiểm tra khối sáng tối thuần túy &amp; áp dụng khi xuất nếu đang bật</div>
+              </div>
+              <button id="toggleGrayscale" type="button" role="switch" aria-checked="false" class="z-toggle" aria-label="Bật tắt chế độ đơn sắc Grayscale">
+                <span class="z-toggle-knob"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2 Nút hành động xuất PNG nổi bật -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
+            <button id="btnCopyPng" type="button" disabled class="btn-studio-emerald py-3.5 px-4 text-sm font-bold flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copy Ảnh (PNG)</span>
+            </button>
+            <button id="btnDownloadPng" type="button" disabled class="btn-clay-primary py-3.5 px-4 text-sm font-bold flex items-center justify-center gap-2">
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Tải Ảnh PNG</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===============================================================
+           CỘT PHẢI — BỘ TẠO PROMPT TIẾNG ANH CHO GEMINI -> DEPTH ANYTHING V2
+           =============================================================== -->
+      <section class="lg:col-span-6 studio-panel p-4 sm:p-5 flex flex-col gap-4" aria-label="Bộ tạo Prompt tiếng Anh cho Gemini và Depth Anything V2">
+
+        <!-- Tiêu đề cột phải -->
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-300 font-mono font-bold text-xs flex items-center justify-center border border-emerald-500/35">02</span>
+            <div>
+              <h2 class="text-base font-bold text-white leading-tight">Bộ Tạo Prompt Tiếng Anh (Gemini → Depth V2)</h2>
+              <p class="text-[11px] text-studio-muted">Tối ưu khối đất sét đơn sắc nền #000000 để xuất Height Map sạch</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-md bg-studio-well border border-studio-border text-[11px] font-mono font-semibold text-clay-sand">
+            CNC / Height Map Optimized
+          </span>
+        </div>
+
+        <!-- 1. Chọn dạng tạo khối đất sét (4 Cards trực quan) -->
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-studio-muted mb-2">1. Dạng tạo khối điêu khắc đất sét</label>
+          <div id="sculptFormGroup" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Bas-Relief CNC -->
+            <button type="button" data-form="bas_relief" class="sculpt-card is-selected p-3 text-left flex items-start gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-clay/20 text-clay-light flex items-center justify-center shrink-0 border border-clay/30">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 15c1.2-3.5 3-5.5 5-5.5s3.8 2 5 5.5"/><circle cx="12" cy="8.5" r="1.5"/></svg>
+              </div>
+              <div>
+                <div class="text-xs sm:text-[13px] font-bold text-white leading-snug">Phù điêu 2.5D (Bas-Relief CNC)</div>
+                <div class="text-[11px] text-studio-muted mt-0.5 leading-snug">Khối nổi chính diện, tối ưu khắc CNC gỗ/đá, không hốc sâu (undercut)</div>
+              </div>
+            </button>
+
+            <!-- High-Relief -->
+            <button type="button" data-form="high_relief" class="sculpt-card p-3 text-left flex items-start gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-300 flex items-center justify-center shrink-0 border border-amber-400/25">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 9 4.5-9 4.5-9-4.5L12 3Z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+              </div>
+              <div>
+                <div class="text-xs sm:text-[13px] font-bold text-white leading-snug">Phù điêu nổi sâu (High-Relief)</div>
+                <div class="text-[11px] text-studio-muted mt-0.5 leading-snug">Độ nổi khối trục Z sâu rõ nét, tách nhiều tầng lớp không gian</div>
+              </div>
+            </button>
+
+            <!-- 3D Sculpt -->
+            <button type="button" data-form="sculpt_3d" class="sculpt-card p-3 text-left flex items-start gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-sky-500/15 text-sky-300 flex items-center justify-center shrink-0 border border-sky-400/25">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/><path d="M4 21h16"/></svg>
+              </div>
+              <div>
+                <div class="text-xs sm:text-[13px] font-bold text-white leading-snug">Tượng đất sét 3D (3D Sculpt)</div>
+                <div class="text-[11px] text-studio-muted mt-0.5 leading-snug">Tượng bán thân / nguyên khối 3D mềm mại nổi bật trên nền đen</div>
+              </div>
+            </button>
+
+            <!-- Chibi Clay -->
+            <button type="button" data-form="chibi_clay" class="sculpt-card p-3 text-left flex items-start gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-pink-500/15 text-pink-300 flex items-center justify-center shrink-0 border border-pink-400/25">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01"/><path d="M9.5 14.8c.9 1 4.1 1 5 0"/></svg>
+              </div>
+              <div>
+                <div class="text-xs sm:text-[13px] font-bold text-white leading-snug">Đất sét Chibi / Hoạt hình nổi</div>
+                <div class="text-[11px] text-studio-muted mt-0.5 leading-snug">Tạo hình bo tròn mịn màng, cực dễ xuất Height Map sạch mượt</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Chất liệu đất sét tối ưu Depth Anything V2 -->
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-studio-muted mb-2">2. Chất liệu đất sét đơn sắc (Tránh nhiễu màu độ sâu)</label>
+          <div id="materialGroup" class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            <button type="button" data-mat="zbrush_gray" class="studio-chip is-active p-2.5 text-left flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-full shrink-0 border border-white/30" style="background: radial-gradient(circle at 35% 35%, #B8BFC9, #6E7685);"></span>
+              <div class="leading-tight">
+                <div class="text-xs font-bold">Đất sét xám ZBrush Clay</div>
+                <div class="text-[10px] opacity-80">Khuyên dùng cho Depth Anything V2</div>
+              </div>
+            </button>
+            <button type="button" data-mat="warm_beige" class="studio-chip p-2.5 text-left flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-full shrink-0 border border-white/30" style="background: radial-gradient(circle at 35% 35%, #EDE0CE, #BEA88E);"></span>
+              <div class="leading-tight">
+                <div class="text-xs font-bold">Đất sét kem / be nhạt mịn</div>
+                <div class="text-[10px] opacity-75">Matte Warm Clay</div>
+              </div>
+            </button>
+            <button type="button" data-mat="white_plaster" class="studio-chip p-2.5 text-left flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-full shrink-0 border border-white/40" style="background: radial-gradient(circle at 35% 35%, #F8FAFC, #CBD5E1);"></span>
+              <div class="leading-tight">
+                <div class="text-xs font-bold">Thạch cao trắng lì</div>
+                <div class="text-[10px] opacity-75">Matte White Plaster</div>
+              </div>
+            </button>
+            <button type="button" data-mat="pale_terracotta" class="studio-chip p-2.5 text-left flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-full shrink-0 border border-white/30" style="background: radial-gradient(circle at 35% 35%, #E7A992, #B86E55);"></span>
+              <div class="leading-tight">
+                <div class="text-xs font-bold">Đất sét nung nhạt mịn</div>
+                <div class="text-[10px] opacity-75">Smooth Pale Terracotta</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Tùy chọn kỹ thuật chuyên sâu cho Height Map -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <!-- Góc nhìn Camera -->
+          <div>
+            <label for="selectCamera" class="block text-[11px] font-bold uppercase tracking-wider text-studio-muted mb-1">Góc nhìn (Camera)</label>
+            <select id="selectCamera" class="w-full studio-well px-2.5 py-2 text-xs font-semibold text-studio-text focus:outline-none focus:border-clay cursor-pointer">
+              <option value="front_ortho">Chính diện thẳng góc (CNC)</option>
+              <option value="slight_34">Hơi nghiêng nhẹ 3/4</option>
+              <option value="keep_original">Giữ nguyên góc ảnh gốc</option>
+            </select>
+          </div>
+
+          <!-- Mức độ chi tiết bề mặt -->
+          <div>
+            <label for="selectDetail" class="block text-[11px] font-bold uppercase tracking-wider text-studio-muted mb-1">Chi tiết bề mặt</label>
+            <select id="selectDetail" class="w-full studio-well px-2.5 py-2 text-xs font-semibold text-studio-text focus:outline-none focus:border-clay cursor-pointer">
+              <option value="ultra_smooth">Siêu mịn không nhiễu (CNC)</option>
+              <option value="crisp_anatomy">Giải phẫu / nếp gấp nét</option>
+              <option value="simplified_soft">Đơn giản hóa mềm mại</option>
+            </select>
+          </div>
+
+          <!-- Giữ nét chủ thể -->
+          <div>
+            <label for="selectFidelity" class="block text-[11px] font-bold uppercase tracking-wider text-studio-muted mb-1">Giữ nét chủ thể</label>
+            <select id="selectFidelity" class="w-full studio-well px-2.5 py-2 text-xs font-semibold text-studio-text focus:outline-none focus:border-clay cursor-pointer">
+              <option value="high">Giữ sát gốc (High fidelity)</option>
+              <option value="medium">Điêu khắc cách điệu nhẹ</option>
+              <option value="stylized">Cách điệu mạnh</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 5 Nút bật/tắt kỹ thuật quan trọng (Mặc định BẬT sẵn) -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-studio-muted">Bộ lọc kỹ thuật Height Map (Mặc định bật)</label>
+            <span class="text-[10px] text-emerald-400 font-semibold">Bấm để bật / tắt</span>
+          </div>
+          <div id="techFlagsGroup" class="flex flex-wrap gap-1.5">
+            <button type="button" data-flag="pitchBlackBg" class="studio-chip is-active px-2.5 py-1.5 text-[11px] font-semibold flex items-center gap-1.5">
+              <span>✓</span><span>Nền đen tuyệt đối #000000</span>
+            </button>
+            <button type="button" data-flag="monochromeNoTexture" class="studio-chip is-active px-2.5 py-1.5 text-[11px] font-semibold flex items-center gap-1.5">
+              <span>✓</span><span>Không màu sơn / Không họa tiết nhiễu</span>
+            </button>
+            <button type="button" data-flag="evenFrontalLight" class="studio-chip is-active px-2.5 py-1.5 text-[11px] font-semibold flex items-center gap-1.5">
+              <span>✓</span><span>Ánh sáng studio đều phía trước</span>
+            </button>
+            <button type="button" data-flag="cleanSilhouette" class="studio-chip is-active px-2.5 py-1.5 text-[11px] font-semibold flex items-center gap-1.5">
+              <span>✓</span><span>Tách biên sắc nét, trọn khung</span>
+            </button>
+            <button type="button" data-flag="zeroGrain" class="studio-chip is-active px-2.5 py-1.5 text-[11px] font-semibold flex items-center gap-1.5">
+              <span>✓</span><span>Không hạt nhiễu / không dấu vân tay</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Ô nhập ghi chú thêm (Tiếng Việt hoặc Tiếng Anh) -->
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+            <label for="extraNoteInput" class="text-[11px] font-bold uppercase tracking-wider text-studio-muted">
+              Ghi chú tùy chỉnh thêm (Tiếng Việt hoặc Tiếng Anh)
+            </label>
+            <!-- Gợi ý nhanh bấm là điền -->
+            <div class="flex items-center gap-1 flex-wrap">
+              <button type="button" data-quicknote="keep only head and shoulders as a clean bust" class="quick-note-btn text-[10px] px-2 py-0.5 rounded bg-studio-card border border-studio-border text-studio-muted hover:text-clay-light hover:border-clay/60">+ Chỉ lấy mặt &amp; vai</button>
+              <button type="button" data-quicknote="remove eyeglasses cleanly and sculpt natural eyes" class="quick-note-btn text-[10px] px-2 py-0.5 rounded bg-studio-card border border-studio-border text-studio-muted hover:text-clay-light hover:border-clay/60">+ Bỏ kính mắt</button>
+              <button type="button" data-quicknote="enhance raised relief depth on ornate carvings and floral motifs" class="quick-note-btn text-[10px] px-2 py-0.5 rounded bg-studio-card border border-studio-border text-studio-muted hover:text-clay-light hover:border-clay/60">+ Nổi rõ hoa văn</button>
+            </div>
+          </div>
+          <input id="extraNoteInput"
+                 type="text"
+                 placeholder='VD: chỉ giữ lại khuôn mặt và vai, bỏ kính mắt, tăng độ nổi phần rồng/hoa văn...'
+                 class="w-full studio-well px-3.5 py-2.5 text-xs sm:text-sm text-white placeholder:text-studio-muted/60 focus:outline-none focus:border-clay" />
+        </div>
+
+        <!-- 5. Khung hiển thị Prompt Tiếng Anh hoàn chỉnh -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-2">
+              <label for="promptOutput" class="text-[11px] font-bold uppercase tracking-wider text-white">
+                Prompt Tiếng Anh Hoàn Chỉnh (Có thể tự sửa)
+              </label>
+              <span id="manualEditBadge" class="hidden px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-bold">
+                Đang chỉnh tay
+              </span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <button id="btnRestorePrompt" type="button" class="hidden text-[11px] font-bold text-clay-light hover:underline cursor-pointer">
+                ↻ Khôi phục Prompt tự động
+              </button>
+              <span id="promptStats" class="font-mono text-[11px] text-studio-muted">0 ký tự</span>
+            </div>
+          </div>
+
+          <textarea id="promptOutput"
+                    rows="7"
+                    spellcheck="false"
+                    class="w-full studio-well p-3.5 text-xs sm:text-[13px] leading-relaxed text-studio-text font-normal focus:outline-none focus:border-clay resize-y"></textarea>
+        </div>
+
+        <!-- Nút lớn nổi bật Copy Prompt -->
+        <button id="btnCopyPrompt" type="button" class="btn-clay-primary w-full py-3.5 px-5 text-sm sm:text-base font-extrabold flex items-center justify-center gap-2.5">
+          <svg id="copyPromptIcon" class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span id="copyPromptText">Copy Prompt Tiếng Anh cho Gemini</span>
+        </button>
+
+        <!-- 6. Thẻ mẹo nhanh Collapsible: Thiết lập Depth Anything V2 trên Google Colab -->
+        <div class="studio-well border border-studio-border overflow-hidden">
+          <button id="btnToggleTips" type="button" aria-expanded="false" class="w-full px-3.5 py-2.5 flex items-center justify-between gap-2 text-left hover:bg-white/[0.02] transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded-md bg-amber-500/20 text-amber-300 flex items-center justify-center text-xs font-bold">💡</span>
+              <span class="text-xs font-bold text-studio-text">Mẹo thiết lập Depth Anything V2 trên Google Colab</span>
+            </div>
+            <svg id="tipsChevron" class="w-4 h-4 text-studio-muted transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+
+          <div id="tipsContent" class="hidden px-3.5 pb-3.5 pt-1 border-t border-studio-border/80 space-y-2 text-xs text-studio-muted leading-relaxed">
+            <div class="flex items-start gap-2">
+              <span class="font-mono text-clay-light font-bold shrink-0">01.</span>
+              <p><strong class="text-studio-text">Chọn model ViT-Large (<code class="font-mono text-clay-sand">vitl</code>):</strong> Luôn ưu tiên bản <code class="font-mono text-clay-sand">depth_anything_v2_vitl.pth</code> trên Colab GPU T4 để tách khối khuôn mặt, nếp áo và đường biên sắc nét hơn hẳn bản Small/Base.</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="font-mono text-clay-light font-bold shrink-0">02.</span>
+              <p><strong class="text-studio-text">Xuất ảnh Grayscale thuần (không colormap):</strong> Khi làm CNC (Aspire, ArtCAM, JDpaint, Blender Displacement), hãy tắt colormap màu (Inferno/Spectral) và lưu bản đồ mức xám 8-bit/16-bit (trắng = cao nhất, đen = nền thấp nhất).</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="font-mono text-clay-light font-bold shrink-0">03.</span>
+              <p><strong class="text-studio-text">Dùng đất sét xám lì, tránh bóng gắt &amp; mảng màu đen:</strong> Ảnh đầu vào cho Depth V2 cần đồng nhất một màu xám lì (ZBrush Gray Clay) để AI tính chiều sâu theo khối hình học, không bị lõm sâu giả ở tóc đen hay lông mày đậm.</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="font-mono text-clay-light font-bold shrink-0">04.</span>
+              <p><strong class="text-studio-text">Tinh chỉnh nhẹ sau khi xuất Height Map:</strong> Nếu thấy nền đen chưa đạt chuẩn 0 hoặc bề mặt hơi gợn bậc thang, hãy chỉnh nhẹ Levels (kéo điểm đen sát về 0) và làm mịn Gaussian Blur <code class="font-mono text-clay-sand">0.5–1.0px</code> trước khi xuất file khắc.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- =================================================================
+       JAVASCRIPT ENGINE — CANVAS EDITOR, BLACK MASK BRUSH & PROMPT BUILDER
+       ================================================================= -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ===============================================================
+         1. TRẠNG THÁI ỨNG DỤNG (APPLICATION STATE)
+         =============================================================== */
+      const state = {
+        img: null,
+        baseName: 'claydepth_input',
+
+        // Chế độ tương tác & hiển thị
+        toolMode: 'pan',          // 'pan' | 'brush'
+        showGrid: true,
+
+        // Khung & xuất ảnh
+        aspectRatio: '1:1',       // '1:1' | '3:4' | '4:3' | '4:5' | '16:9' | 'original'
+        fitMode: 'contain',       // 'contain' (mặc định nền đen #000) | 'cover'
+        resolution: 1024,         // 1024 | 1536 | 2048
+
+        // Biến đổi vị trí & phóng đại
+        zoom: 1.0,                // 0.35 -> 3.0
+        panX: 0,                  // chuẩn hóa theo chiều rộng canvas
+        panY: 0,                  // chuẩn hóa theo chiều cao canvas
+
+        // Bộ lọc quang học
+        brightness: 100,          // 50 -> 150
+        contrast: 100,            // 50 -> 150
+        sharpen: 0,               // 0 -> 100
+        vignette: 0,              // 0 -> 100
+        grayscale: false,
+
+        // Cọ tô đen nền (Black Mask Brush)
+        brushSizePx: 42,          // đường kính cọ quy chiếu trên cạnh dài 640px
+        brushFeather: 45,         // 0 -> 100 (%)
+        strokes: [],              // [{ sizeNorm, feather, points: [{nx, ny}, ...] }]
+        activeStroke: null,
+
+        // Trạng thái thao tác chuột / cảm ứng
+        isPointerDown: false,
+        pointerId: null,
+        dragStartX: 0,
+        dragStartY: 0,
+        panStartX: 0,
+        panStartY: 0,
+
+        // Prompt Builder State
+        sculptForm: 'bas_relief',
+        clayMaterial: 'zbrush_gray',
+        camera: 'front_ortho',
+        surfaceDetail: 'ultra_smooth',
+        fidelity: 'high',
+        flags: {
+          pitchBlackBg: true,
+          monochromeNoTexture: true,
+          evenFrontalLight: true,
+          cleanSilhouette: true,
+          zeroGrain: true
+        },
+        extraNote: '',
+        isManualPrompt: false
+      };
+
+      /* ===============================================================
+         2. THAM CHIẾU DOM ELEMENTS
+         =============================================================== */
+      const els = {
+        fileInput: document.getElementById('fileInput'),
+        uploadDropzone: document.getElementById('uploadDropzone'),
+        editorWorkspace: document.getElementById('editorWorkspace'),
+        canvasStageDrop: document.getElementById('canvasStageDrop'),
+        previewCanvas: document.getElementById('previewCanvas'),
+        gridOverlay: document.getElementById('gridOverlay'),
+        grayscaleBadge: document.getElementById('grayscaleBadge'),
+        exportDimBadge: document.getElementById('exportDimBadge'),
+        canvasModeHint: document.getElementById('canvasModeHint'),
+        brushCursor: document.getElementById('brushCursor'),
+        brushCursorInner: document.getElementById('brushCursorInner'),
+
+        btnLoadSample: document.getElementById('btnLoadSample'),
+        btnDropzoneSample: document.getElementById('btnDropzoneSample'),
+        btnChangePhoto: document.getElementById('btnChangePhoto'),
+        btnResetAll: document.getElementById('btnResetAll'),
+
+        modePanBtn: document.getElementById('modePanBtn'),
+        modeBrushBtn: document.getElementById('modeBrushBtn'),
+        btnToggleGrid: document.getElementById('btnToggleGrid'),
+
+        brushControlsBar: document.getElementById('brushControlsBar'),
+        sliderBrushSize: document.getElementById('sliderBrushSize'),
+        valBrushSize: document.getElementById('valBrushSize'),
+        sliderBrushFeather: document.getElementById('sliderBrushFeather'),
+        valBrushFeather: document.getElementById('valBrushFeather'),
+        btnUndoBrush: document.getElementById('btnUndoBrush'),
+        btnClearMask: document.getElementById('btnClearMask'),
+        strokeCountBadge: document.getElementById('strokeCountBadge'),
+
+        sliderZoom: document.getElementById('sliderZoom'),
+        valZoom: document.getElementById('valZoom'),
+        btnCenterFrame: document.getElementById('btnCenterFrame'),
+
+        aspectRatioGroup: document.getElementById('aspectRatioGroup'),
+        fitModeGroup: document.getElementById('fitModeGroup'),
+        resolutionGroup: document.getElementById('resolutionGroup'),
+
+        sliderBrightness: document.getElementById('sliderBrightness'),
+        valBrightness: document.getElementById('valBrightness'),
+        sliderContrast: document.getElementById('sliderContrast'),
+        valContrast: document.getElementById('valContrast'),
+        sliderSharpen: document.getElementById('sliderSharpen'),
+        valSharpen: document.getElementById('valSharpen'),
+        sliderVignette: document.getElementById('sliderVignette'),
+        valVignette: document.getElementById('valVignette'),
+        btnAutoOptical: document.getElementById('btnAutoOptical'),
+        toggleGrayscale: document.getElementById('toggleGrayscale'),
+
+        btnCopyPng: document.getElementById('btnCopyPng'),
+        btnDownloadPng: document.getElementById('btnDownloadPng'),
+
+        // Cột phải — Prompt
+        sculptFormGroup: document.getElementById('sculptFormGroup'),
+        materialGroup: document.getElementById('materialGroup'),
+        selectCamera: document.getElementById('selectCamera'),
+        selectDetail: document.getElementById('selectDetail'),
+        selectFidelity: document.getElementById('selectFidelity'),
+        techFlagsGroup: document.getElementById('techFlagsGroup'),
+        extraNoteInput: document.getElementById('extraNoteInput'),
+        promptOutput: document.getElementById('promptOutput'),
+        promptStats: document.getElementById('promptStats'),
+        manualEditBadge: document.getElementById('manualEditBadge'),
+        btnRestorePrompt: document.getElementById('btnRestorePrompt'),
+        btnCopyPrompt: document.getElementById('btnCopyPrompt'),
+        copyPromptText: document.getElementById('copyPromptText'),
+        copyPromptIcon: document.getElementById('copyPromptIcon'),
+
+        btnToggleTips: document.getElementById('btnToggleTips'),
+        tipsContent: document.getElementById('tipsContent'),
+        tipsChevron: document.getElementById('tipsChevron'),
+        toastContainer: document.getElementById('toastContainer')
+      };
+
+      /* ===============================================================
+         3. HỆ THỐNG THÔNG BÁO TOAST (KHÔNG DÙNG ALERT/CONFIRM)
+         =============================================================== */
+      function showToast(message, type = 'success', duration = 3200) {
+        const toast = document.createElement('div');
+        const palette = {
+          success: 'background: linear-gradient(135deg, #24785C, #195944); border: 1px solid rgba(110,231,183,0.35); color: #ECFDF5;',
+          info: 'background: linear-gradient(135deg, #232A3A, #171C27); border: 1px solid #3D4966; color: #F1F5F9;',
+          warn: 'background: linear-gradient(135deg, #C86343, #9F482D); border: 1px solid rgba(253,186,164,0.4); color: #FFF7ED;'
+        };
+        const icons = { success: '✓', info: '✦', warn: '!' };
+
+        toast.className = 'toast-enter pointer-events-auto px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs sm:text-[13px] font-semibold max-w-full';
+        toast.style.cssText = palette[type] || palette.info;
+        toast.innerHTML = `
+          <span class="w-5 h-5 rounded-full bg-black/25 flex items-center justify-center shrink-0 text-[11px] font-bold">${icons[type] || '✦'}</span>
+          <span class="leading-snug">${escapeHtml(message)}</span>
+        `;
+
+        els.toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(8px)';
+          setTimeout(() => toast.remove(), 230);
+        }, duration);
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      /* ===============================================================
+         4. TẢI ẢNH ĐẦU VÀO (FILE / DRAG-DROP / CTRL+V / ẢNH MẪU PROCEDURAL)
+         =============================================================== */
+      function activateLoadedImage(img, labelName) {
+        state.img = img;
+        state.baseName = labelName || 'claydepth_input';
+        state.zoom = 1.0;
+        state.panX = 0;
+        state.panY = 0;
+        state.strokes = [];
+        state.activeStroke = null;
+
+        els.sliderZoom.value = 100;
+        els.valZoom.textContent = '100%';
+        updateBrushButtonsState();
+
+        els.uploadDropzone.classList.add('hidden');
+        els.editorWorkspace.classList.remove('hidden');
+        els.btnCopyPng.disabled = false;
+        els.btnDownloadPng.disabled = false;
+
+        schedulePreviewRender();
+      }
+
+      function handleImageFile(file) {
+        if (!file) return;
+        if (!file.type || !file.type.startsWith('image/')) {
+          showToast('Vui lòng chọn tệp ảnh hợp lệ (JPG, PNG, WebP).', 'warn');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const cleanName = (file.name || 'claydepth_input').replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+            activateLoadedImage(img, cleanName || 'claydepth_input');
+            showToast(`Đã tải ảnh (${img.naturalWidth} × ${img.naturalHeight} px) sẵn sàng xử lý!`, 'success');
+          };
+          img.onerror = () => showToast('Không thể giải mã tệp ảnh này.', 'warn');
+          img.src = e.target.result;
+        };
+        reader.onerror = () => showToast('Lỗi khi đọc tệp từ máy.', 'warn');
+        reader.readAsDataURL(file);
+      }
+
+      /**
+       * Tạo ảnh mẫu nội bộ 1024x1024 (không dùng URL ngoài để tránh lỗi CORS khi xuất PNG)
+       * Mô phỏng một bức tượng bán thân / phù điêu cổ điển kèm chút phông nền thừa để người dùng thử Cọ tô đen
+       */
+      function loadProceduralSampleImage() {
+        const size = 1024;
+        const c = document.createElement('canvas');
+        c.width = size;
+        c.height = size;
+        const ctx = c.getContext('2d');
+
+        // Phông nền phòng xưởng có chi tiết thừa để người dùng thử Cọ tô đen hoặc Black Vignette
+        const bgGrad = ctx.createLinearGradient(0, 0, size, size);
+        bgGrad.addColorStop(0, '#3C4659');
+        bgGrad.addColorStop(0.5, '#2A3140');
+        bgGrad.addColorStop(1, '#1E2430');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, size, size);
+
+        // Vẽ các chi tiết nền thừa giả lập (kệ tường, ánh đèn góc)
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
+        ctx.fillRect(60, 120, 220, 320);
+        ctx.fillRect(740, 150, 210, 290);
+        ctx.fillStyle = 'rgba(217, 119, 87, 0.14)';
+        ctx.beginPath();
+        ctx.arc(850, 140, 130, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hào quang khung phù điêu oval mềm
+        ctx.save();
+        const halo = ctx.createRadialGradient(512, 490, 90, 512, 490, 420);
+        halo.addColorStop(0, 'rgba(240, 212, 186, 0.16)');
+        halo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = halo;
+        ctx.fillRect(0, 0, size, size);
+        ctx.restore();
+
+        // Bệ vai & áo choàng điêu khắc
+        const torsoGrad = ctx.createRadialGradient(480, 720, 40, 512, 790, 330);
+        torsoGrad.addColorStop(0, '#E3C3A8');
+        torsoGrad.addColorStop(0.55, '#B6896A');
+        torsoGrad.addColorStop(1, '#5D4032');
+        ctx.fillStyle = torsoGrad;
+        ctx.beginPath();
+        ctx.moveTo(220, 930);
+        ctx.quadraticCurveTo(250, 700, 395, 650);
+        ctx.lineTo(629, 650);
+        ctx.quadraticCurveTo(774, 700, 804, 930);
+        ctx.quadraticCurveTo(512, 985, 220, 930);
+        ctx.closePath();
+        ctx.fill();
+
+        // Nếp gấp áo choàng tạo khối sáng tối
+        ctx.strokeStyle = 'rgba(72, 46, 33, 0.45)';
+        ctx.lineWidth = 14;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(355, 700);
+        ctx.quadraticCurveTo(512, 815, 675, 700);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255, 232, 210, 0.35)';
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(365, 688);
+        ctx.quadraticCurveTo(512, 800, 665, 688);
+        ctx.stroke();
+
+        // Cổ
+        const neckGrad = ctx.createLinearGradient(440, 550, 585, 675);
+        neckGrad.addColorStop(0, '#CFA788');
+        neckGrad.addColorStop(0.5, '#E4C2A6');
+        neckGrad.addColorStop(1, '#8D654B');
+        ctx.fillStyle = neckGrad;
+        ctx.beginPath();
+        ctx.roundRect(442, 545, 140, 145, 42);
+        ctx.fill();
+
+        // Mái tóc uốn lượn phía sau
+        const hairGrad = ctx.createRadialGradient(470, 300, 60, 512, 390, 260);
+        hairGrad.addColorStop(0, '#8A5B41');
+        hairGrad.addColorStop(0.65, '#593929');
+        hairGrad.addColorStop(1, '#2D1B12');
+        ctx.fillStyle = hairGrad;
+        ctx.beginPath();
+        ctx.ellipse(512, 385, 212, 235, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hai tai
+        ctx.fillStyle = '#C99F80';
+        ctx.beginPath();
+        ctx.ellipse(342, 435, 28, 52, -0.1, 0, Math.PI * 2);
+        ctx.ellipse(682, 435, 28, 52, 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Khuôn mặt chính diện
+        const faceGrad = ctx.createRadialGradient(475, 390, 35, 512, 430, 215);
+        faceGrad.addColorStop(0, '#F5DEC8');
+        faceGrad.addColorStop(0.55, '#D7B090');
+        faceGrad.addColorStop(1, '#8C6247');
+        ctx.fillStyle = faceGrad;
+        ctx.beginPath();
+        ctx.ellipse(512, 430, 162, 200, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tóc mái điêu khắc trên trán
+        ctx.fillStyle = '#5E3C2B';
+        ctx.beginPath();
+        ctx.moveTo(352, 370);
+        ctx.quadraticCurveTo(430, 255, 520, 295);
+        ctx.quadraticCurveTo(615, 255, 672, 370);
+        ctx.quadraticCurveTo(645, 215, 512, 205);
+        ctx.quadraticCurveTo(375, 215, 352, 370);
+        ctx.closePath();
+        ctx.fill();
+
+        // Hốc mắt & lông mày
+        ctx.fillStyle = 'rgba(92, 58, 40, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(445, 415, 42, 22, 0, 0, Math.PI * 2);
+        ctx.ellipse(579, 415, 42, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#4B2E20';
+        ctx.lineWidth = 10;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(402, 388);
+        ctx.quadraticCurveTo(445, 372, 482, 386);
+        ctx.moveTo(542, 386);
+        ctx.quadraticCurveTo(579, 372, 622, 388);
+        ctx.stroke();
+
+        // Đôi mắt
+        ctx.fillStyle = '#FFFDF9';
+        ctx.beginPath();
+        ctx.ellipse(445, 418, 25, 13, 0, 0, Math.PI * 2);
+        ctx.ellipse(579, 418, 25, 13, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#2B1B14';
+        ctx.beginPath();
+        ctx.arc(445, 418, 10, 0, Math.PI * 2);
+        ctx.arc(579, 418, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sống mũi & chóp mũi nổi khối
+        const noseGrad = ctx.createLinearGradient(490, 410, 534, 495);
+        noseGrad.addColorStop(0, '#F6E2CE');
+        noseGrad.addColorStop(1, '#AE8264');
+        ctx.fillStyle = noseGrad;
+        ctx.beginPath();
+        ctx.moveTo(512, 402);
+        ctx.lineTo(532, 488);
+        ctx.quadraticCurveTo(512, 504, 492, 488);
+        ctx.closePath();
+        ctx.fill();
+
+        // Đôi môi điêu khắc
+        ctx.fillStyle = '#BA7A66';
+        ctx.beginPath();
+        ctx.moveTo(462, 538);
+        ctx.quadraticCurveTo(492, 522, 512, 532);
+        ctx.quadraticCurveTo(532, 522, 562, 538);
+        ctx.quadraticCurveTo(512, 566, 462, 538);
+        ctx.closePath();
+        ctx.fill();
+
+        // Vòng nguyệt quế đơn giản trên đầu (nhấn mạnh chi tiết phù điêu)
+        ctx.strokeStyle = '#D9B68C';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.arc(512, 360, 188, Math.PI * 1.12, Math.PI * 1.88);
+        ctx.stroke();
+
+        const img = new Image();
+        img.onload = () => {
+          activateLoadedImage(img, 'sample_bust_relief');
+          showToast('Đã nạp ảnh mẫu! Hãy thử Cọ tô đen nền hoặc kéo Black Vignette nhé.', 'success', 3600);
+        };
+        img.src = c.toDataURL('image/png');
+      }
+
+      // Gắn sự kiện mở chọn file
+      els.uploadDropzone.addEventListener('click', (e) => {
+        if (e.target.closest('#btnDropzoneSample')) return;
+        els.fileInput.click();
+      });
+      els.btnChangePhoto.addEventListener('click', () => els.fileInput.click());
+      els.btnLoadSample.addEventListener('click', loadProceduralSampleImage);
+      els.btnDropzoneSample.addEventListener('click', (e) => {
+        e.stopPropagation();
+        loadProceduralSampleImage();
+      });
+
+      els.fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleImageFile(e.target.files[0]);
+          e.target.value = '';
+        }
+      });
+
+      // Drag & Drop trên cả dropzone và vùng stage canvas
+      function bindDropZone(el) {
+        ['dragenter', 'dragover'].forEach(evt => {
+          el.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.add('drop-active');
+          });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+          el.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.remove('drop-active');
+          });
+        });
+        el.addEventListener('drop', (e) => {
+          const files = e.dataTransfer && e.dataTransfer.files;
+          if (files && files.length > 0) handleImageFile(files[0]);
+        });
+      }
+      bindDropZone(els.uploadDropzone);
+      bindDropZone(els.canvasStageDrop);
+
+      // Dán ảnh trực tiếp bằng Ctrl+V / Cmd+V
+      window.addEventListener('paste', (e) => {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type && items[i].type.startsWith('image/')) {
+            const blob = items[i].getAsFile();
+            if (blob) {
+              e.preventDefault();
+              handleImageFile(blob);
+              return;
+            }
+          }
+        }
+      });
+
+      /* ===============================================================
+         5. RENDER PIPELINE (WYSIWYG 100% GIỮA PREVIEW VÀ EXPORT PNG)
+         =============================================================== */
+      function getTargetDimensions(maxSide) {
+        if (!state.img) return { width: maxSide, height: maxSide };
+
+        let ratio = 1;
+        if (state.aspectRatio === 'original') {
+          ratio = state.img.naturalWidth / state.img.naturalHeight;
+        } else {
+          const [rw, rh] = state.aspectRatio.split(':').map(Number);
+          ratio = rw / rh;
+        }
+
+        let width, height;
+        if (ratio >= 1) {
+          width = maxSide;
+          height = Math.round(maxSide / ratio);
+        } else {
+          height = maxSide;
+          width = Math.round(maxSide * ratio);
+        }
+
+        // Làm tròn chẵn để tương thích tối ưu với mọi mô hình Vision AI
+        width = Math.max(64, Math.round(width / 2) * 2);
+        height = Math.max(64, Math.round(height / 2) * 2);
+        return { width, height };
+      }
+
+      /**
+       * Vẽ một dấu chấm cọ đen có độ mềm viền (feather) bằng RadialGradient
+       * Hoạt động nhất quán trên mọi trình duyệt (không lệ thuộc ctx.filter)
+       */
+      function stampBlackBrushDot(ctx, x, y, radius, featherRatio) {
+        if (radius <= 0.5) return;
+        ctx.beginPath();
+        if (featherRatio <= 0.02) {
+          ctx.fillStyle = '#000000';
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          const innerR = Math.max(0, radius * (1 - featherRatio));
+          const grad = ctx.createRadialGradient(x, y, innerR, x, y, radius);
+          grad.addColorStop(0, 'rgba(0, 0, 0, 1)');
+          grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = grad;
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      /**
+       * Vẽ toàn bộ 1 nét cọ với nội suy mượt giữa các điểm
+       */
+      function drawStrokeOnContext(ctx, stroke, width, height) {
+        const pts = stroke.points;
+        if (!pts || pts.length === 0) return;
+
+        const maxDim = Math.max(width, height);
+        const radius = Math.max(1, (stroke.sizeNorm * maxDim) / 2);
+        const featherRatio = stroke.feather / 100;
+        const step = Math.max(1.5, radius * (featherRatio > 0.1 ? 0.22 : 0.3));
+
+        let prevX = pts[0].nx * width;
+        let prevY = pts[0].ny * height;
+        stampBlackBrushDot(ctx, prevX, prevY, radius, featherRatio);
+
+        for (let i = 1; i < pts.length; i++) {
+          const currX = pts[i].nx * width;
+          const currY = pts[i].ny * height;
+          const dx = currX - prevX;
+          const dy = currY - prevY;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist >= step) {
+            const steps = Math.ceil(dist / step);
+            for (let s = 1; s <= steps; s++) {
+              const t = s / steps;
+              stampBlackBrushDot(ctx, prevX + dx * t, prevY + dy * t, radius, featherRatio);
+            }
+            prevX = currX;
+            prevY = currY;
+          }
+        }
+      }
+
+      /**
+       * Render đầy đủ khung hình lên Canvas đích (dùng chung cho cả Preview & Export 1024/1536/2048px)
+       */
+      function renderCompositionToCanvas(canvas, width, height) {
+        if (!state.img) return;
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // 1. Phủ nền đen tuyệt đối #000000
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, width, height);
+
+        // 2. Vẽ ảnh đầu vào theo Contain/Cover + Zoom + Pan
+        const imgW = state.img.naturalWidth;
+        const imgH = state.img.naturalHeight;
+        const baseScale = state.fitMode === 'cover'
+          ? Math.max(width / imgW, height / imgH)
+          : Math.min(width / imgW, height / imgH);
+
+        const drawScale = baseScale * state.zoom;
+        const drawW = imgW * drawScale;
+        const drawH = imgH * drawScale;
+        const drawX = (width - drawW) / 2 + state.panX * width;
+        const drawY = (height - drawH) / 2 + state.panY * height;
+
+        ctx.drawImage(state.img, drawX, drawY, drawW, drawH);
+
+        // 3. Áp dụng bộ lọc quang học thực trên pixel (Brightness, Contrast, Grayscale, Sharpen)
+        const needsPixelColor = state.brightness !== 100 || state.contrast !== 100 || state.grayscale;
+        const needsSharpen = state.sharpen > 0;
+
+        if (needsPixelColor || needsSharpen) {
+          const imageData = ctx.getImageData(0, 0, width, height);
+          const data = imageData.data;
+
+          if (needsPixelColor) {
+            const bFactor = state.brightness / 100;
+            const cFactor = state.contrast / 100;
+            const toGray = state.grayscale;
+
+            for (let i = 0; i < data.length; i += 4) {
+              let r = data[i];
+              let g = data[i + 1];
+              let b = data[i + 2];
+
+              // Giữ nguyên các điểm nền đen tuyệt đối #000000 ngoài biên ảnh không bị nâng sáng
+              if (r === 0 && g === 0 && b === 0) continue;
+
+              // Brightness
+              r *= bFactor;
+              g *= bFactor;
+              b *= bFactor;
+
+              // Contrast quanh mức xám giữa 128
+              r = (r - 128) * cFactor + 128;
+              g = (g - 128) * cFactor + 128;
+              b = (b - 128) * cFactor + 128;
+
+              if (toGray) {
+                const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                r = g = b = lum;
+              }
+
+              data[i] = r < 0 ? 0 : r > 255 ? 255 : r;
+              data[i + 1] = g < 0 ? 0 : g > 255 ? 255 : g;
+              data[i + 2] = b < 0 ? 0 : b > 255 ? 255 : b;
+            }
+          }
+
+          // Bộ lọc làm nét Unsharp Convolution 3x3 thực
+          if (needsSharpen) {
+            const amount = (state.sharpen / 100) * 0.9;
+            const src = new Uint8ClampedArray(data);
+            const rowStride = width * 4;
+
+            for (let y = 1; y < height - 1; y++) {
+              const rowOffset = y * rowStride;
+              for (let x = 1; x < width - 1; x++) {
+                const idx = rowOffset + x * 4;
+                // Bỏ qua vùng đen thuần tuyệt đối để không tạo viền nhiễu
+                if (src[idx] === 0 && src[idx + 1] === 0 && src[idx + 2] === 0) continue;
+
+                const up = idx - rowStride;
+                const down = idx + rowStride;
+                const left = idx - 4;
+                const right = idx + 4;
+
+                for (let c = 0; c < 3; c++) {
+                  const center = src[idx + c];
+                  const avgNeighbors = (src[up + c] + src[down + c] + src[left + c] + src[right + c]) * 0.25;
+                  const val = center + (center - avgNeighbors) * amount * 2.2;
+                  data[idx + c] = val < 0 ? 0 : val > 255 ? 255 : val;
+                }
+              }
+            }
+          }
+
+          ctx.putImageData(imageData, 0, 0);
+        }
+
+        // 4. Black Vignette (Gom chủ thể vào trung tâm trên nền đen #000000)
+        if (state.vignette > 0) {
+          const v = state.vignette / 100; // 0 -> 1
+          const cx = width / 2;
+          const cy = height / 2;
+          const outerR = Math.hypot(cx, cy);
+          // Khi vignette tăng, bán kính vùng sáng thu hẹp dần và viền tối đậm đặc về #000000
+          const innerR = outerR * Math.max(0.12, 0.72 - v * 0.54);
+          const endR = outerR * Math.max(0.55, 1.05 - v * 0.32);
+
+          const vigGrad = ctx.createRadialGradient(cx, cy, innerR, cx, cy, endR);
+          vigGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+          vigGrad.addColorStop(0.65, `rgba(0, 0, 0, ${Math.min(0.92, v * 0.78)})`);
+          vigGrad.addColorStop(1, `rgba(0, 0, 0, ${Math.min(1, v * 1.15)})`);
+          ctx.fillStyle = vigGrad;
+          ctx.fillRect(0, 0, width, height);
+        }
+
+        // 5. Vẽ lớp Cọ tô đen nền (#000000) ở tầng trên cùng (luôn đen tuyệt đối)
+        for (let i = 0; i < state.strokes.length; i++) {
+          drawStrokeOnContext(ctx, state.strokes[i], width, height);
+        }
+        if (state.activeStroke) {
+          drawStrokeOnContext(ctx, state.activeStroke, width, height);
+        }
+      }
+
+      // Render Preview tối ưu 60fps
+      let rafId = null;
+      function schedulePreviewRender() {
+        if (!state.img) return;
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          const exportDims = getTargetDimensions(state.resolution);
+          els.exportDimBadge.textContent = `${exportDims.width} × ${exportDims.height} px`;
+
+          const previewDims = getTargetDimensions(640);
+          renderCompositionToCanvas(els.previewCanvas, previewDims.width, previewDims.height);
+          rafId = null;
+        });
+      }
+
+      /* ===============================================================
+         6. TƯƠNG TÁC POINTER (CHUỘT + CẢM ỨNG + BÚT) CHO PAN & BLACK BRUSH
+         =============================================================== */
+      function getNormalizedCanvasPoint(clientX, clientY) {
+        const rect = els.previewCanvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return { nx: 0.5, ny: 0.5, rect };
+        return {
+          nx: (clientX - rect.left) / rect.width,
+          ny: (clientY - rect.top) / rect.height,
+          rect
+        };
+      }
+
+      function updateBrushCursorVisual(clientX, clientY, visible) {
+        if (!visible || state.toolMode !== 'brush' || !state.img) {
+          els.brushCursor.style.display = 'none';
+          return;
+        }
+        const rect = els.previewCanvas.getBoundingClientRect();
+        const maxDisplaySide = Math.max(rect.width, rect.height);
+        const sizeNorm = state.brushSizePx / 640;
+        const displayDiameter = Math.max(6, sizeNorm * maxDisplaySide);
+
+        els.brushCursor.style.display = 'block';
+        els.brushCursor.style.left = `${clientX}px`;
+        els.brushCursor.style.top = `${clientY}px`;
+        els.brushCursor.style.width = `${displayDiameter}px`;
+        els.brushCursor.style.height = `${displayDiameter}px`;
+
+        // Vòng đứt nét bên trong biểu diễn lõi đặc (1 - feather)
+        const innerPct = Math.max(0, 100 - state.brushFeather);
+        els.brushCursorInner.style.width = `${innerPct}%`;
+        els.brushCursorInner.style.height = `${innerPct}%`;
+        els.brushCursorInner.style.display = state.brushFeather > 5 ? 'block' : 'none';
+      }
+
+      function updateBrushButtonsState() {
+        const count = state.strokes.length;
+        els.strokeCountBadge.textContent = String(count);
+        els.btnUndoBrush.disabled = count === 0;
+        els.btnClearMask.disabled = count === 0;
+      }
+
+      els.previewCanvas.addEventListener('pointerdown', (e) => {
+        if (!state.img) return;
+        // Chỉ nhận chuột trái hoặc cảm ứng / bút
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+        e.preventDefault();
+        state.isPointerDown = true;
+        state.pointerId = e.pointerId;
+        try {
+          els.previewCanvas.setPointerCapture(e.pointerId);
+        } catch (_) {}
+
+        if (state.toolMode === 'pan') {
+          state.dragStartX = e.clientX;
+          state.dragStartY = e.clientY;
+          state.panStartX = state.panX;
+          state.panStartY = state.panY;
+        } else if (state.toolMode === 'brush') {
+          const { nx, ny } = getNormalizedCanvasPoint(e.clientX, e.clientY);
+          state.activeStroke = {
+            sizeNorm: state.brushSizePx / 640,
+            feather: state.brushFeather,
+            points: [{ nx, ny }]
+          };
+          // Vẽ trực tiếp điểm đầu tiên lên previewCanvas ngay lập tức cho độ phản hồi 0ms
+          const ctx = els.previewCanvas.getContext('2d');
+          const r = Math.max(1, (state.activeStroke.sizeNorm * Math.max(els.previewCanvas.width, els.previewCanvas.height)) / 2);
+          stampBlackBrushDot(ctx, nx * els.previewCanvas.width, ny * els.previewCanvas.height, r, state.brushFeather / 100);
+          if (e.pointerType === 'mouse') updateBrushCursorVisual(e.clientX, e.clientY, true);
+        }
+      });
+
+      els.previewCanvas.addEventListener('pointermove', (e) => {
+        if (!state.img) return;
+
+        if (state.toolMode === 'brush' && e.pointerType === 'mouse') {
+          updateBrushCursorVisual(e.clientX, e.clientY, true);
+        }
+
+        if (!state.isPointerDown || e.pointerId !== state.pointerId) return;
+        e.preventDefault();
+
+        if (state.toolMode === 'pan') {
+          const rect = els.previewCanvas.getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) return;
+          const dx = (e.clientX - state.dragStartX) / rect.width;
+          const dy = (e.clientY - state.dragStartY) / rect.height;
+          state.panX = Math.max(-1.2, Math.min(1.2, state.panStartX + dx));
+          state.panY = Math.max(-1.2, Math.min(1.2, state.panStartY + dy));
+          schedulePreviewRender();
+        } else if (state.toolMode === 'brush' && state.activeStroke) {
+          const { nx, ny } = getNormalizedCanvasPoint(e.clientX, e.clientY);
+          const pts = state.activeStroke.points;
+          const lastPt = pts[pts.length - 1];
+          pts.push({ nx, ny });
+
+          // Vẽ đoạn nối trực tiếp lên Canvas preview để quẹt cọ siêu mượt
+          const w = els.previewCanvas.width;
+          const h = els.previewCanvas.height;
+          const ctx = els.previewCanvas.getContext('2d');
+          const radius = Math.max(1, (state.activeStroke.sizeNorm * Math.max(w, h)) / 2);
+          const featherRatio = state.activeStroke.feather / 100;
+          const step = Math.max(1.5, radius * (featherRatio > 0.1 ? 0.22 : 0.3));
+
+          const x0 = lastPt.nx * w;
+          const y0 = lastPt.ny * h;
+          const x1 = nx * w;
+          const y1 = ny * h;
+          const dist = Math.hypot(x1 - x0, y1 - y0);
+          const steps = Math.max(1, Math.ceil(dist / step));
+
+          for (let s = 1; s <= steps; s++) {
+            const t = s / steps;
+            stampBlackBrushDot(ctx, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, radius, featherRatio);
+          }
+        }
+      });
+
+      function finishPointerAction(e) {
+        if (!state.isPointerDown) return;
+        if (e && state.pointerId !== null && e.pointerId !== state.pointerId) return;
+
+        state.isPointerDown = false;
+        if (state.pointerId !== null) {
+          try { els.previewCanvas.releasePointerCapture(state.pointerId); } catch (_) {}
+          state.pointerId = null;
+        }
+
+        if (state.toolMode === 'brush' && state.activeStroke) {
+          state.strokes.push(state.activeStroke);
+          state.activeStroke = null;
+          updateBrushButtonsState();
+          schedulePreviewRender();
+        }
+      }
+
+      els.previewCanvas.addEventListener('pointerup', finishPointerAction);
+      els.previewCanvas.addEventListener('pointercancel', finishPointerAction);
+      els.previewCanvas.addEventListener('pointerleave', () => {
+        els.brushCursor.style.display = 'none';
+      });
+
+      // Cuộn chuột trên Canvas để Zoom nhanh khi ở chế độ Pan (hoặc chỉnh cỡ cọ khi ở chế độ Brush + Shift/Alt)
+      els.previewCanvas.addEventListener('wheel', (e) => {
+        if (!state.img) return;
+        e.preventDefault();
+        if (state.toolMode === 'brush') {
+          const delta = e.deltaY < 0 ? 4 : -4;
+          state.brushSizePx = Math.max(8, Math.min(150, state.brushSizePx + delta));
+          els.sliderBrushSize.value = state.brushSizePx;
+          els.valBrushSize.textContent = `${state.brushSizePx}px`;
+          updateBrushCursorVisual(e.clientX, e.clientY, true);
+        } else {
+          const delta = e.deltaY < 0 ? 7 : -7;
+          const nextZoom = Math.max(35, Math.min(300, Math.round(state.zoom * 100) + delta));
+          state.zoom = nextZoom / 100;
+          els.sliderZoom.value = nextZoom;
+          els.valZoom.textContent = `${nextZoom}%`;
+          schedulePreviewRender();
+        }
+      }, { passive: false });
+
+      /* ===============================================================
+         7. SỰ KIỆN ĐIỀU KHIỂN CỘT TRÁI
+         =============================================================== */
+      function setToolMode(mode) {
+        state.toolMode = mode;
+        const isBrush = mode === 'brush';
+        els.modePanBtn.classList.toggle('is-active', !isBrush);
+        els.modeBrushBtn.classList.toggle('is-active', isBrush);
+        els.brushControlsBar.classList.toggle('hidden', !isBrush);
+        els.canvasStageDrop.classList.toggle('mode-pan', !isBrush);
+        els.canvasStageDrop.classList.toggle('mode-brush', isBrush);
+        els.canvasModeHint.textContent = isBrush
+          ? 'Quẹt tô đen nền thừa • Cuộn chuột để đổi cỡ cọ'
+          : 'Kéo để di chuyển • Cuộn chuột để zoom';
+        if (!isBrush) els.brushCursor.style.display = 'none';
+      }
+
+      els.modePanBtn.addEventListener('click', () => setToolMode('pan'));
+      els.modeBrushBtn.addEventListener('click', () => setToolMode('brush'));
+
+      els.btnToggleGrid.addEventListener('click', () => {
+        state.showGrid = !state.showGrid;
+        els.btnToggleGrid.classList.toggle('is-active', state.showGrid);
+        els.gridOverlay.classList.toggle('hidden', !state.showGrid);
+      });
+
+      // Điều khiển Cọ tô đen
+      els.sliderBrushSize.addEventListener('input', (e) => {
+        state.brushSizePx = Number(e.target.value);
+        els.valBrushSize.textContent = `${state.brushSizePx}px`;
+      });
+
+      els.sliderBrushFeather.addEventListener('input', (e) => {
+        state.brushFeather = Number(e.target.value);
+        els.valBrushFeather.textContent = `${state.brushFeather}%`;
+      });
+
+      els.btnUndoBrush.addEventListener('click', () => {
+        if (state.strokes.length === 0) return;
+        state.strokes.pop();
+        updateBrushButtonsState();
+        schedulePreviewRender();
+      });
+
+      els.btnClearMask.addEventListener('click', () => {
+        if (state.strokes.length === 0) return;
+        state.strokes = [];
+        updateBrushButtonsState();
+        schedulePreviewRender();
+        showToast('Đã xóa toàn bộ nét cọ tô đen.', 'info', 2000);
+      });
+
+      // Zoom & Căn giữa
+      els.sliderZoom.addEventListener('input', (e) => {
+        const val = Number(e.target.value);
+        state.zoom = val / 100;
+        els.valZoom.textContent = `${val}%`;
+        schedulePreviewRender();
+      });
+
+      els.btnCenterFrame.addEventListener('click', () => {
+        state.panX = 0;
+        state.panY = 0;
+        state.zoom = 1.0;
+        els.sliderZoom.value = 100;
+        els.valZoom.textContent = '100%';
+        schedulePreviewRender();
+      });
+
+      // Tỷ lệ khung hình, Fit mode, Độ phân giải
+      function activateGroupButton(groupEl, targetBtn) {
+        groupEl.querySelectorAll('button').forEach(b => b.classList.remove('is-active'));
+        targetBtn.classList.add('is-active');
+      }
+
+      els.aspectRatioGroup.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-ratio]');
+        if (!btn) return;
+        state.aspectRatio = btn.dataset.ratio;
+        state.panX = 0;
+        state.panY = 0;
+        activateGroupButton(els.aspectRatioGroup, btn);
+        schedulePreviewRender();
+      });
+
+      els.fitModeGroup.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-fit]');
+        if (!btn) return;
+        state.fitMode = btn.dataset.fit;
+        state.panX = 0;
+        state.panY = 0;
+        activateGroupButton(els.fitModeGroup, btn);
+        schedulePreviewRender();
+      });
+
+      els.resolutionGroup.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-res]');
+        if (!btn) return;
+        state.resolution = Number(btn.dataset.res);
+        activateGroupButton(els.resolutionGroup, btn);
+        schedulePreviewRender();
+      });
+
+      // Bộ lọc quang học
+      els.sliderBrightness.addEventListener('input', (e) => {
+        state.brightness = Number(e.target.value);
+        els.valBrightness.textContent = `${state.brightness}%`;
+        schedulePreviewRender();
+      });
+      els.sliderContrast.addEventListener('input', (e) => {
+        state.contrast = Number(e.target.value);
+        els.valContrast.textContent = `${state.contrast}%`;
+        schedulePreviewRender();
+      });
+      els.sliderSharpen.addEventListener('input', (e) => {
+        state.sharpen = Number(e.target.value);
+        els.valSharpen.textContent = `${state.sharpen}%`;
+        schedulePreviewRender();
+      });
+      els.sliderVignette.addEventListener('input', (e) => {
+        state.vignette = Number(e.target.value);
+        els.valVignette.textContent = `${state.vignette}%`;
+        schedulePreviewRender();
+      });
+
+      els.btnAutoOptical.addEventListener('click', () => {
+        state.brightness = 104;
+        state.contrast = 110;
+        state.sharpen = 24;
+        state.vignette = 35;
+        syncOpticalSlidersUI();
+        schedulePreviewRender();
+        showToast('Đã áp dụng cân bằng quang học + gom viền đen tối ưu cho Gemini!', 'success', 2600);
+      });
+
+      els.toggleGrayscale.addEventListener('click', () => {
+        state.grayscale = !state.grayscale;
+        els.toggleGrayscale.classList.toggle('is-on', state.grayscale);
+        els.toggleGrayscale.setAttribute('aria-checked', String(state.grayscale));
+        els.grayscaleBadge.classList.toggle('hidden', !state.grayscale);
+        schedulePreviewRender();
+      });
+
+      function syncOpticalSlidersUI() {
+        els.sliderBrightness.value = state.brightness;
+        els.valBrightness.textContent = `${state.brightness}%`;
+        els.sliderContrast.value = state.contrast;
+        els.valContrast.textContent = `${state.contrast}%`;
+        els.sliderSharpen.value = state.sharpen;
+        els.valSharpen.textContent = `${state.sharpen}%`;
+        els.sliderVignette.value = state.vignette;
+        els.valVignette.textContent = `${state.vignette}%`;
+      }
+
+      // Reset toàn bộ thông số & nét cọ
+      els.btnResetAll.addEventListener('click', () => {
+        state.zoom = 1.0;
+        state.panX = 0;
+        state.panY = 0;
+        state.brightness = 100;
+        state.contrast = 100;
+        state.sharpen = 0;
+        state.vignette = 0;
+        state.grayscale = false;
+        state.strokes = [];
+        state.activeStroke = null;
+
+        els.sliderZoom.value = 100;
+        els.valZoom.textContent = '100%';
+        syncOpticalSlidersUI();
+        els.toggleGrayscale.classList.remove('is-on');
+        els.toggleGrayscale.setAttribute('aria-checked', 'false');
+        els.grayscaleBadge.classList.add('hidden');
+        updateBrushButtonsState();
+        setToolMode('pan');
+
+        schedulePreviewRender();
+        showToast('Đã Reset toàn bộ thông số ảnh & nét cọ tô đen.', 'info', 2200);
+      });
+
+      /* ===============================================================
+         8. XUẤT PNG FULL-RES (COPY CLIPBOARD & DOWNLOAD)
+         =============================================================== */
+      function generateExportBlob() {
+        return new Promise((resolve, reject) => {
+          if (!state.img) {
+            reject(new Error('Chưa có ảnh đầu vào'));
+            return;
+          }
+          try {
+            const dims = getTargetDimensions(state.resolution);
+            const exportCanvas = document.createElement('canvas');
+            renderCompositionToCanvas(exportCanvas, dims.width, dims.height);
+
+            exportCanvas.toBlob((blob) => {
+              if (!blob) reject(new Error('Không thể xuất PNG'));
+              else resolve({ blob, dims });
+            }, 'image/png');
+          } catch (err) {
+            reject(err);
+          }
+        });
+      }
+
+      els.btnCopyPng.addEventListener('click', async () => {
+        if (!state.img) return;
+        const originalHtml = els.btnCopyPng.innerHTML;
+        els.btnCopyPng.disabled = true;
+        els.btnCopyPng.innerHTML = '<span>Đang tạo PNG...</span>';
+
+        try {
+          const { blob, dims } = await generateExportBlob();
+          if (navigator.clipboard && typeof navigator.clipboard.write === 'function' && typeof ClipboardItem !== 'undefined') {
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            showToast(`Đã copy ảnh PNG (${dims.width}×${dims.height}px)! Dán (Ctrl+V) ngay vào Gemini.`, 'success', 3800);
+          } else {
+            throw new Error('Clipboard image unsupported');
+          }
+        } catch (err) {
+          showToast('Trình duyệt giới hạn Copy ảnh trực tiếp trong khung này — hãy bấm nút "Tải Ảnh PNG" bên cạnh để tải lên Gemini nhé!', 'warn', 4600);
+        } finally {
+          els.btnCopyPng.disabled = false;
+          els.btnCopyPng.innerHTML = originalHtml;
+        }
+      });
+
+      els.btnDownloadPng.addEventListener('click', async () => {
+        if (!state.img) return;
+        const originalHtml = els.btnDownloadPng.innerHTML;
+        els.btnDownloadPng.disabled = true;
+        els.btnDownloadPng.innerHTML = '<span>Đang xuất PNG...</span>';
+
+        try {
+          const { blob, dims } = await generateExportBlob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `claydepth_input_${state.resolution}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+          showToast(`Đã tải xuống claydepth_input_${state.resolution}.png (${dims.width}×${dims.height}px)!`, 'success', 3200);
+        } catch (err) {
+          showToast('Không thể xuất tệp PNG. Vui lòng thử lại.', 'warn');
+        } finally {
+          els.btnDownloadPng.disabled = false;
+          els.btnDownloadPng.innerHTML = originalHtml;
+        }
+      });
+
+      /* ===============================================================
+         9. BỘ TẠO PROMPT TIẾNG ANH CHUYÊN BIỆT CHO GEMINI -> DEPTH ANYTHING V2
+         =============================================================== */
+      const PROMPT_LIBRARY = {
+        forms: {
+          bas_relief: {
+            intro: 'a clean 2.5D bas-relief clay sculpture specifically optimized for CNC wood/stone relief carving and depth-map generation',
+            geometry: 'Construct the subject as a smooth continuous frontal raised relief projecting evenly toward the camera with gentle sculpted depth transitions, crisp readable contours, and strictly zero deep undercuts or hollow gaps behind protruding parts.'
+          },
+          high_relief: {
+            intro: 'a dramatic high-relief clay sculpture with strong layered Z-axis depth projection optimized for clean height-map extraction',
+            geometry: 'Sculpt prominent, well-separated foreground, midground, and recessed relief layers with bold dimensional volume and smooth transitions from the closest sculpted features down toward the dark background plane.'
+          },
+          sculpt_3d: {
+            intro: 'a refined full 3D sculpted clay bust/figurine render completely floating and isolated in darkness for clean depth estimation',
+            geometry: 'Form the subject with authentic three-dimensional sculptural mass, smooth anatomical volumes, and well-defined depth gradients across every plane of the sculpture.'
+          },
+          chibi_clay: {
+            intro: 'a smooth, adorable stylized chibi 3D clay figurine with plump rounded sculptural geometry designed for ultra-clean height maps',
+            geometry: 'Translate the subject into charming rounded, simplified chibi sculptural forms with generous smooth curves, clear volume hierarchy, and zero chaotic micro-clutter.'
+          }
+        },
+        materials: {
+          zbrush_gray: 'Sculpt the entire subject out of uniform neutral medium-gray matte digital sculpting clay (ZBrush gray clay matcap aesthetic) with velvety non-reflective surface shading.',
+          warm_beige: 'Sculpt the entire subject out of uniform smooth pale warm-beige matte modeling clay with soft non-reflective surface finish.',
+          white_plaster: 'Sculpt the entire subject out of uniform matte white fine sculptural plaster (unpainted gypsum finish) with soft diffuse light reflection and zero glossy hotspots.',
+          pale_terracotta: 'Sculpt the entire subject out of uniform smooth pale matte terracotta clay with an even, refined, non-glossy surface.'
+        },
+        camera: {
+          front_ortho: 'Use a strict straight-on front-facing orthographic-like camera view with zero perspective distortion, centered cleanly in the frame for accurate CNC relief projection.',
+          slight_34: 'Capture from a gentle, balanced slight 3/4 sculptural angle that showcases smooth dimensional volume clearly toward the camera.',
+          keep_original: 'Maintain the exact camera angle, head orientation, and compositional framing of the reference image.'
+        },
+        detail: {
+          ultra_smooth: 'Keep every clay surface ultra-smooth, cleanly modeled, and free of high-frequency clutter so that monocular depth estimation (Depth Anything V2) outputs a clean, noise-free height map.',
+          crisp_anatomy: 'Sculpt crisp, well-defined anatomical planes, sharp sculpted hair locks, and clean drapery folds with clear sculptural bevels and deliberate depth separation.',
+          simplified_soft: 'Simplify fine textures into soft, broad, gently blended sculptural forms with smooth transitions ideal for soft relief height maps.'
+        },
+        fidelity: {
+          high: 'Faithfully preserve the exact likeness, recognizable facial geometry, expression, pose, hairstyle silhouette, and structural details of the original input image.',
+          medium: 'Preserve the recognizable identity, pose, and main structure of the original input while refining proportions with tasteful classical clay sculpting stylization.',
+          stylized: 'Boldly reinterpret the input subject into cohesive artistic clay sculpture volumes while keeping the core subject immediately recognizable.'
+        },
+        flags: {
+          pitchBlackBg: 'Place the clay sculpture against a 100% pure pitch-black void background (#000000) with absolutely no floor, no pedestal shadow, no studio backdrop gradient, no smoke, no fog, and no cast shadows.',
+          monochromeNoTexture: 'The clay must be strictly monochromatic and completely unpainted: remove all original colors, skin tones, makeup, dark hair pigments, dark pupils, clothing prints, and painted patterns so depth is conveyed purely by 3D sculptural geometry and shading (even hair, eyes, and dark garments must be sculpted in the exact same uniform clay color).',
+          evenFrontalLight: 'Illuminate with soft, even, diffused frontal studio lighting and gentle ambient occlusion in crevices to clearly reveal 3D surface elevation without harsh black shadows, blown-out white specular glare, or dramatic side chiaroscuro.',
+          cleanSilhouette: 'Ensure a razor-clean, unbroken outer silhouette completely separated from the pure black background, keeping the entire sculpted subject comfortably inside the frame with zero accidental edge cropping.',
+          zeroGrain: 'Render with zero film grain, zero surface speckles, zero clay dust, zero fingerprints, and zero noisy bump texture to guarantee a silky-smooth height map.'
+        }
+      };
+
+      function buildDepthPrompt() {
+        const formObj = PROMPT_LIBRARY.forms[state.sculptForm] || PROMPT_LIBRARY.forms.bas_relief;
+        const matSentence = PROMPT_LIBRARY.materials[state.clayMaterial] || PROMPT_LIBRARY.materials.zbrush_gray;
+        const camSentence = PROMPT_LIBRARY.camera[state.camera] || PROMPT_LIBRARY.camera.front_ortho;
+        const detailSentence = PROMPT_LIBRARY.detail[state.surfaceDetail] || PROMPT_LIBRARY.detail.ultra_smooth;
+        const fidelitySentence = PROMPT_LIBRARY.fidelity[state.fidelity] || PROMPT_LIBRARY.fidelity.high;
+
+        const parts = [
+          `Transform the uploaded reference image into ${formObj.intro}.`,
+          fidelitySentence,
+          formObj.geometry,
+          matSentence,
+          camSentence,
+          detailSentence
+        ];
+
+        // Thêm các cờ kỹ thuật Height Map đang bật
+        if (state.flags.pitchBlackBg) parts.push(PROMPT_LIBRARY.flags.pitchBlackBg);
+        if (state.flags.monochromeNoTexture) parts.push(PROMPT_LIBRARY.flags.monochromeNoTexture);
+        if (state.flags.evenFrontalLight) parts.push(PROMPT_LIBRARY.flags.evenFrontalLight);
+        if (state.flags.cleanSilhouette) parts.push(PROMPT_LIBRARY.flags.cleanSilhouette);
+        if (state.flags.zeroGrain) parts.push(PROMPT_LIBRARY.flags.zeroGrain);
+
+        // Ghi chú thêm của người dùng (hỗ trợ cả tiếng Việt & tiếng Anh)
+        const noteClean = state.extraNote.trim();
+        if (noteClean) {
+          parts.push(`Additional specific sculpting instructions: ${noteClean.replace(/\.+$/, '')}.`);
+        }
+
+        parts.push('Output as a high-resolution, razor-sharp 3D studio clay render ready for direct input into Depth Anything V2 to generate an artifact-free grayscale height map.');
+
+        return parts.join(' ');
+      }
+
+      function refreshPrompt(forceAuto = false) {
+        if (state.isManualPrompt && !forceAuto) return;
+        els.promptOutput.value = buildDepthPrompt();
+        updatePromptStats();
+        if (forceAuto) {
+          state.isManualPrompt = false;
+          els.manualEditBadge.classList.add('hidden');
+          els.btnRestorePrompt.classList.add('hidden');
+        }
+      }
+
+      function updatePromptStats() {
+        const text = els.promptOutput.value;
+        const chars = text.length;
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        els.promptStats.textContent = `${words} từ • ${chars} ký tự`;
+      }
+
+      /* ===============================================================
+         10. SỰ KIỆN CỘT PHẢI (PROMPT BUILDER & COPY AN TOÀN)
+         =============================================================== */
+      // 1. Dạng tạo khối
+      els.sculptFormGroup.addEventListener('click', (e) => {
+        const card = e.target.closest('button[data-form]');
+        if (!card) return;
+        state.sculptForm = card.dataset.form;
+        els.sculptFormGroup.querySelectorAll('.sculpt-card').forEach(c => c.classList.remove('is-selected'));
+        card.classList.add('is-selected');
+        refreshPrompt(true);
+      });
+
+      // 2. Chất liệu đất sét
+      els.materialGroup.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-mat]');
+        if (!btn) return;
+        state.clayMaterial = btn.dataset.mat;
+        activateGroupButton(els.materialGroup, btn);
+        refreshPrompt(true);
+      });
+
+      // 3. Selects kỹ thuật
+      els.selectCamera.addEventListener('change', (e) => {
+        state.camera = e.target.value;
+        refreshPrompt(true);
+      });
+      els.selectDetail.addEventListener('change', (e) => {
+        state.surfaceDetail = e.target.value;
+        refreshPrompt(true);
+      });
+      els.selectFidelity.addEventListener('change', (e) => {
+        state.fidelity = e.target.value;
+        refreshPrompt(true);
+      });
+
+      // 4. 5 Nút bật/tắt cờ kỹ thuật
+      els.techFlagsGroup.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-flag]');
+        if (!btn) return;
+        const key = btn.dataset.flag;
+        state.flags[key] = !state.flags[key];
+        btn.classList.toggle('is-active', state.flags[key]);
+        const checkSpan = btn.querySelector('span');
+        if (checkSpan) checkSpan.textContent = state.flags[key] ? '✓' : '○';
+        refreshPrompt(true);
+      });
+
+      // 5. Ghi chú thêm & các nút điền nhanh
+      els.extraNoteInput.addEventListener('input', (e) => {
+        state.extraNote = e.target.value;
+        refreshPrompt(true);
+      });
+
+      document.querySelectorAll('.quick-note-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const snippet = btn.dataset.quicknote;
+          const current = els.extraNoteInput.value.trim();
+          if (!current.includes(snippet)) {
+            els.extraNoteInput.value = current ? `${current}, ${snippet}` : snippet;
+            state.extraNote = els.extraNoteInput.value;
+            refreshPrompt(true);
+          }
+        });
+      });
+
+      // 6. Chỉnh sửa trực tiếp trong Textarea & Khôi phục tự động
+      els.promptOutput.addEventListener('input', () => {
+        state.isManualPrompt = true;
+        els.manualEditBadge.classList.remove('hidden');
+        els.btnRestorePrompt.classList.remove('hidden');
+        updatePromptStats();
+      });
+
+      els.btnRestorePrompt.addEventListener('click', () => {
+        refreshPrompt(true);
+        showToast('Đã khôi phục Prompt tự động theo các thông số hiện tại.', 'info', 2200);
+      });
+
+      // 7. Copy Prompt tiếng Anh an toàn (hỗ trợ execCommand fallback trong iFrame)
+      function copyTextToClipboard(text) {
+        return new Promise((resolve, reject) => {
+          const fallbackExecCopy = () => {
+            try {
+              const ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.top = '-9999px';
+              ta.style.left = '-9999px';
+              document.body.appendChild(ta);
+              ta.select();
+              ta.setSelectionRange(0, text.length);
+              const ok = document.execCommand('copy');
+              document.body.removeChild(ta);
+              if (ok) resolve();
+              else reject(new Error('execCommand copy failed'));
+            } catch (err) {
+              reject(err);
+            }
+          };
+
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(text).then(resolve).catch(fallbackExecCopy);
+          } else {
+            fallbackExecCopy();
+          }
+        });
+      }
+
+      let copyBtnTimeout = null;
+      els.btnCopyPrompt.addEventListener('click', async () => {
+        const text = els.promptOutput.value.trim();
+        if (!text) {
+          showToast('Khung Prompt đang trống!', 'warn');
+          return;
+        }
+        try {
+          await copyTextToClipboard(text);
+          els.copyPromptText.textContent = 'Đã Copy Prompt! Dán ngay vào Gemini';
+          els.copyPromptIcon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+          els.btnCopyPrompt.classList.remove('btn-clay-primary');
+          els.btnCopyPrompt.classList.add('btn-studio-emerald');
+
+          showToast('Đã copy Prompt tiếng Anh chuẩn Depth Anything V2!', 'success', 3200);
+
+          if (copyBtnTimeout) clearTimeout(copyBtnTimeout);
+          copyBtnTimeout = setTimeout(() => {
+            els.copyPromptText.textContent = 'Copy Prompt Tiếng Anh cho Gemini';
+            els.copyPromptIcon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
+            els.btnCopyPrompt.classList.remove('btn-studio-emerald');
+            els.btnCopyPrompt.classList.add('btn-clay-primary');
+          }, 2200);
+        } catch (err) {
+          els.promptOutput.focus();
+          els.promptOutput.select();
+          showToast('Đã chọn toàn bộ Prompt — hãy bấm Ctrl+C để copy nhé!', 'warn', 3500);
+        }
+      });
+
+      // 8. Mở / Đóng thẻ Mẹo Depth Anything V2 trên Google Colab
+      els.btnToggleTips.addEventListener('click', () => {
+        const isHidden = els.tipsContent.classList.toggle('hidden');
+        els.btnToggleTips.setAttribute('aria-expanded', String(!isHidden));
+        els.tipsChevron.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+      });
+
+      /* ===============================================================
+         11. KHỞI TẠO BAN ĐẦU
+         =============================================================== */
+      refreshPrompt(true);
+    })();
+  </script>
+</body>
+</html>
