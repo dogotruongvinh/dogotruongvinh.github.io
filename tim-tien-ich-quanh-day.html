@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tìm Giặt Là, Ăn Uống, Vui Chơi, Nhà Nghỉ & Phòng Trọ Quanh Đây</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; padding: 14px; background: #f3f4f6; color: #1f2937; }
+    .container { max-width: 820px; margin: 0 auto; background: #fff; padding: 18px; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    h1 { margin: 0 0 12px; font-size: 1.3rem; color: #111827; }
+
+    .perm-box {
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+    }
+    .perm-granted { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+    .perm-denied { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+    .perm-warn { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    input[type="text"], select, button {
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 0.92rem;
+    }
+    input[type="text"] { flex: 1; min-width: 200px; }
+    button { background: #2563eb; color: #fff; border: none; cursor: pointer; font-weight: 600; }
+    button:hover { background: #1d4ed8; }
+    button.gps-btn { background: #0f766e; }
+    button.gps-btn:hover { background: #115e59; }
+    button.ip-btn { background: #4b5563; }
+    button.ip-btn:hover { background: #374151; }
+    button.rescan-btn { background: #d97706; }
+    button.rescan-btn:hover { background: #b45309; }
+
+    .cat-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    .cat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cat-chip input { margin: 0; cursor: pointer; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    .gmap-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      padding: 10px 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+    }
+    .gmap-bar span { font-weight: 700; color: #1e3a8a; margin-right: 4px; }
+    .gmap-bar a {
+      text-decoration: none;
+      background: #fff;
+      color: #1d4ed8;
+      border: 1px solid #93c5fd;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .gmap-bar a:hover { background: #dbeafe; }
+
+    #map {
+      width: 100%;
+      height: 320px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      margin-bottom: 12px;
+      z-index: 1;
+    }
+    .map-hint { font-size: 0.82rem; color: #6b7280; margin: -6px 0 12px; }
+
+    .gps-info {
+      display: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .status {
+      font-size: 0.89rem;
+      color: #374151;
+      margin-bottom: 12px;
+      padding: 9px 12px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border-left: 3px solid #2563eb;
+    }
+    .status.error { border-left-color: #dc2626; background: #fef2f2; color: #991b1b; }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .tab-btn {
+      background: #e5e7eb;
+      color: #1f2937;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .tab-btn:hover { background: #d1d5db; }
+    .tab-btn.active { background: #111827; color: #fff; }
+
+    .list { display: grid; gap: 10px; }
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: #fafafa;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: #93c5fd; background: #fff; }
+    .card-header { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+    .card-title { font-weight: 700; color: #111827; font-size: 0.98rem; }
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .badge {
+      font-size: 0.76rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .dist-badge { background: #e0f2fe; color: #075985; }
+    .meta { margin-top: 6px; font-size: 0.86rem; color: #4b5563; line-height: 1.55; }
+    .card-actions { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.86rem; }
+    .card-actions a, .card-actions button.link-btn {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-size: 0.86rem;
+    }
+    .card-actions a:hover, .card-actions button.link-btn:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tìm Tiện Ích Quanh Vị Trí Của Bạn</h1>
+
+    <div id="permBox" class="perm-box">Đang kiểm tra quyền vị trí...</div>
+
+    <!-- Chọn nhóm tiện ích muốn quét -->
+    <div class="cat-selector">
+      <label class="cat-chip">
+        <input type="checkbox" class="cat-check" value="laundry" checked />
+        <span class="dot" style="background:#0284c7;"></span> Giặt là
+      </label>
+      <label class="cat-chip">
+        <input type="checkbox" class="cat-check" value="food" checked />
+        <span class="dot" style="background:#ea580c;"></span> Ăn uống
+      </label>
+      <label class="cat-chip">
+        <input type="checkbox" class="cat-check" value="fun" checked />
+        <span class="dot" style="background:#9333ea;"></span> Vui chơi
+      </label>
+      <label class="cat-chip">
+        <input type="checkbox" class="cat-check" value="motel" checked />
+        <span class="dot" style="background:#dc2626;"></span> Nhà nghỉ / KS
+      </label>
+      <label class="cat-chip">
+        <input type="checkbox" class="cat-check" value="boarding" checked />
+        <span class="dot" style="background:#16a34a;"></span> Phòng trọ
+      </label>
+    </div>
+
+    <!-- Nút định vị & bán kính -->
+    <div class="controls">
+      <button class="gps-btn" onclick="requestGPSLocation()">Lấy GPS chính xác</button>
+      <button class="ip-btn" onclick="locateByIP()">Định vị theo IP</button>
+      <select id="radiusSelect">
+        <option value="500">Bán kính 500m</option>
+        <option value="1500" selected>Bán kính 1.5km</option>
+        <option value="3000">Bán kính 3km</option>
+        <option value="5000">Bán kính 5km</option>
+      </select>
+      <button class="rescan-btn" onclick="rescanCurrent()">Quét lại</button>
+    </div>
+
+    <!-- Tìm theo địa chỉ nhập tay -->
+    <div class="controls">
+      <input type="text" id="placeInput" placeholder="Hoặc nhập tên đường, phường/xã, quận/huyện..." />
+      <button onclick="searchByAddress()">Tìm theo địa chỉ</button>
+    </div>
+
+    <!-- Lối tắt Google Maps tự gắn tọa độ hiện tại -->
+    <div class="gmap-bar" id="gmapBar">
+      <span>Mở nhanh Google Maps:</span>
+      <a id="gm-laundry" href="https://www.google.com/maps/search/tiệm+giặt+là+gần+đây" target="_blank" rel="noopener">Giặt là</a>
+      <a id="gm-food" href="https://www.google.com/maps/search/quán+ăn+cà+phê+gần+đây" target="_blank" rel="noopener">Ăn uống</a>
+      <a id="gm-fun" href="https://www.google.com/maps/search/khu+vui+chơi+giải+trí+gần+đây" target="_blank" rel="noopener">Vui chơi</a>
+      <a id="gm-motel" href="https://www.google.com/maps/search/nhà+nghỉ+khách+sạn+gần+đây" target="_blank" rel="noopener">Nhà nghỉ</a>
+      <a id="gm-boarding" href="https://www.google.com/maps/search/nhà+trọ+phòng+trọ+gần+đây" target="_blank" rel="noopener">Phòng trọ</a>
+    </div>
+
+    <!-- Bản đồ tương tác -->
+    <div id="map"></div>
+    <div class="map-hint">Mẹo: Chạm vào bất kỳ điểm nào trên bản đồ để đặt lại tâm quét thủ công nếu GPS bị lệch hoặc bị chặn.</div>
+
+    <div id="gpsInfo" class="gps-info"></div>
+    <div id="status" class="status">Nhấn "Lấy GPS chính xác", "Định vị theo IP", nhập địa chỉ hoặc chấm tay trên bản đồ để bắt đầu quét.</div>
+
+    <!-- Tab lọc nhanh kết quả đã tải -->
+    <div id="filterTabs" class="filter-tabs"></div>
+
+    <!-- Danh sách địa điểm -->
+    <div id="results" class="list"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const permBox = document.getElementById("permBox");
+    const gpsInfoEl = document.getElementById("gpsInfo");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+    const filterTabsEl = document.getElementById("filterTabs");
+    const placeInput = document.getElementById("placeInput");
+
+    const CATEGORY_META = {
+      laundry:  { label: "Giặt là",       color: "#0284c7", bg: "#e0f2fe", gmQuery: "tiệm giặt là" },
+      food:     { label: "Ăn uống",       color: "#ea580c", bg: "#ffedd5", gmQuery: "quán ăn cà phê" },
+      fun:      { label: "Vui chơi",      color: "#9333ea", bg: "#f3e8ff", gmQuery: "khu vui chơi giải trí" },
+      motel:    { label: "Nhà nghỉ / KS", color: "#dc2626", bg: "#fee2e2", gmQuery: "nhà nghỉ khách sạn" },
+      boarding: { label: "Phòng trọ",     color: "#16a34a", bg: "#dcfce7", gmQuery: "nhà trọ phòng trọ" }
+    };
+
+    const OVERPASS_MIRRORS = [
+      { name: "Overpass DE (Chính)", url: "https://overpass-api.de/api/interpreter" },
+      { name: "Overpass Kumi (Dự phòng 1)", url: "https://overpass.kumi.systems/api/interpreter" },
+      { name: "Overpass Mail.ru (Dự phòng 2)", url: "https://maps.mail.ru/osm/tools/overpass/api/interpreter" },
+      { name: "Overpass LZ4 (Dự phòng 3)", url: "https://lz4.overpass-api.de/api/interpreter" }
+    ];
+
+    let currentLat = null;
+    let currentLon = null;
+    let currentLabel = "";
+    let allItems = [];
+    let activeTab = "all";
+
+    // Khởi tạo bản đồ Leaflet
+    let map = null;
+    let userLayer = null;
+    let markersLayer = null;
+    const markerIndex = new Map();
+
+    function initMap() {
+      if (typeof L === "undefined") {
+        document.getElementById("map").style.display = "none";
+        return;
+      }
+      map = L.map("map").setView([21.0285, 105.8542], 13);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+
+      userLayer = L.layerGroup().addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
+
+      // Chấm tay trực tiếp lên bản đồ để chọn vị trí quét
+      map.on("click", async (e) => {
+        const { lat, lng } = e.latlng;
+        setLocation(lat, lng, "Điểm chọn trên bản đồ", "Đang tra cứu địa chỉ...");
+        const addr = await reverseGeocode(lat, lng);
+        placeInput.value = addr;
+        setLocation(lat, lng, "Điểm chọn trên bản đồ", addr);
+        fetchNearbyPlaces(lat, lng, addr);
+      });
+    }
+
+    function setStatus(msg, isError = false) {
+      statusEl.textContent = msg;
+      statusEl.className = isError ? "status error" : "status";
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function formatDist(meters) {
+      return meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${meters} m`;
+    }
+
+    function calcDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const toRad = d => d * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    }
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function updateGoogleMapsLinks(lat, lon) {
+      for (const [key, meta] of Object.entries(CATEGORY_META)) {
+        const link = document.getElementById(`gm-${key}`);
+        if (link) {
+          link.href = `https://www.google.com/maps/search/${encodeURIComponent(meta.gmQuery)}/@${lat.toFixed(6)},${lon.toFixed(6)},15z`;
+        }
+      }
+    }
+
+    function setLocation(lat, lon, sourceText, address) {
+      currentLat = lat;
+      currentLon = lon;
+      currentLabel = address;
+      updateGoogleMapsLinks(lat, lon);
+
+      gpsInfoEl.style.display = "block";
+      gpsInfoEl.innerHTML = `
+        <strong>Nguồn định vị:</strong> ${escapeHtml(sourceText)}<br/>
+        <strong>Tọa độ:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br/>
+        <strong>Địa chỉ:</strong> ${escapeHtml(address)}
+      `;
+
+      if (map && userLayer) {
+        userLayer.clearLayers();
+        const radius = parseInt(document.getElementById("radiusSelect").value, 10);
+        L.circle([lat, lon], {
+          radius,
+          color: "#2563eb",
+          fillColor: "#3b82f6",
+          fillOpacity: 0.08,
+          weight: 1.5
+        }).addTo(userLayer);
+
+        L.circleMarker([lat, lon], {
+          radius: 8,
+          color: "#ffffff",
+          weight: 3,
+          fillColor: "#2563eb",
+          fillOpacity: 1
+        }).bindPopup("<strong>Vị trí tâm quét</strong>").addTo(userLayer);
+
+        map.setView([lat, lon], radius <= 1500 ? 15 : 14);
+      }
+    }
+
+    async function checkPermissionStatus() {
+      if (!navigator.geolocation) {
+        permBox.className = "perm-box perm-denied";
+        permBox.textContent = "Trình duyệt không hỗ trợ GPS. Hãy dùng Định vị theo IP, nhập địa chỉ hoặc chấm trên bản đồ.";
+        return;
+      }
+      if (!window.isSecureContext) {
+        permBox.className = "perm-box perm-warn";
+        permBox.innerHTML =
+          "<strong>Lưu ý:</strong> Đang mở file cục bộ (không phải HTTPS/localhost). Nếu trình duyệt chặn GPS, bạn có thể bấm <strong>Định vị theo IP</strong> hoặc chấm trực tiếp lên bản đồ.";
+        return;
+      }
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const result = await navigator.permissions.query({ name: "geolocation" });
+          renderPermissionState(result.state);
+          result.onchange = () => renderPermissionState(result.state);
+          return;
+        } catch {}
+      }
+      permBox.className = "perm-box";
+      permBox.textContent = "Sẵn sàng yêu cầu quyền vị trí GPS.";
+    }
+
+    function renderPermissionState(state) {
+      if (state === "granted") {
+        permBox.className = "perm-box perm-granted";
+        permBox.textContent = "Quyền vị trí GPS: Đã cấp quyền.";
+      } else if (state === "denied") {
+        permBox.className = "perm-box perm-denied";
+        permBox.textContent = "Quyền vị trí GPS: Đang bị chặn. Mở khóa tại biểu tượng ổ khóa trên thanh địa chỉ hoặc dùng Định vị theo IP / chấm bản đồ.";
+      } else {
+        permBox.className = "perm-box";
+        permBox.textContent = "Quyền vị trí GPS: Chưa cấp quyền. Nhấn \"Lấy GPS chính xác\" để bật hộp thoại cho phép.";
+      }
+    }
+
+    function requestGPSLocation() {
+      if (!navigator.geolocation) {
+        setStatus("Trình duyệt không hỗ trợ GPS. Hãy dùng Định vị theo IP.", true);
+        return;
+      }
+      setStatus("Đang xin quyền và lấy tọa độ GPS...");
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const acc = Math.round(pos.coords.accuracy);
+          renderPermissionState("granted");
+          setLocation(lat, lon, `GPS (sai số ~${acc}m)`, "Đang dịch địa chỉ...");
+          const address = await reverseGeocode(lat, lon);
+          placeInput.value = address;
+          setLocation(lat, lon, `GPS (sai số ~${acc}m)`, address);
+          fetchNearbyPlaces(lat, lon, address);
+        },
+        (err) => {
+          if (err.code === err.PERMISSION_DENIED) {
+            renderPermissionState("denied");
+            setStatus("Trình duyệt đang chặn GPS. Hãy bấm \"Định vị theo IP\" hoặc chạm vào bản đồ để chọn vị trí.", true);
+          } else {
+            setStatus(`Không lấy được GPS (mã lỗi ${err.code}). Hãy thử Định vị theo IP.`, true);
+          }
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      );
+    }
+
+    async function locateByIP() {
+      setStatus("Đang xác định vị trí tương đối qua IP...");
+      try {
+        const res = await fetchWithTimeout("https://get.geojs.io/v1/ip/geo.json", {}, 10000);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const lat = parseFloat(data.latitude);
+        const lon = parseFloat(data.longitude);
+        const label = [data.city, data.region, data.country].filter(Boolean).join(", ");
+        placeInput.value = label;
+        setLocation(lat, lon, "Địa chỉ IP (ước lượng)", label);
+        fetchNearbyPlaces(lat, lon, label);
+      } catch (e) {
+        setStatus(`Không định vị được qua IP (${e.message}). Hãy nhập địa chỉ hoặc chấm trên bản đồ.`, true);
+      }
+    }
+
+    async function reverseGeocode(lat, lon) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=vi`;
+        const res = await fetchWithTimeout(url, {}, 10000);
+        if (!res.ok) return `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+        const data = await res.json();
+        return data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      } catch {
+        return `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      }
+    }
+
+    async function searchByAddress() {
+      const query = placeInput.value.trim();
+      if (!query) {
+        setStatus("Vui lòng nhập tên khu vực cần tìm.", true);
+        return;
+      }
+      setStatus("Đang tìm tọa độ của địa chỉ...");
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=vi&q=${encodeURIComponent(query)}`;
+        const res = await fetchWithTimeout(url, {}, 10000);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.length) {
+          setStatus("Không tìm thấy địa chỉ này. Hãy thử rút gọn tên phường/huyện/tỉnh.", true);
+          return;
+        }
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        setLocation(lat, lon, "Tìm kiếm theo địa chỉ", data[0].display_name);
+        fetchNearbyPlaces(lat, lon, data[0].display_name);
+      } catch (e) {
+        setStatus(`Lỗi khi tra cứu tọa độ (${e.message}).`, true);
+      }
+    }
+
+    function rescanCurrent() {
+      if (currentLat === null || currentLon === null) {
+        setStatus("Chưa có vị trí tâm quét. Hãy lấy GPS, định vị IP hoặc chấm trên bản đồ trước.", true);
+        return;
+      }
+      setLocation(currentLat, currentLon, "Vị trí hiện tại", currentLabel);
+      fetchNearbyPlaces(currentLat, currentLon, currentLabel);
+    }
+
+    function getSelectedCategories() {
+      return Array.from(document.querySelectorAll(".cat-check:checked")).map(el => el.value);
+    }
+
+    // Xây dựng truy vấn Overpass theo đúng các nhóm người dùng đã chọn
+    function buildOverpassQuery(lat, lon, radius, selectedCats) {
+      const parts = [];
+
+      if (selectedCats.includes("laundry")) {
+        parts.push(`
+          nwr["shop"="laundry"](around:${radius},${lat},${lon});
+          nwr["shop"="dry_cleaning"](around:${radius},${lat},${lon});
+          nwr["name"~"giặt là|giặt ủi|giặt sấy",i](around:${radius},${lat},${lon});
+        `);
+      }
+      if (selectedCats.includes("food")) {
+        parts.push(`
+          nwr["amenity"~"^(restaurant|cafe|fast_food|food_court|bar|pub|biergarten)$"](around:${radius},${lat},${lon});
+        `);
+      }
+      if (selectedCats.includes("fun")) {
+        parts.push(`
+          nwr["leisure"~"^(park|playground|amusement_arcade|bowling_alley|water_park|sports_centre)$"](around:${radius},${lat},${lon});
+          nwr["amenity"~"^(cinema|nightclub|karaoke_box|theatre)$"](around:${radius},${lat},${lon});
+          nwr["tourism"="attraction"](around:${radius},${lat},${lon});
+          nwr["name"~"bida|billiards|karaoke|khu vui chơi",i](around:${radius},${lat},${lon});
+        `);
+      }
+      if (selectedCats.includes("motel")) {
+        parts.push(`
+          nwr["tourism"~"^(motel|guest_house|hotel|hostel)$"](around:${radius},${lat},${lon});
+          nwr["name"~"nhà nghỉ|khách sạn|homestay",i](around:${radius},${lat},${lon});
+        `);
+      }
+      if (selectedCats.includes("boarding")) {
+        parts.push(`
+          nwr["tourism"="apartment"](around:${radius},${lat},${lon});
+          nwr["building"="dormitory"](around:${radius},${lat},${lon});
+          nwr["name"~"nhà trọ|phòng trọ|khu trọ|cho thuê trọ|ký túc xá",i](around:${radius},${lat},${lon});
+        `);
+      }
+
+      return `
+        [out:json][timeout:15];
+        (
+          ${parts.join("\n")}
+        );
+        out center 150;
+      `;
+    }
+
+    // Phân loại phần tử OSM vào 1 trong 5 nhóm
+    function classifyElement(tags) {
+      const name = (tags.name || "").toLowerCase();
+      const shop = tags.shop || "";
+      const amenity = tags.amenity || "";
+      const tourism = tags.tourism || "";
+      const leisure = tags.leisure || "";
+      const building = tags.building || "";
+
+      if (shop === "laundry" || shop === "dry_cleaning" || /giặt là|giặt ủi|giặt sấy/.test(name)) {
+        return { cat: "laundry", subType: shop === "dry_cleaning" ? "Giặt khô" : "Tiệm giặt là" };
+      }
+      if (tourism === "apartment" || building === "dormitory" || /nhà trọ|phòng trọ|khu trọ|cho thuê trọ|ký túc xá/.test(name)) {
+        return { cat: "boarding", subType: building === "dormitory" ? "Ký túc xá" : "Phòng trọ / Căn hộ thuê" };
+      }
+      if (["motel", "guest_house", "hotel", "hostel"].includes(tourism) || /nhà nghỉ|khách sạn|homestay/.test(name)) {
+        const mapSub = { motel: "Nhà nghỉ", guest_house: "Nhà khách / Homestay", hotel: "Khách sạn", hostel: "Hostel" };
+        return { cat: "motel", subType: mapSub[tourism] || "Nhà nghỉ / Lưu trú" };
+      }
+      if (
+        ["park", "playground", "amusement_arcade", "bowling_alley", "water_park", "sports_centre"].includes(leisure) ||
+        ["cinema", "nightclub", "karaoke_box", "theatre"].includes(amenity) ||
+        tourism === "attraction" ||
+        /bida|billiards|karaoke|khu vui chơi/.test(name)
+      ) {
+        const mapSub = {
+          park: "Công viên", playground: "Sân chơi", cinema: "Rạp chiếu phim",
+          karaoke_box: "Karaoke", nightclub: "Giải trí đêm", water_park: "Công viên nước",
+          sports_centre: "Khu thể thao", attraction: "Điểm tham quan"
+        };
+        return { cat: "fun", subType: mapSub[leisure] || mapSub[amenity] || mapSub[tourism] || "Điểm vui chơi" };
+      }
+      if (["restaurant", "cafe", "fast_food", "food_court", "bar", "pub", "biergarten"].includes(amenity)) {
+        const mapSub = {
+          restaurant: "Nhà hàng / Quán ăn", cafe: "Quán cà phê", fast_food: "Đồ ăn nhanh",
+          food_court: "Khu ẩm thực", bar: "Quán bar", pub: "Quán nhậu / Pub", biergarten: "Quán bia"
+        };
+        return { cat: "food", subType: mapSub[amenity] || "Ăn uống" };
+      }
+      return null;
+    }
+
+    async function fetchNearbyPlaces(lat, lon, label) {
+      const selectedCats = getSelectedCategories();
+      if (!selectedCats.length) {
+        setStatus("Vui lòng tích chọn ít nhất 1 nhóm tiện ích ở phía trên.", true);
+        return;
+      }
+
+      const radius = document.getElementById("radiusSelect").value;
+      const overpassQuery = buildOverpassQuery(lat, lon, radius, selectedCats);
+
+      let data = null;
+      const errorLogs = [];
+
+      for (let i = 0; i < OVERPASS_MIRRORS.length; i++) {
+        const mirror = OVERPASS_MIRRORS[i];
+        setStatus(`Đang quét bản đồ qua ${mirror.name} (${i + 1}/${OVERPASS_MIRRORS.length})...`);
+        try {
+          const res = await fetchWithTimeout(
+            mirror.url,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+              body: "data=" + encodeURIComponent(overpassQuery)
+            },
+            16000
+          );
+          if (!res.ok) {
+            errorLogs.push(`${mirror.name}: HTTP ${res.status}`);
+            continue;
+          }
+          const rawText = await res.text();
+          if (!rawText.trim().startsWith("{")) {
+            errorLogs.push(`${mirror.name}: Dữ liệu không hợp lệ`);
+            continue;
+          }
+          data = JSON.parse(rawText);
+          break;
+        } catch (err) {
+          const reason = err.name === "AbortError" ? "Quá thời gian chờ" : err.message;
+          errorLogs.push(`${mirror.name}: ${reason}`);
+        }
+      }
+
+      if (!data) {
+        setStatus(`Không kết nối được máy chủ bản đồ (${errorLogs.join(" | ")}). Bạn vẫn có thể dùng hàng nút "Mở nhanh Google Maps" ở trên.`, true);
+        return;
+      }
+
+      const seen = new Set();
+      const parsed = [];
+
+      for (const el of (data.elements || [])) {
+        const key = `${el.type}-${el.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const elLat = el.lat || (el.center && el.center.lat);
+        const elLon = el.lon || (el.center && el.center.lon);
+        if (!elLat || !elLon) continue;
+
+        const tags = el.tags || {};
+        const info = classifyElement(tags);
+        if (!info || !selectedCats.includes(info.cat)) continue;
+
+        const addrParts = [
+          tags["addr:housenumber"],
+          tags["addr:street"],
+          tags["addr:subdistrict"] || tags["addr:ward"],
+          tags["addr:district"]
+        ].filter(Boolean);
+
+        parsed.push({
+          id: key,
+          cat: info.cat,
+          subType: info.subType,
+          name: tags.name || `${info.subType} (chưa ghi tên trên bản đồ)`,
+          address: addrParts.join(", "),
+          phone: tags.phone || tags["contact:phone"] || "",
+          hours: tags.opening_hours || "",
+          lat: elLat,
+          lon: elLon,
+          dist: calcDistance(lat, lon, elLat, elLon)
+        });
+      }
+
+      parsed.sort((a, b) => a.dist - b.dist);
+      allItems = parsed;
+      activeTab = "all";
+
+      if (!allItems.length) {
+        filterTabsEl.innerHTML = "";
+        resultsEl.innerHTML = "";
+        if (markersLayer) markersLayer.clearLayers();
+        setStatus(`Không có địa điểm nào trên OpenStreetMap trong bán kính ${radius}m quanh "${label}". Hãy tăng bán kính lên 3km–5km hoặc bấm các nút "Mở nhanh Google Maps" phía trên.`);
+        return;
+      }
+
+      setStatus(`Tìm thấy ${allItems.length} địa điểm quanh "${label}" trong bán kính ${radius}m.`);
+      renderTabs();
+      renderView();
+    }
+
+    function renderTabs() {
+      const counts = { all: allItems.length };
+      for (const item of allItems) {
+        counts[item.cat] = (counts[item.cat] || 0) + 1;
+      }
+
+      const tabs = [{ key: "all", label: `Tất cả (${counts.all})` }];
+      for (const [key, meta] of Object.entries(CATEGORY_META)) {
+        if (counts[key]) {
+          tabs.push({ key, label: `${meta.label} (${counts[key]})` });
+        }
+      }
+
+      filterTabsEl.innerHTML = tabs.map(t => `
+        <button class="tab-btn ${activeTab === t.key ? "active" : ""}" onclick="switchTab('${t.key}')">
+          ${escapeHtml(t.label)}
+        </button>
+      `).join("");
+    }
+
+    function switchTab(catKey) {
+      activeTab = catKey;
+      renderTabs();
+      renderView();
+    }
+
+    function focusOnMap(itemId, lat, lon) {
+      if (!map) return;
+      map.setView([lat, lon], 17);
+      const marker = markerIndex.get(itemId);
+      if (marker) marker.openPopup();
+      document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function renderView() {
+      const filtered = activeTab === "all" ? allItems : allItems.filter(x => x.cat === activeTab);
+
+      if (markersLayer) {
+        markersLayer.clearLayers();
+        markerIndex.clear();
+        for (const item of filtered) {
+          const meta = CATEGORY_META[item.cat];
+          const marker = L.circleMarker([item.lat, item.lon], {
+            radius: 7,
+            color: "#ffffff",
+            weight: 2,
+            fillColor: meta.color,
+            fillOpacity: 0.95
+          }).bindPopup(`
+            <strong>${escapeHtml(item.name)}</strong><br/>
+            ${escapeHtml(item.subType)} &bull; ${formatDist(item.dist)}<br/>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lon}" target="_blank" rel="noopener">Chỉ đường Google Maps</a>
+          `);
+          marker.addTo(markersLayer);
+          markerIndex.set(item.id, marker);
+        }
+      }
+
+      resultsEl.innerHTML = filtered.map(item => {
+        const meta = CATEGORY_META[item.cat];
+        return `
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">${escapeHtml(item.name)}</span>
+              <div class="badges">
+                <span class="badge" style="background:${meta.bg};color:${meta.color};">${escapeHtml(meta.label)}</span>
+                <span class="badge dist-badge">${formatDist(item.dist)}</span>
+              </div>
+            </div>
+            <div class="meta">
+              Phân loại: ${escapeHtml(item.subType)}
+              ${item.address ? `<br/>Địa chỉ: ${escapeHtml(item.address)}` : ""}
+              ${item.phone ? `<br/>SĐT: <a href="tel:${escapeHtml(item.phone)}">${escapeHtml(item.phone)}</a>` : ""}
+              ${item.hours ? `<br/>Giờ mở cửa: ${escapeHtml(item.hours)}` : ""}
+            </div>
+            <div class="card-actions">
+              <button class="link-btn" onclick="focusOnMap('${item.id}', ${item.lat}, ${item.lon})">Xem trên bản đồ</button>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lon}" target="_blank" rel="noopener">Chỉ đường Google Maps</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    initMap();
+    checkPermissionStatus();
+  </script>
+</body>
+</html>
