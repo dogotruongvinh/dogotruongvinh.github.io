@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tìm Tiện Ích & Tuyến Xe Buýt Quanh Đây</title>
+  <title>Tìm Tiện Ích & Tuyến Xe Buýt Quanh Đây (Bản Tối Ưu Tốc Độ)</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { margin: 0; padding: 14px; background: #f3f4f6; color: #1f2937; }
     .container { max-width: 880px; margin: 0 auto; background: #fff; padding: 18px; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
     h1 { margin: 0 0 12px; font-size: 1.32rem; color: #111827; }
-    h2 { margin: 0 0 10px; font-size: 1.05rem; color: #111827; }
+    h2 { margin: 0 0 10px; font-size: 1.04rem; color: #111827; }
 
     .perm-box {
       padding: 10px 12px;
@@ -358,7 +358,7 @@
         </select>
         <button class="bus-btn" onclick="findBusRoutesByInput()">Tìm tuyến xe buýt</button>
       </div>
-      <div class="small-note">Mẹo: Bạn cũng có thể bấm nút <strong>"Chạm bản đồ: Chọn điểm đích"</strong> ở trên hoặc bấm <strong>"Tìm bus tới đây"</strong> ngay trong danh sách địa điểm phía dưới.</div>
+      <div class="small-note">Mẹo: Bạn có thể bấm <strong>"Chạm bản đồ: Chọn điểm đích"</strong> ở trên hoặc bấm <strong>"Tìm bus tới đây"</strong> trong danh sách phía dưới.</div>
       <div id="busRouteResult" class="bus-result-box"></div>
     </div>
 
@@ -393,17 +393,14 @@
 
     const OVERPASS_MIRRORS = [
       { name: "Overpass DE (Chính)", url: "https://overpass-api.de/api/interpreter" },
-      { name: "Overpass Kumi (Dự phòng 1)", url: "https://overpass.kumi.systems/api/interpreter" },
-      { name: "Overpass Mail.ru (Dự phòng 2)", url: "https://maps.mail.ru/osm/tools/overpass/api/interpreter" },
-      { name: "Overpass LZ4 (Dự phòng 3)", url: "https://lz4.overpass-api.de/api/interpreter" }
+      { name: "Private.coffee (Dự phòng 1)", url: "https://overpass.private.coffee/api/interpreter" },
+      { name: "Mail.ru (Dự phòng 2)", url: "https://maps.mail.ru/osm/tools/overpass/api/interpreter" },
+      { name: "Kumi (Dự phòng 3)", url: "https://overpass.kumi.systems/api/interpreter" }
     ];
 
     let currentLat = null;
     let currentLon = null;
     let currentLabel = "";
-    let destLat = null;
-    let destLon = null;
-    let destLabel = "";
     let mapClickMode = "origin";
 
     let allItems = [];
@@ -484,7 +481,20 @@
       return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
     }
 
-    async function fetchWithTimeout(url, options = {}, timeoutMs = 16000) {
+    // Chuyển tâm (lat, lon) + bán kính (m) thành khung tọa độ bbox (s,w,n,e) để Overpass truy vấn cực nhanh
+    function latLonToBBox(lat, lon, radiusMeters) {
+      const dLat = radiusMeters / 111320;
+      const cosLat = Math.max(0.1, Math.cos(lat * Math.PI / 180));
+      const dLon = radiusMeters / (111320 * cosLat);
+      return [
+        (lat - dLat).toFixed(6),
+        (lon - dLon).toFixed(6),
+        (lat + dLat).toFixed(6),
+        (lon + dLon).toFixed(6)
+      ].join(",");
+    }
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 25000) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -507,7 +517,7 @@
               headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
               body: "data=" + encodeURIComponent(overpassQuery)
             },
-            17000
+            25000
           );
           if (!res.ok) {
             errorLogs.push(`${mirror.name}: HTTP ${res.status}`);
@@ -515,7 +525,7 @@
           }
           const rawText = await res.text();
           if (!rawText.trim().startsWith("{")) {
-            errorLogs.push(`${mirror.name}: Dữ liệu không hợp lệ`);
+            errorLogs.push(`${mirror.name}: Máy chủ trả về trang báo bận`);
             continue;
           }
           return { data: JSON.parse(rawText), errors: errorLogs };
@@ -573,10 +583,6 @@
     }
 
     function setDestinationMarker(lat, lon, label) {
-      destLat = lat;
-      destLon = lon;
-      destLabel = label;
-
       if (map && destLayer) {
         destLayer.clearLayers();
         L.circleMarker([lat, lon], {
@@ -736,6 +742,8 @@
 
     async function scanOriginAll(lat, lon, label) {
       await fetchNearbyPlaces(lat, lon, label);
+      // Nghỉ ngắn để tránh gửi 2 yêu cầu dồn dập cùng lúc tới Overpass
+      await new Promise(r => setTimeout(r, 600));
       await loadNearbyBusRoutes(lat, lon);
     }
 
@@ -743,75 +751,56 @@
       return Array.from(document.querySelectorAll(".cat-check:checked")).map(el => el.value);
     }
 
-    // Truy vấn tiện ích theo các nhóm đã chọn
-    function buildOverpassQuery(lat, lon, radius, selectedCats) {
-      const parts = [];
+    // Câu truy vấn siêu nhẹ: chỉ dùng chỉ mục thẻ chuẩn + khung bbox + nw (không quét regex name, không nwr)
+    function buildFastOverpassQuery(lat, lon, radius, selectedCats) {
+      const bbox = latLonToBBox(lat, lon, radius);
+      const amenities = [];
+      const shops = [];
+      const tourisms = [];
+      const leisures = [];
+      const extraLines = [];
 
       if (selectedCats.includes("pharmacy")) {
-        parts.push(`
-          nwr["amenity"="pharmacy"](around:${radius},${lat},${lon});
-          nwr["name"~"nhà thuốc|hiệu thuốc|quầy thuốc|long châu|pharmacity|an khang",i](around:${radius},${lat},${lon});
-        `);
+        amenities.push("pharmacy");
       }
       if (selectedCats.includes("hospital")) {
-        parts.push(`
-          nwr["amenity"~"^(hospital|clinic|doctors)$"](around:${radius},${lat},${lon});
-          nwr["healthcare"~"^(hospital|clinic|centre)$"](around:${radius},${lat},${lon});
-          nwr["name"~"bệnh viện|phòng khám|trạm y tế|bệnh xá",i](around:${radius},${lat},${lon});
-        `);
+        amenities.push("hospital", "clinic", "doctors");
+        extraLines.push('nw["healthcare"~"^(hospital|clinic)$"];');
       }
       if (selectedCats.includes("transit")) {
-        parts.push(`
-          nwr["amenity"~"^(bus_station|parking|motorcycle_parking)$"](around:${radius},${lat},${lon});
-          nwr["highway"="bus_stop"](around:${radius},${lat},${lon});
-          nwr["public_transport"~"^(station|platform|stop_position)$"](around:${radius},${lat},${lon});
-          nwr["name"~"bến xe|bãi đỗ xe|bãi gửi xe|điểm đỗ xe|trạm xe buýt",i](around:${radius},${lat},${lon});
-        `);
+        amenities.push("bus_station", "parking", "motorcycle_parking");
+        extraLines.push('node["highway"="bus_stop"];');
       }
       if (selectedCats.includes("laundry")) {
-        parts.push(`
-          nwr["shop"~"^(laundry|dry_cleaning)$"](around:${radius},${lat},${lon});
-          nwr["name"~"giặt là|giặt ủi|giặt sấy",i](around:${radius},${lat},${lon});
-        `);
+        shops.push("laundry", "dry_cleaning");
       }
       if (selectedCats.includes("food")) {
-        parts.push(`
-          nwr["amenity"~"^(restaurant|cafe|fast_food|food_court|bar|pub|biergarten)$"](around:${radius},${lat},${lon});
-        `);
+        amenities.push("restaurant", "cafe", "fast_food", "food_court", "bar", "pub");
       }
       if (selectedCats.includes("fun")) {
-        parts.push(`
-          nwr["leisure"~"^(park|playground|amusement_arcade|bowling_alley|water_park|sports_centre)$"](around:${radius},${lat},${lon});
-          nwr["amenity"~"^(cinema|nightclub|karaoke_box|theatre)$"](around:${radius},${lat},${lon});
-          nwr["tourism"="attraction"](around:${radius},${lat},${lon});
-          nwr["name"~"bida|billiards|karaoke|khu vui chơi",i](around:${radius},${lat},${lon});
-        `);
+        leisures.push("park", "playground", "amusement_arcade", "bowling_alley", "water_park", "sports_centre");
+        amenities.push("cinema", "nightclub", "karaoke_box", "theatre");
+        tourisms.push("attraction");
       }
       if (selectedCats.includes("motel")) {
-        parts.push(`
-          nwr["tourism"~"^(motel|guest_house|hotel|hostel)$"](around:${radius},${lat},${lon});
-          nwr["name"~"nhà nghỉ|khách sạn|homestay",i](around:${radius},${lat},${lon});
-        `);
+        tourisms.push("motel", "guest_house", "hotel", "hostel");
       }
       if (selectedCats.includes("boarding")) {
-        parts.push(`
-          nwr["tourism"="apartment"](around:${radius},${lat},${lon});
-          nwr["building"="dormitory"](around:${radius},${lat},${lon});
-          nwr["name"~"nhà trọ|phòng trọ|khu trọ|cho thuê trọ|ký túc xá",i](around:${radius},${lat},${lon});
-        `);
+        tourisms.push("apartment");
+        extraLines.push('nw["building"="dormitory"];');
       }
 
-      return `
-        [out:json][timeout:18];
-        (
-          ${parts.join("\n")}
-        );
-        out center 220;
-      `;
+      const lines = [];
+      if (amenities.length) lines.push(`nw["amenity"~"^(${amenities.join("|")})$"];`);
+      if (shops.length) lines.push(`nw["shop"~"^(${shops.join("|")})$"];`);
+      if (tourisms.length) lines.push(`nw["tourism"~"^(${tourisms.join("|")})$"];`);
+      if (leisures.length) lines.push(`nw["leisure"~"^(${leisures.join("|")})$"];`);
+      lines.push(...extraLines);
+
+      return `[out:json][timeout:20][bbox:${bbox}];(${lines.join("")});out center 220;`;
     }
 
     function classifyElement(tags) {
-      const name = (tags.name || "").toLowerCase();
       const shop = tags.shop || "";
       const amenity = tags.amenity || "";
       const healthcare = tags.healthcare || "";
@@ -819,19 +808,15 @@
       const leisure = tags.leisure || "";
       const building = tags.building || "";
       const highway = tags.highway || "";
-      const pt = tags.public_transport || "";
 
-      // 1. Ưu tiên phân loại theo thẻ chuẩn OSM
       if (amenity === "pharmacy") return { cat: "pharmacy", subType: "Nhà thuốc / Hiệu thuốc" };
-      if (["hospital", "clinic", "doctors"].includes(amenity) || ["hospital", "clinic", "centre"].includes(healthcare)) {
-        const sub = amenity === "hospital" || healthcare === "hospital" ? "Bệnh viện" : "Phòng khám / Cơ sở y tế";
+      if (["hospital", "clinic", "doctors"].includes(amenity) || ["hospital", "clinic"].includes(healthcare)) {
+        const sub = (amenity === "hospital" || healthcare === "hospital") ? "Bệnh viện" : "Phòng khám / Cơ sở y tế";
         return { cat: "hospital", subType: sub };
       }
       if (amenity === "bus_station") return { cat: "transit", subType: "Bến xe khách / Bến xe buýt" };
       if (amenity === "parking" || amenity === "motorcycle_parking") return { cat: "transit", subType: "Bãi đỗ / Điểm gửi xe" };
-      if (highway === "bus_stop" || ["station", "platform", "stop_position"].includes(pt)) {
-        return { cat: "transit", subType: pt === "station" ? "Ga / Trạm trung chuyển" : "Điểm dừng xe buýt" };
-      }
+      if (highway === "bus_stop") return { cat: "transit", subType: "Điểm dừng xe buýt" };
       if (shop === "laundry" || shop === "dry_cleaning") {
         return { cat: "laundry", subType: shop === "dry_cleaning" ? "Giặt khô" : "Tiệm giặt là" };
       }
@@ -854,23 +839,13 @@
         };
         return { cat: "fun", subType: mapSub[leisure] || mapSub[amenity] || mapSub[tourism] || "Điểm vui chơi" };
       }
-      if (["restaurant", "cafe", "fast_food", "food_court", "bar", "pub", "biergarten"].includes(amenity)) {
+      if (["restaurant", "cafe", "fast_food", "food_court", "bar", "pub"].includes(amenity)) {
         const mapSub = {
           restaurant: "Nhà hàng / Quán ăn", cafe: "Quán cà phê", fast_food: "Đồ ăn nhanh",
-          food_court: "Khu ẩm thực", bar: "Quán bar", pub: "Quán nhậu / Pub", biergarten: "Quán bia"
+          food_court: "Khu ẩm thực", bar: "Quán bar", pub: "Quán nhậu / Pub"
         };
         return { cat: "food", subType: mapSub[amenity] || "Ăn uống" };
       }
-
-      // 2. Dự phòng theo tên tiếng Việt
-      if (/nhà thuốc|hiệu thuốc|quầy thuốc|long châu|pharmacity|an khang/.test(name)) return { cat: "pharmacy", subType: "Nhà thuốc" };
-      if (/bệnh viện|phòng khám|trạm y tế|bệnh xá/.test(name)) return { cat: "hospital", subType: "Bệnh viện / Phòng khám" };
-      if (/bến xe|bãi đỗ xe|bãi gửi xe|điểm đỗ xe|trạm xe buýt/.test(name)) return { cat: "transit", subType: "Bến xe / Điểm đỗ xe" };
-      if (/giặt là|giặt ủi|giặt sấy/.test(name)) return { cat: "laundry", subType: "Tiệm giặt là" };
-      if (/nhà trọ|phòng trọ|khu trọ|cho thuê trọ|ký túc xá/.test(name)) return { cat: "boarding", subType: "Phòng trọ" };
-      if (/nhà nghỉ|khách sạn|homestay/.test(name)) return { cat: "motel", subType: "Nhà nghỉ / Lưu trú" };
-      if (/bida|billiards|karaoke|khu vui chơi/.test(name)) return { cat: "fun", subType: "Điểm vui chơi" };
-
       return null;
     }
 
@@ -881,15 +856,15 @@
         return;
       }
 
-      const radius = document.getElementById("radiusSelect").value;
-      const overpassQuery = buildOverpassQuery(lat, lon, radius, selectedCats);
+      const radius = parseInt(document.getElementById("radiusSelect").value, 10);
+      const overpassQuery = buildFastOverpassQuery(lat, lon, radius, selectedCats);
 
       const { data, errors } = await queryOverpassWithFallback(overpassQuery, (name, idx, total) => {
-        setStatus(`Đang quét tiện ích qua ${name} (${idx}/${total})...`);
+        setStatus(`Đang quét nhanh qua ${name} (${idx}/${total})...`);
       });
 
       if (!data) {
-        setStatus(`Không kết nối được máy chủ bản đồ (${errors.join(" | ")}). Bạn vẫn có thể dùng hàng nút "Mở nhanh Google Maps" phía trên.`, true);
+        setStatus(`Không kết nối được máy chủ bản đồ (${errors.join(" | ")}). Bạn có thể giảm bán kính hoặc dùng hàng nút "Mở nhanh Google Maps" phía trên.`, true);
         return;
       }
 
@@ -904,6 +879,9 @@
         const elLat = el.lat || (el.center && el.center.lat);
         const elLon = el.lon || (el.center && el.center.lon);
         if (!elLat || !elLon) continue;
+
+        const dist = calcDistance(lat, lon, elLat, elLon);
+        if (dist > radius) continue;
 
         const tags = el.tags || {};
         const info = classifyElement(tags);
@@ -927,7 +905,7 @@
           hours: tags.opening_hours || "",
           lat: elLat,
           lon: elLon,
-          dist: calcDistance(lat, lon, elLat, elLon)
+          dist
         });
       }
 
@@ -939,7 +917,7 @@
         filterTabsEl.innerHTML = "";
         resultsEl.innerHTML = "";
         if (markersLayer) markersLayer.clearLayers();
-        setStatus(`Không có địa điểm nào trên OpenStreetMap trong bán kính ${radius}m quanh "${label}". Hãy tăng bán kính hoặc bấm nút Google Maps ở trên.`);
+        setStatus(`Kết nối thành công nhưng không có địa điểm nào trên OpenStreetMap trong bán kính ${radius}m quanh "${label}". Hãy tăng bán kính hoặc bấm nút Google Maps phía trên.`);
         return;
       }
 
@@ -948,7 +926,7 @@
       renderView();
     }
 
-    // ==================== MODULE TUYẾN XE BUÝT ====================
+    // ==================== MODULE TUYẾN XE BUÝT (ĐÃ TỐI ƯU BBOX) ====================
 
     function normalizeRouteGroup(relations) {
       const mapGroups = new Map();
@@ -980,14 +958,12 @@
     }
 
     async function fetchBusRoutesNear(lat, lon, walkRadius) {
-      const roadRadius = Math.min(walkRadius, 350);
+      const stopBBox = latLonToBBox(lat, lon, walkRadius);
+      const roadBBox = latLonToBBox(lat, lon, Math.min(walkRadius, 250));
       const q = `
-        [out:json][timeout:16];
-        (
-          node["highway"="bus_stop"](around:${walkRadius},${lat},${lon});
-          node["public_transport"~"^(platform|stop_position|station)$"](around:${walkRadius},${lat},${lon});
-        )->.stops;
-        way["highway"~"^(trunk|primary|secondary|tertiary|unclassified|residential)$"](around:${roadRadius},${lat},${lon})->.roads;
+        [out:json][timeout:18];
+        node["highway"="bus_stop"](${stopBBox})->.stops;
+        way["highway"~"^(trunk|primary|secondary|tertiary)$"](${roadBBox})->.roads;
         (
           rel(bn.stops)["route"="bus"];
           rel(bw.roads)["route"="bus"];
@@ -1011,8 +987,8 @@
 
         if (!groups.length) {
           nearbyBusBox.innerHTML =
-            `Chưa ghi nhận tuyến xe buýt nào trên bản đồ OpenStreetMap trong bán kính ${walkRadius}m. ` +
-            `Hãy thử tăng bán kính đi bộ lên <strong>1.5km–2km</strong> hoặc dùng nút Google Maps bên dưới.`;
+            `Chưa ghi nhận tuyến xe buýt nào trên OpenStreetMap trong bán kính ${walkRadius}m. ` +
+            `Hãy thử tăng bán kính đi bộ lên <strong>1.5km–2km</strong> hoặc dùng nút chỉ đường Google Maps bên dưới.`;
           return;
         }
 
@@ -1154,7 +1130,7 @@
     async function drawBusRoute(relId, routeRef) {
       if (!map || !busRouteLayer) return;
       setStatus(`Đang tải đường chạy thực tế của tuyến xe buýt ${routeRef} để vẽ lên bản đồ...`);
-      const q = `[out:json][timeout:16];rel(${relId});out geom;`;
+      const q = `[out:json][timeout:18];rel(${relId});out geom;`;
       const { data, errors } = await queryOverpassWithFallback(q);
 
       if (!data || !data.elements || !data.elements.length) {
