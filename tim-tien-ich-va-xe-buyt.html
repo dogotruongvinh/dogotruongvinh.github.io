@@ -12,7 +12,6 @@
     h1 { margin: 0 0 12px; font-size: 1.28rem; color: #111827; }
     h2 { margin: 0 0 10px; font-size: 1.02rem; color: #111827; }
 
-    /* Thanh cảnh báo mất mạng nổi bật */
     .offline-banner {
       display: none;
       position: sticky;
@@ -59,6 +58,9 @@
     button.ip-btn:hover { background: #374151; }
     button.rescan-btn { background: #d97706; }
     button.rescan-btn:hover { background: #b45309; }
+    button.cancel-btn { background: #dc2626; display: none; }
+    button.cancel-btn.show { display: inline-block; }
+    button.cancel-btn:hover { background: #b91c1c; }
     button.bus-btn { background: #7c3aed; }
     button.bus-btn:hover { background: #6d28d9; }
     button.outline-btn { background: #fff; color: #1f2937; border: 1px solid #cbd5e1; font-size: 0.84rem; padding: 7px 10px; }
@@ -178,7 +180,6 @@
     }
     .status.error { border-left-color: #dc2626; background: #fef2f2; color: #991b1b; }
 
-    /* Khung cảnh báo đang hiển thị dữ liệu cũ */
     .stale-banner {
       display: none;
       padding: 10px 12px;
@@ -320,7 +321,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- Thanh báo mất mạng tự động -->
     <div id="offlineBanner" class="offline-banner">
       Thiết bị đang mất kết nối Internet (Offline). Hãy bật lại Wi-Fi hoặc 4G/5G rồi bấm "Quét lại".
     </div>
@@ -371,11 +371,12 @@
       <button class="ip-btn" onclick="locateByIP()">Định vị theo IP</button>
       <select id="radiusSelect">
         <option value="500">Bán kính 500m</option>
-        <option value="1500" selected>Bán kính 1.5km</option>
+        <option value="1000" selected>Bán kính 1km</option>
+        <option value="1500">Bán kính 1.5km</option>
         <option value="3000">Bán kính 3km</option>
-        <option value="5000">Bán kính 5km</option>
       </select>
       <button class="rescan-btn" onclick="rescanCurrent()">Quét lại</button>
+      <button id="cancelScanBtn" class="cancel-btn" onclick="cancelActiveScan()">Hủy quét</button>
     </div>
 
     <div class="controls">
@@ -383,7 +384,7 @@
       <button onclick="searchByAddress()">Đặt làm vị trí đứng</button>
     </div>
 
-    <!-- Thanh mở nhanh Google Maps đúng tọa độ -->
+    <!-- Thanh mở nhanh Google Maps -->
     <div class="gmap-bar">
       <span>Mở nhanh Google Maps:</span>
       <a id="gm-pharmacy" href="https://www.google.com/maps/search/nhà+thuốc+gần+đây" target="_blank" rel="noopener">Nhà thuốc</a>
@@ -396,7 +397,7 @@
       <a id="gm-boarding" href="https://www.google.com/maps/search/nhà+trọ+phòng+trọ+gần+đây" target="_blank" rel="noopener">Phòng trọ</a>
     </div>
 
-    <!-- Thanh điều khiển chế độ chạm bản đồ -->
+    <!-- Thanh khóa chạm bản đồ -->
     <div class="map-toolbar">
       <div class="map-mode-group">
         <button id="modeLockedBtn" class="outline-btn active-lock" onclick="setMapClickMode('locked')">🔒 Khóa chạm (Chỉ kéo/phóng)</button>
@@ -412,26 +413,26 @@
 
     <div id="gpsInfo" class="gps-info"></div>
 
-    <!-- Khung hiển thị các tuyến xe buýt đi ngang qua vị trí hiện tại -->
+    <!-- Tuyến xe buýt đi qua gần vị trí đứng -->
     <div class="panel panel-bus">
       <h2>Tuyến xe buýt đi qua gần vị trí bạn đứng</h2>
       <div id="nearbyBusBox" class="small-note">Hãy xác định vị trí đứng để quét các tuyến xe buýt đi qua khu vực này.</div>
     </div>
 
-    <!-- Khung tra cứu tuyến xe buýt từ vị trí đứng đến vị trí đích -->
+    <!-- Tra cứu tuyến xe buýt tới điểm đích -->
     <div class="panel panel-bus">
       <h2>Tìm tuyến xe buýt từ vị trí bạn đứng đến điểm đích</h2>
       <div class="controls" style="margin-bottom:8px;">
         <input type="text" id="destInput" placeholder="Nhập địa chỉ điểm đích (VD: Bến xe Giáp Bát, Hồ Gươm, Bệnh viện Bạch Mai)..." />
         <select id="busWalkRadius" title="Bán kính đi bộ ra trạm xe buýt">
-          <option value="500">Đi bộ 500m</option>
-          <option value="1000" selected>Đi bộ 1km</option>
+          <option value="500" selected>Đi bộ 500m</option>
+          <option value="1000">Đi bộ 1km</option>
           <option value="1500">Đi bộ 1.5km</option>
           <option value="2000">Đi bộ 2km</option>
         </select>
         <button class="bus-btn" onclick="findBusRoutesByInput()">Tìm tuyến xe buýt</button>
       </div>
-      <div class="small-note">Mẹo: Bấm <strong>"🚌 Chạm chọn điểm đích"</strong> ở trên bản đồ hoặc bấm <strong>"Tìm bus tới đây"</strong> trong danh sách phía dưới.</div>
+      <div class="small-note">Mẹo: Bấm <strong>"🚌 Chạm chọn điểm đích"</strong> trên bản đồ hoặc bấm <strong>"Tìm bus tới đây"</strong> ở danh sách phía dưới.</div>
       <div id="busRouteResult" class="bus-result-box"></div>
     </div>
 
@@ -453,6 +454,7 @@
     const permBox = document.getElementById("permBox");
     const gpsInfoEl = document.getElementById("gpsInfo");
     const statusEl = document.getElementById("status");
+    const cancelScanBtn = document.getElementById("cancelScanBtn");
     const staleBanner = document.getElementById("staleBanner");
     const staleBannerText = document.getElementById("staleBannerText");
     const resultsEl = document.getElementById("results");
@@ -484,12 +486,20 @@
     let currentLat = null;
     let currentLon = null;
     let currentLabel = "";
-    let mapClickMode = "locked"; // Mặc định khóa chạm bản đồ để vuốt trên điện thoại không quét nhầm
+    let mapClickMode = "locked";
 
     let allItems = [];
     let activeTab = "all";
-    let lastScanMeta = null; // Lưu thông tin lần quét tiện ích thành công gần nhất
+    let lastScanMeta = null;
     let lastBusCache = { key: "", groups: [], timeStr: "", label: "" };
+
+    // Bộ điều khiển hủy lượt quét cũ để chống lỗi đè trạng thái (race condition)
+    let scanRunId = 0;
+    let activeScanController = null;
+    let busSearchId = 0;
+    let activeBusSearchController = null;
+    let drawRouteId = 0;
+    let activeDrawController = null;
 
     let map = null;
     let userLayer = null;
@@ -508,13 +518,14 @@
       if (isOffline()) {
         offlineBanner.classList.add("show");
         if (isEvent) {
-          setStatus("Thiết bị vừa mất kết nối Internet (Offline). Các thao tác quét mới tạm dừng cho tới khi có mạng.", true);
+          cancelActiveScan(true);
+          setStatus("Thiết bị vừa mất kết nối Internet (Offline). Các thao tác quét tạm dừng cho tới khi có mạng.", true);
           showStaleBannerIfNeeded("điện thoại đang mất kết nối mạng");
         }
       } else {
         offlineBanner.classList.remove("show");
         if (isEvent) {
-          setStatus("Đã có kết nối Internet trở lại. Bạn có thể bấm \"Quét lại\" để cập nhật dữ liệu mới.");
+          setStatus("Đã có kết nối Internet trở lại. Bạn có thể bấm \"Quét lại\" để cập nhật.");
         }
       }
     }
@@ -524,6 +535,35 @@
 
     function getCurrentTimeStr() {
       return new Date().toLocaleTimeString("vi-VN", { hour12: false });
+    }
+
+    function beginNewScanSession() {
+      scanRunId += 1;
+      if (activeScanController) {
+        activeScanController.abort();
+      }
+      activeScanController = new AbortController();
+      cancelScanBtn.classList.add("show");
+      return { runId: scanRunId, signal: activeScanController.signal };
+    }
+
+    function finishScanSession(runId) {
+      if (runId === scanRunId) {
+        cancelScanBtn.classList.remove("show");
+      }
+    }
+
+    function cancelActiveScan(silent = false) {
+      scanRunId += 1;
+      if (activeScanController) {
+        activeScanController.abort();
+        activeScanController = null;
+      }
+      cancelScanBtn.classList.remove("show");
+      if (!silent) {
+        setStatus("Đã hủy lượt quét đang chạy.");
+        showStaleBannerIfNeeded("bạn đã hủy lượt quét mới");
+      }
     }
 
     // ==================== CẢNH BÁO GIỮ KẾT QUẢ CŨ ====================
@@ -575,7 +615,6 @@
       busRouteLayer = L.layerGroup().addTo(map);
 
       map.on("click", async (e) => {
-        // Nếu bản đồ đang khóa chạm thì bỏ qua hoàn toàn
         if (mapClickMode === "locked") return;
 
         if (isOffline()) {
@@ -588,8 +627,6 @@
 
         const pickedMode = mapClickMode;
         const { lat, lng } = e.latlng;
-
-        // Tự động khóa lại ngay sau khi chấm xong để tránh chạm nhầm khi vuốt tiếp
         setMapClickMode("locked");
 
         if (pickedMode === "dest") {
@@ -611,14 +648,10 @@
 
     function setMapClickMode(mode) {
       mapClickMode = mode;
-      const lockedBtn = document.getElementById("modeLockedBtn");
-      const originBtn = document.getElementById("modeOriginBtn");
-      const destBtn = document.getElementById("modeDestBtn");
+      document.getElementById("modeLockedBtn").classList.toggle("active-lock", mode === "locked");
+      document.getElementById("modeOriginBtn").classList.toggle("active-origin", mode === "origin");
+      document.getElementById("modeDestBtn").classList.toggle("active-dest", mode === "dest");
       const mapEl = document.getElementById("map");
-
-      lockedBtn.classList.toggle("active-lock", mode === "locked");
-      originBtn.classList.toggle("active-origin", mode === "origin");
-      destBtn.classList.toggle("active-dest", mode === "dest");
 
       if (mode === "locked") {
         mapEl.classList.remove("picking-mode");
@@ -672,30 +705,67 @@
       ].join(",");
     }
 
-    async function fetchWithTimeout(url, options = {}, timeoutMs = 25000) {
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 11000, externalSignal = null) {
       if (isOffline()) {
         throw new Error("Thiết bị đang mất kết nối mạng (Offline)");
       }
+      if (externalSignal && externalSignal.aborted) {
+        const err = new Error("Đã hủy bởi lượt quét mới");
+        err.name = "UserAbortError";
+        throw err;
+      }
+
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      let timedOut = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, timeoutMs);
+
+      const onExternalAbort = () => controller.abort();
+      if (externalSignal) {
+        externalSignal.addEventListener("abort", onExternalAbort, { once: true });
+      }
+
       try {
         return await fetch(url, { ...options, signal: controller.signal });
+      } catch (err) {
+        if (externalSignal && externalSignal.aborted) {
+          const abortErr = new Error("Đã hủy bởi lượt quét mới");
+          abortErr.name = "UserAbortError";
+          throw abortErr;
+        }
+        if (timedOut) {
+          const toErr = new Error("Quá thời gian chờ");
+          toErr.name = "TimeoutError";
+          throw toErr;
+        }
+        throw err;
       } finally {
         clearTimeout(timer);
+        if (externalSignal) {
+          externalSignal.removeEventListener("abort", onExternalAbort);
+        }
       }
     }
 
-    async function queryOverpassWithFallback(overpassQuery, onProgress) {
+    async function queryOverpassWithFallback(overpassQuery, { onProgress = null, signal = null, timeoutMs = 11000 } = {}) {
+      if (signal && signal.aborted) {
+        return { data: null, aborted: true, offline: false, errors: [] };
+      }
       if (isOffline()) {
         updateOnlineStatus(false);
-        return { data: null, offline: true, errors: ["Thiết bị đang mất kết nối Internet (Offline)"] };
+        return { data: null, aborted: false, offline: true, errors: ["Thiết bị đang mất kết nối Internet (Offline)"] };
       }
 
       const errorLogs = [];
       for (let i = 0; i < OVERPASS_MIRRORS.length; i++) {
+        if (signal && signal.aborted) {
+          return { data: null, aborted: true, offline: false, errors: [] };
+        }
         if (isOffline()) {
           updateOnlineStatus(false);
-          return { data: null, offline: true, errors: ["Thiết bị mất kết nối mạng giữa chừng (Offline)"] };
+          return { data: null, aborted: false, offline: true, errors: ["Thiết bị mất kết nối mạng giữa chừng (Offline)"] };
         }
         const mirror = OVERPASS_MIRRORS[i];
         if (onProgress) onProgress(mirror.name, i + 1, OVERPASS_MIRRORS.length);
@@ -707,24 +777,31 @@
               headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
               body: "data=" + encodeURIComponent(overpassQuery)
             },
-            25000
+            timeoutMs,
+            signal
           );
           if (!res.ok) {
             errorLogs.push(`${mirror.name}: HTTP ${res.status}`);
             continue;
           }
           const rawText = await res.text();
+          if (signal && signal.aborted) {
+            return { data: null, aborted: true, offline: false, errors: [] };
+          }
           if (!rawText.trim().startsWith("{")) {
             errorLogs.push(`${mirror.name}: Máy chủ đang bận`);
             continue;
           }
-          return { data: JSON.parse(rawText), offline: false, errors: errorLogs };
+          return { data: JSON.parse(rawText), aborted: false, offline: false, errors: errorLogs };
         } catch (err) {
-          const reason = err.name === "AbortError" ? "Quá thời gian chờ" : err.message;
+          if (err.name === "UserAbortError") {
+            return { data: null, aborted: true, offline: false, errors: [] };
+          }
+          const reason = err.name === "TimeoutError" ? "Quá thời gian chờ" : err.message;
           errorLogs.push(`${mirror.name}: ${reason}`);
         }
       }
-      return { data: null, offline: false, errors: errorLogs };
+      return { data: null, aborted: false, offline: false, errors: errorLogs };
     }
 
     function updateGoogleMapsLinks(lat, lon) {
@@ -794,7 +871,7 @@
     async function checkPermissionStatus() {
       if (!navigator.geolocation) {
         permBox.className = "perm-box perm-denied";
-        permBox.textContent = "Trình duyệt không hỗ trợ GPS. Hãy dùng Định vị theo IP, nhập địa chỉ hoặc mở khóa chạm bản đồ.";
+        permBox.textContent = "Trình duyệt không hỗ trợ GPS. Hãy dùng Định vị theo IP, nhập địa chỉ hoặc chọn trên bản đồ.";
         return;
       }
       if (!window.isSecureContext) {
@@ -845,7 +922,7 @@
             const coordText = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
             setLocation(lat, lon, `GPS ~${acc}m`, coordText);
             updateOnlineStatus(false);
-            setStatus("Đã lấy được tọa độ GPS nhưng thiết bị đang mất mạng (Offline) nên chưa thể quét dữ liệu bản đồ.", true);
+            setStatus("Đã lấy được tọa độ GPS nhưng thiết bị đang mất mạng (Offline) nên chưa thể quét bản đồ.", true);
             showStaleBannerIfNeeded("thiết bị đang mất kết nối mạng");
             return;
           }
@@ -877,7 +954,7 @@
       }
       setStatus("Đang ước lượng vị trí qua IP...");
       try {
-        const res = await fetchWithTimeout("https://get.geojs.io/v1/ip/geo.json", {}, 10000);
+        const res = await fetchWithTimeout("https://get.geojs.io/v1/ip/geo.json", {}, 9000);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const lat = parseFloat(data.latitude);
@@ -896,7 +973,7 @@
       if (isOffline()) return `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
       try {
         const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=vi`;
-        const res = await fetchWithTimeout(url, {}, 10000);
+        const res = await fetchWithTimeout(url, {}, 9000);
         if (!res.ok) return `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
         const data = await res.json();
         return data.display_name || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
@@ -905,10 +982,10 @@
       }
     }
 
-    async function geocodeAddress(query) {
+    async function geocodeAddress(query, signal = null) {
       if (isOffline()) throw new Error("Thiết bị đang mất kết nối mạng (Offline)");
       const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=vi&q=${encodeURIComponent(query)}`;
-      const res = await fetchWithTimeout(url, {}, 10000);
+      const res = await fetchWithTimeout(url, {}, 10000, signal);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data.length) return null;
@@ -968,12 +1045,23 @@
         showStaleBannerIfNeeded("thiết bị đang mất kết nối mạng");
         return;
       }
-      const ok = await fetchNearbyPlaces(lat, lon, label);
-      if (ok && !isOffline()) {
-        await new Promise(r => setTimeout(r, 600));
-        await loadNearbyBusRoutes(lat, lon, label);
-      } else if (isOffline()) {
-        renderNearbyBusError("Thiết bị đang mất kết nối mạng (Offline).");
+
+      // Hủy toàn bộ lượt quét cũ trước khi bắt đầu lượt mới
+      const { runId, signal } = beginNewScanSession();
+
+      try {
+        const ok = await fetchNearbyPlaces(lat, lon, label, runId, signal);
+        if (runId !== scanRunId || signal.aborted) return;
+
+        if (ok && !isOffline()) {
+          await new Promise(r => setTimeout(r, 500));
+          if (runId !== scanRunId || signal.aborted) return;
+          await loadNearbyBusRoutes(lat, lon, label, runId, signal);
+        } else if (isOffline()) {
+          renderNearbyBusError("Thiết bị đang mất kết nối mạng (Offline).");
+        }
+      } finally {
+        finishScanSession(runId);
       }
     }
 
@@ -981,59 +1069,50 @@
       return Array.from(document.querySelectorAll(".cat-check:checked")).map(el => el.value);
     }
 
+    // Truy vấn chỉ mục chuẩn không dùng regex để chạy nhanh ở nội thành đông điểm
     function buildFastOverpassQuery(lat, lon, radius, selectedCats) {
       const bbox = latLonToBBox(lat, lon, radius);
-      const amenities = [];
-      const shops = [];
-      const tourisms = [];
-      const leisures = [];
-      const extraLines = [];
+      const lines = [];
 
-      if (selectedCats.includes("pharmacy")) amenities.push("pharmacy");
+      if (selectedCats.includes("pharmacy")) {
+        lines.push('nw["amenity"="pharmacy"];');
+      }
       if (selectedCats.includes("hospital")) {
-        amenities.push("hospital", "clinic", "doctors");
-        extraLines.push('nw["healthcare"~"^(hospital|clinic)$"];');
+        lines.push('nw["amenity"="hospital"];nw["amenity"="clinic"];nw["amenity"="doctors"];');
       }
       if (selectedCats.includes("transit")) {
-        amenities.push("bus_station", "parking", "motorcycle_parking");
-        extraLines.push('node["highway"="bus_stop"];');
+        lines.push('node["highway"="bus_stop"];nw["amenity"="bus_station"];nw["amenity"="parking"];nw["amenity"="motorcycle_parking"];');
       }
-      if (selectedCats.includes("laundry")) shops.push("laundry", "dry_cleaning");
-      if (selectedCats.includes("food")) amenities.push("restaurant", "cafe", "fast_food", "food_court", "bar", "pub");
+      if (selectedCats.includes("laundry")) {
+        lines.push('nw["shop"="laundry"];nw["shop"="dry_cleaning"];');
+      }
+      if (selectedCats.includes("food")) {
+        lines.push('nw["amenity"="restaurant"];nw["amenity"="cafe"];nw["amenity"="fast_food"];');
+      }
       if (selectedCats.includes("fun")) {
-        leisures.push("park", "playground", "amusement_arcade", "bowling_alley", "water_park", "sports_centre");
-        amenities.push("cinema", "nightclub", "karaoke_box", "theatre");
-        tourisms.push("attraction");
+        lines.push('nw["leisure"="park"];nw["leisure"="playground"];nw["amenity"="cinema"];nw["amenity"="karaoke_box"];nw["tourism"="attraction"];');
       }
-      if (selectedCats.includes("motel")) tourisms.push("motel", "guest_house", "hotel", "hostel");
+      if (selectedCats.includes("motel")) {
+        lines.push('nw["tourism"="motel"];nw["tourism"="guest_house"];nw["tourism"="hotel"];nw["tourism"="hostel"];');
+      }
       if (selectedCats.includes("boarding")) {
-        tourisms.push("apartment");
-        extraLines.push('nw["building"="dormitory"];');
+        lines.push('nw["tourism"="apartment"];nw["building"="dormitory"];');
       }
 
-      const lines = [];
-      if (amenities.length) lines.push(`nw["amenity"~"^(${amenities.join("|")})$"];`);
-      if (shops.length) lines.push(`nw["shop"~"^(${shops.join("|")})$"];`);
-      if (tourisms.length) lines.push(`nw["tourism"~"^(${tourisms.join("|")})$"];`);
-      if (leisures.length) lines.push(`nw["leisure"~"^(${leisures.join("|")})$"];`);
-      lines.push(...extraLines);
-
-      return `[out:json][timeout:20][bbox:${bbox}];(${lines.join("")});out center 220;`;
+      return `[out:json][timeout:10][bbox:${bbox}];(${lines.join("")});out center 200;`;
     }
 
     function classifyElement(tags) {
       const shop = tags.shop || "";
       const amenity = tags.amenity || "";
-      const healthcare = tags.healthcare || "";
       const tourism = tags.tourism || "";
       const leisure = tags.leisure || "";
       const building = tags.building || "";
       const highway = tags.highway || "";
 
       if (amenity === "pharmacy") return { cat: "pharmacy", subType: "Nhà thuốc / Hiệu thuốc" };
-      if (["hospital", "clinic", "doctors"].includes(amenity) || ["hospital", "clinic"].includes(healthcare)) {
-        const sub = (amenity === "hospital" || healthcare === "hospital") ? "Bệnh viện" : "Phòng khám / Cơ sở y tế";
-        return { cat: "hospital", subType: sub };
+      if (["hospital", "clinic", "doctors"].includes(amenity)) {
+        return { cat: "hospital", subType: amenity === "hospital" ? "Bệnh viện" : "Phòng khám / Cơ sở y tế" };
       }
       if (amenity === "bus_station") return { cat: "transit", subType: "Bến xe khách / Bến xe buýt" };
       if (amenity === "parking" || amenity === "motorcycle_parking") return { cat: "transit", subType: "Bãi đỗ / Điểm gửi xe" };
@@ -1048,55 +1127,49 @@
         const mapSub = { motel: "Nhà nghỉ", guest_house: "Nhà khách / Homestay", hotel: "Khách sạn", hostel: "Hostel" };
         return { cat: "motel", subType: mapSub[tourism] };
       }
-      if (
-        ["park", "playground", "amusement_arcade", "bowling_alley", "water_park", "sports_centre"].includes(leisure) ||
-        ["cinema", "nightclub", "karaoke_box", "theatre"].includes(amenity) ||
-        tourism === "attraction"
-      ) {
+      if (["park", "playground"].includes(leisure) || ["cinema", "karaoke_box"].includes(amenity) || tourism === "attraction") {
         const mapSub = {
           park: "Công viên", playground: "Sân chơi", cinema: "Rạp chiếu phim",
-          karaoke_box: "Karaoke", nightclub: "Giải trí đêm", water_park: "Công viên nước",
-          sports_centre: "Khu thể thao", attraction: "Điểm tham quan"
+          karaoke_box: "Karaoke", attraction: "Điểm tham quan"
         };
         return { cat: "fun", subType: mapSub[leisure] || mapSub[amenity] || mapSub[tourism] || "Điểm vui chơi" };
       }
-      if (["restaurant", "cafe", "fast_food", "food_court", "bar", "pub"].includes(amenity)) {
-        const mapSub = {
-          restaurant: "Nhà hàng / Quán ăn", cafe: "Quán cà phê", fast_food: "Đồ ăn nhanh",
-          food_court: "Khu ẩm thực", bar: "Quán bar", pub: "Quán nhậu / Pub"
-        };
+      if (["restaurant", "cafe", "fast_food"].includes(amenity)) {
+        const mapSub = { restaurant: "Nhà hàng / Quán ăn", cafe: "Quán cà phê", fast_food: "Đồ ăn nhanh" };
         return { cat: "food", subType: mapSub[amenity] || "Ăn uống" };
       }
       return null;
     }
 
-    async function fetchNearbyPlaces(lat, lon, label) {
-      if (isOffline()) {
-        updateOnlineStatus(false);
-        setStatus("Thiết bị đang mất kết nối Internet (Offline). Bật lại Wi-Fi hoặc 4G/5G rồi bấm \"Quét lại\".", true);
-        showStaleBannerIfNeeded("thiết bị đang mất kết nối mạng");
-        return false;
-      }
-
+    async function fetchNearbyPlaces(lat, lon, label, runId, signal) {
       const selectedCats = getSelectedCategories();
       if (!selectedCats.length) {
-        setStatus("Vui lòng tích chọn ít nhất 1 nhóm địa điểm ở phía trên.", true);
+        if (runId === scanRunId) setStatus("Vui lòng tích chọn ít nhất 1 nhóm địa điểm ở phía trên.", true);
         return false;
       }
 
       const radius = parseInt(document.getElementById("radiusSelect").value, 10);
       const overpassQuery = buildFastOverpassQuery(lat, lon, radius, selectedCats);
 
-      const { data, offline, errors } = await queryOverpassWithFallback(overpassQuery, (name, idx, total) => {
-        setStatus(`Đang quét nhanh qua ${name} (${idx}/${total})...`);
+      const { data, aborted, offline, errors } = await queryOverpassWithFallback(overpassQuery, {
+        signal,
+        timeoutMs: 11000,
+        onProgress: (name, idx, total) => {
+          if (runId === scanRunId) {
+            setStatus(`Đang quét nhanh qua ${name} (${idx}/${total})...`);
+          }
+        }
       });
+
+      // Nếu đã có lượt quét mới hơn thì dừng hẳn, tuyệt đối không ghi đè UI
+      if (aborted || runId !== scanRunId) return false;
 
       if (!data) {
         if (offline) {
           setStatus("Thiết bị đang mất kết nối Internet (Offline). Không thể tải dữ liệu mới.", true);
           showStaleBannerIfNeeded("thiết bị đang mất kết nối mạng");
         } else {
-          setStatus(`Không kết nối được máy chủ bản đồ (${errors.join(" | ")}). Bạn có thể giảm bán kính hoặc dùng hàng nút "Mở nhanh Google Maps" phía trên.`, true);
+          setStatus(`Không kết nối được máy chủ bản đồ (${errors.join(" | ")}). Hãy thử giảm bán kính xuống 500m–1km hoặc bỏ bớt nhóm Ăn uống khi ở nội thành.`, true);
           showStaleBannerIfNeeded("máy chủ bản đồ quá tải hoặc không phản hồi");
         }
         return false;
@@ -1196,22 +1269,19 @@
       );
     }
 
-    async function fetchBusRoutesNear(lat, lon, walkRadius) {
+    // Truy vấn gọn: chỉ lấy tuyến buýt qua các trạm dừng (tránh quét toàn bộ đường bộ gây treo máy chủ)
+    async function fetchBusRoutesNear(lat, lon, walkRadius, signal = null) {
       if (isOffline()) throw new Error("Thiết bị đang mất kết nối Internet (Offline)");
 
       const stopBBox = latLonToBBox(lat, lon, walkRadius);
-      const roadBBox = latLonToBBox(lat, lon, Math.min(walkRadius, 250));
-      const q = `
-        [out:json][timeout:18];
-        node["highway"="bus_stop"](${stopBBox})->.stops;
-        way["highway"~"^(trunk|primary|secondary|tertiary)$"](${roadBBox})->.roads;
-        (
-          rel(bn.stops)["route"="bus"];
-          rel(bw.roads)["route"="bus"];
-        );
-        out tags;
-      `;
-      const { data, offline, errors } = await queryOverpassWithFallback(q);
+      const q = `[out:json][timeout:10];node["highway"="bus_stop"](${stopBBox})->.stops;rel(bn.stops)["route"="bus"];out tags;`;
+
+      const { data, aborted, offline, errors } = await queryOverpassWithFallback(q, { signal, timeoutMs: 11000 });
+      if (aborted) {
+        const err = new Error("Đã hủy bởi lượt tìm mới");
+        err.name = "UserAbortError";
+        throw err;
+      }
       if (!data) {
         throw new Error(offline ? "Thiết bị đang mất kết nối mạng (Offline)" : (errors.join(" | ") || "Không kết nối được máy chủ bản đồ"));
       }
@@ -1252,30 +1322,35 @@
       if (relId) drawBusRoute(relId, ref);
     }
 
-    async function loadNearbyBusRoutes(lat, lon, label = "") {
-      const walkRadius = parseInt(document.getElementById("busWalkRadius").value, 10) || 1000;
+    async function loadNearbyBusRoutes(lat, lon, label, runId, signal) {
+      const walkRadius = parseInt(document.getElementById("busWalkRadius").value, 10) || 500;
       const cacheKey = `${lat.toFixed(4)},${lon.toFixed(4)},${walkRadius}`;
 
       if (isOffline()) {
-        renderNearbyBusError("thiết bị đang mất kết nối mạng (Offline)");
+        if (runId === scanRunId) renderNearbyBusError("thiết bị đang mất kết nối mạng (Offline)");
         return;
       }
 
-      nearbyBusBox.innerHTML = `Đang quét các tuyến xe buýt đi qua trong bán kính ${walkRadius}m quanh vị trí bạn đứng...`;
+      if (runId === scanRunId) {
+        nearbyBusBox.innerHTML = `Đang quét các tuyến xe buýt đi qua trong bán kính ${walkRadius}m quanh vị trí bạn đứng...`;
+      }
 
       try {
-        const groups = await fetchBusRoutesNear(lat, lon, walkRadius);
+        const groups = await fetchBusRoutesNear(lat, lon, walkRadius, signal);
+        if (runId !== scanRunId || (signal && signal.aborted)) return;
+
         lastBusCache = { key: cacheKey, groups, timeStr: getCurrentTimeStr(), label: label || currentLabel };
 
         if (!groups.length) {
           nearbyBusBox.innerHTML =
             `Chưa ghi nhận tuyến xe buýt nào trên OpenStreetMap trong bán kính ${walkRadius}m. ` +
-            `Hãy thử tăng bán kính đi bộ lên <strong>1.5km–2km</strong> hoặc dùng nút chỉ đường Google Maps bên dưới.`;
+            `Hãy thử tăng bán kính đi bộ lên <strong>1km–1.5km</strong> hoặc dùng nút chỉ đường Google Maps bên dưới.`;
           return;
         }
 
         renderNearbyBusGroups(groups);
       } catch (e) {
+        if (e.name === "UserAbortError" || runId !== scanRunId) return;
         renderNearbyBusError(e.message);
       }
     }
@@ -1295,16 +1370,24 @@
         busRouteResult.innerHTML = `<span style="color:#b91c1c;">Vui lòng nhập địa chỉ điểm đích hoặc dùng nút chấm điểm đích trên bản đồ.</span>`;
         return;
       }
+
+      busSearchId += 1;
+      const mySearchId = busSearchId;
+      if (activeBusSearchController) activeBusSearchController.abort();
+      activeBusSearchController = new AbortController();
+
       busRouteResult.innerHTML = "Đang xác định tọa độ điểm đích...";
       try {
-        const found = await geocodeAddress(query);
+        const found = await geocodeAddress(query, activeBusSearchController.signal);
+        if (mySearchId !== busSearchId) return;
         if (!found) {
           busRouteResult.innerHTML = `<span style="color:#b91c1c;">Không tìm thấy điểm đích "${escapeHtml(query)}". Hãy nhập rõ tên đường/quận/tỉnh hoặc chấm trực tiếp trên bản đồ.</span>`;
           return;
         }
         setDestinationMarker(found.lat, found.lon, found.label);
-        findBusRoutesToCoords(found.lat, found.lon, found.label);
+        findBusRoutesToCoords(found.lat, found.lon, found.label, mySearchId, activeBusSearchController.signal);
       } catch (e) {
+        if (e.name === "UserAbortError" || mySearchId !== busSearchId) return;
         busRouteResult.innerHTML = `<span style="color:#b91c1c;">Lỗi tra cứu điểm đích: ${escapeHtml(e.message)}</span>`;
       }
     }
@@ -1318,13 +1401,23 @@
       document.getElementById("busRouteResult").scrollIntoView({ behavior: "smooth", block: "center" });
     }
 
-    async function findBusRoutesToCoords(dLat, dLon, dLabel) {
+    async function findBusRoutesToCoords(dLat, dLon, dLabel, existingSearchId = null, existingSignal = null) {
       if (currentLat === null || currentLon === null) {
         busRouteResult.innerHTML = `<span style="color:#b91c1c;">Chưa có vị trí xuất phát. Hãy lấy GPS hoặc chọn vị trí đứng trước.</span>`;
         return;
       }
 
-      const walkRadius = parseInt(document.getElementById("busWalkRadius").value, 10) || 1000;
+      let mySearchId = existingSearchId;
+      let signal = existingSignal;
+      if (mySearchId === null) {
+        busSearchId += 1;
+        mySearchId = busSearchId;
+        if (activeBusSearchController) activeBusSearchController.abort();
+        activeBusSearchController = new AbortController();
+        signal = activeBusSearchController.signal;
+      }
+
+      const walkRadius = parseInt(document.getElementById("busWalkRadius").value, 10) || 500;
       const straightDist = calcDistance(currentLat, currentLon, dLat, dLon);
       const gmTransitUrl = `https://www.google.com/maps/dir/?api=1&origin=${currentLat},${currentLon}&destination=${dLat},${dLon}&travelmode=transit`;
 
@@ -1341,11 +1434,13 @@
         let originGroups = lastBusCache.key === cacheKey ? lastBusCache.groups : null;
 
         if (!originGroups) {
-          originGroups = await fetchBusRoutesNear(currentLat, currentLon, walkRadius);
+          originGroups = await fetchBusRoutesNear(currentLat, currentLon, walkRadius, signal);
+          if (mySearchId !== busSearchId) return;
           lastBusCache = { key: cacheKey, groups: originGroups, timeStr: getCurrentTimeStr(), label: currentLabel };
         }
 
-        const destGroups = await fetchBusRoutesNear(dLat, dLon, walkRadius);
+        const destGroups = await fetchBusRoutesNear(dLat, dLon, walkRadius, signal);
+        if (mySearchId !== busSearchId) return;
 
         const destMap = new Map(destGroups.map(g => [g.key, g]));
         const directRoutes = originGroups.filter(g => destMap.has(g.key));
@@ -1374,7 +1469,7 @@
         } else {
           html += `
             <div class="route-card" style="border-color:#fcd34d;background:#fffbeb;">
-              <strong>Không tìm thấy tuyến đi thẳng</strong> trong dữ liệu OpenStreetMap (bán kính đi bộ ${walkRadius}m). Bạn có thể cần chuyển tuyến hoặc tăng bán kính đi bộ.
+              <strong>Không tìm thấy tuyến đi thẳng</strong> trong dữ liệu OpenStreetMap (bán kính đi bộ ${walkRadius}m). Bạn có thể cần chuyển tuyến hoặc tăng bán kính đi bộ lên 1km.
               <div style="margin-top:8px;">
                 <strong>Tuyến gần vị trí đứng (${originGroups.length}):</strong>
                 ${originGroups.length
@@ -1401,6 +1496,7 @@
 
         busRouteResult.innerHTML = html;
       } catch (e) {
+        if (e.name === "UserAbortError" || mySearchId !== busSearchId) return;
         busRouteResult.innerHTML = `
           <div style="color:#b91c1c;">Lỗi khi tra cứu tuyến xe buýt (${escapeHtml(e.message)}).</div>
           <a class="gm-transit-btn" href="${gmTransitUrl}" target="_blank" rel="noopener">
@@ -1417,9 +1513,20 @@
         setStatus(`Không thể tải đường vẽ tuyến ${routeRef} vì thiết bị đang mất mạng (Offline).`, true);
         return;
       }
+
+      drawRouteId += 1;
+      const myDrawId = drawRouteId;
+      if (activeDrawController) activeDrawController.abort();
+      activeDrawController = new AbortController();
+
       setStatus(`Đang tải đường chạy thực tế của tuyến xe buýt ${routeRef} để vẽ lên bản đồ...`);
-      const q = `[out:json][timeout:18];rel(${relId});out geom;`;
-      const { data, offline, errors } = await queryOverpassWithFallback(q);
+      const q = `[out:json][timeout:12];rel(${relId});out geom;`;
+      const { data, aborted, offline, errors } = await queryOverpassWithFallback(q, {
+        signal: activeDrawController.signal,
+        timeoutMs: 13000
+      });
+
+      if (aborted || myDrawId !== drawRouteId) return;
 
       if (!data || !data.elements || !data.elements.length) {
         const msg = offline
