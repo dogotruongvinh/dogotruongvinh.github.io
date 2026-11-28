@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ClayDepth V2 Studio — Depth Anything V2 Colab &amp; Height Map 16-bit CNC</title>
+  <title>ClayDepth V2.5 Pro — Depth Anything V2 Hi-Res Interpolation &amp; 16-bit Height Map CNC</title>
   <style>
     /* =====================================================================
-       CLAYDEPTH V2 STUDIO — ZBRUSH / CNC DARK SCULPTING DESIGN SYSTEM
+       CLAYDEPTH V2.5 PRO — ZBRUSH / CNC DARK SCULPTING DESIGN SYSTEM
        100% tự chứa, không phụ thuộc CDN bên ngoài
        ===================================================================== */
     :root {
@@ -25,6 +25,7 @@
       --clay-dark: #ba5b41;
       --amber: #f4b942;
       --emerald: #34b888;
+      --cyan: #38bdf8;
       --danger: #e25d6b;
       --radius-lg: 14px;
       --radius-md: 10px;
@@ -55,10 +56,9 @@
       overflow: hidden;
       background-image:
         radial-gradient(circle at 12% 0%, rgba(224, 122, 95, 0.08), transparent 36%),
-        radial-gradient(circle at 88% 4%, rgba(244, 185, 66, 0.05), transparent 34%);
+        radial-gradient(circle at 88% 4%, rgba(56, 189, 248, 0.05), transparent 34%);
     }
 
-    /* Thanh cuộn tinh gọn kiểu phần mềm 3D */
     ::-webkit-scrollbar { width: 7px; height: 7px; }
     ::-webkit-scrollbar-track { background: var(--bg-well); }
     ::-webkit-scrollbar-thumb { background: #2c3445; border-radius: 99px; }
@@ -109,6 +109,7 @@
       display: flex;
       align-items: center;
       gap: 7px;
+      flex-wrap: wrap;
     }
 
     .badge-16bit {
@@ -122,12 +123,22 @@
       border: 1px solid rgba(244, 185, 66, 0.35);
     }
 
+    .badge-pro {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 5px;
+      color: #7dd3fc;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
     .brand-sub {
       font-size: 11px;
       color: var(--text-sub);
     }
 
-    /* Thanh kết nối Colab trên Header */
     .colab-bar {
       display: flex;
       align-items: center;
@@ -302,9 +313,8 @@
       overflow: hidden;
     }
 
-    /* Cột trái 370px cuộn độc lập */
     .sidebar {
-      width: 370px;
+      width: 390px;
       flex-shrink: 0;
       background: var(--bg-panel);
       border-right: 1px solid var(--border);
@@ -353,7 +363,6 @@
       border: 1px solid rgba(224, 122, 95, 0.35);
     }
 
-    /* Dropzone */
     .dropzone {
       background: var(--bg-well);
       border: 1.5px dashed var(--border-light);
@@ -394,10 +403,7 @@
       flex-shrink: 0;
     }
 
-    .input-meta {
-      flex: 1;
-      min-width: 0;
-    }
+    .input-meta { flex: 1; min-width: 0; }
     .input-name {
       font-weight: 700;
       font-size: 12px;
@@ -418,7 +424,6 @@
       gap: 7px;
     }
 
-    /* Form Controls */
     .field-label {
       font-size: 11.5px;
       font-weight: 600;
@@ -427,6 +432,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 5px;
+      gap: 6px;
     }
 
     .mono-val {
@@ -444,13 +450,35 @@
       color: var(--text-main);
       font-size: 12px;
       font-weight: 600;
-      padding: 8px 10px;
+      padding: 7.5px 10px;
       outline: none;
       cursor: pointer;
     }
     .select-box:focus { border-color: var(--clay); }
 
-    /* Sliders */
+    .preset-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .preset-pill {
+      padding: 6px 6px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--bg-well);
+      border: 1px solid var(--border-light);
+      color: var(--text-sub);
+      text-align: center;
+      transition: all 0.14s;
+    }
+    .preset-pill:hover { color: #fff; border-color: var(--cyan); }
+    .preset-pill.active {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: var(--cyan);
+      color: #bae6fd;
+    }
+
     input[type="range"].studio-slider {
       -webkit-appearance: none;
       appearance: none;
@@ -495,7 +523,21 @@
       padding: 10px 11px;
     }
 
-    /* Toggle Switch & Checkbox */
+    .control-group.hi-res-box {
+      border-color: rgba(56, 189, 248, 0.28);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.05) 0%, var(--bg-well) 100%);
+    }
+
+    .sub-head {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
     .toggle-row {
       display: flex;
       align-items: center;
@@ -546,6 +588,7 @@
       height: 15px;
       accent-color: var(--clay);
       cursor: pointer;
+      flex-shrink: 0;
     }
 
     .disabled-block {
@@ -565,7 +608,6 @@
       position: relative;
     }
 
-    /* Thanh Tab trên Viewport */
     .viewport-tabs {
       flex-shrink: 0;
       display: flex;
@@ -615,7 +657,6 @@
       font-family: var(--font-mono);
     }
 
-    /* Khung sân khấu hiển thị chính */
     .stage-wrap {
       flex: 1;
       min-height: 300px;
@@ -624,14 +665,12 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 50% 50%, #151a24 0%, #090b0f 75%);
+      background: radial-gradient(circle at 50% 50%, #151a24 0%, #090b0f 75%);
     }
 
-    /* Trạng thái trống chưa có ảnh */
     .empty-stage {
       text-align: center;
-      max-width: 420px;
+      max-width: 440px;
       padding: 24px;
       display: flex;
       flex-direction: column;
@@ -650,7 +689,6 @@
       color: var(--clay);
     }
 
-    /* Canvas 2D / Split / Heatmap */
     .stage-2d-container {
       position: relative;
       display: none;
@@ -675,7 +713,6 @@
       touch-action: none;
     }
 
-    /* Thanh kéo Split Overlay */
     .split-handle {
       position: absolute;
       top: 0;
@@ -725,7 +762,6 @@
     .split-badge.left { left: 10px; }
     .split-badge.right { right: 10px; color: var(--amber); }
 
-    /* Thanh chú thích Heatmap Inferno */
     .heatmap-legend {
       position: absolute;
       bottom: 14px;
@@ -754,7 +790,6 @@
       color: var(--text-sub);
     }
 
-    /* Tooltip tọa độ & Z 16-bit khi rê chuột lên 2D / Heatmap */
     .probe-tooltip {
       position: fixed;
       pointer-events: none;
@@ -772,7 +807,6 @@
     }
     .probe-tooltip .z-hi { color: var(--amber); font-weight: 700; }
 
-    /* Khung WebGL 3D */
     .stage-3d-container {
       position: absolute;
       inset: 0;
@@ -789,12 +823,11 @@
     }
     #webglCanvas:active { cursor: grabbing; }
 
-    /* Bảng điều khiển nổi góc trên 3D Viewport */
     .controls-3d-float {
       position: absolute;
       top: 14px;
       right: 14px;
-      width: 228px;
+      width: 234px;
       background: rgba(20, 24, 32, 0.9);
       backdrop-filter: blur(8px);
       border: 1px solid var(--border-light);
@@ -839,11 +872,10 @@
       border: 1px solid rgba(255,255,255,0.3);
     }
 
-    /* Overlay Loading khi gọi Colab GPU */
     .stage-loader {
       position: absolute;
       inset: 0;
-      background: rgba(11, 13, 17, 0.82);
+      background: rgba(11, 13, 17, 0.84);
       backdrop-filter: blur(4px);
       z-index: 30;
       display: none;
@@ -862,7 +894,7 @@
       border-radius: 50%;
       border: 3px solid var(--border-light);
       border-top-color: var(--clay);
-      border-right-color: var(--amber);
+      border-right-color: var(--cyan);
       animation: spin 0.75s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -947,7 +979,7 @@
 
     .modal-dialog {
       width: 100%;
-      max-width: 900px;
+      max-width: 920px;
       max-height: 90vh;
       background: var(--bg-panel);
       border: 1px solid var(--border-light);
@@ -1035,7 +1067,7 @@
       align-items: center;
       gap: 8px;
       pointer-events: none;
-      width: min(92vw, 440px);
+      width: min(92vw, 460px);
     }
 
     .toast {
@@ -1059,9 +1091,6 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* =====================================================================
-       RESPONSIVE (TABLET & MOBILE)
-       ===================================================================== */
     @media (max-width: 980px) {
       body { overflow: auto; height: auto; }
       .workspace { flex-direction: column; overflow: visible; }
@@ -1084,10 +1113,7 @@
 </head>
 <body>
 
-  <!-- Toast Stack -->
   <div id="toastStack" class="toast-stack"></div>
-
-  <!-- Tooltip tọa độ & Z 16-bit -->
   <div id="probeTooltip" class="probe-tooltip"></div>
 
   <!-- =====================================================================
@@ -1104,10 +1130,11 @@
       </div>
       <div>
         <div class="brand-title">
-          ClayDepth V2 Studio
+          ClayDepth V2.5 Pro
           <span class="badge-16bit">16-BIT CNC</span>
+          <span class="badge-pro">HI-RES TILE + GUIDED</span>
         </div>
-        <div class="brand-sub">Depth Anything V2 (Google Colab GPU) → Height Map 16-bit &amp; 3D OBJ</div>
+        <div class="brand-sub">Depth Anything V2 Siêu Phân Giải (Tile Fusion + Guided Upsampling) → Height Map 16-bit &amp; 3D OBJ</div>
       </div>
     </div>
 
@@ -1133,9 +1160,7 @@
        ===================================================================== -->
   <div class="workspace">
 
-    <!-- ===================================================================
-         CỘT TRÁI (370px): NẠP ẢNH, GỌI COLAB, HẬU KỲ 16-BIT, XUẤT FILE
-         =================================================================== -->
+    <!-- CỘT TRÁI -->
     <aside class="sidebar">
 
       <!-- 1. NẠP ẢNH ĐẤT SÉT NỀN ĐEN -->
@@ -1157,14 +1182,14 @@
             <line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
           <div style="font-weight:700;font-size:12.5px;">Kéo thả, chọn ảnh hoặc dán (Ctrl+V)</div>
-          <div style="font-size:11px;color:var(--text-sub);">Ưu tiên ảnh đất sét đơn sắc nền đen #000000 từ Gemini</div>
+          <div style="font-size:11px;color:var(--text-sub);">Hỗ trợ tới 3072px • Ưu tiên ảnh đất sét nền đen #000000</div>
         </div>
 
         <div id="inputPreviewRow" class="input-preview-row">
           <img id="inputThumb" class="input-thumb" alt="Ảnh đầu vào" />
           <div class="input-meta">
             <div id="inputName" class="input-name">sample_lotus.png</div>
-            <div id="inputDims" class="input-dims">768 × 768 px</div>
+            <div id="inputDims" class="input-dims">1024 × 1024 px</div>
           </div>
           <button id="btnSwapClay" class="btn btn-ghost btn-sm" type="button">Đổi ảnh</button>
         </div>
@@ -1181,11 +1206,11 @@
         </div>
       </section>
 
-      <!-- 2. CHẠY DEPTH ANYTHING V2 TRÊN GOOGLE COLAB -->
+      <!-- 2. CHẠY DEPTH ANYTHING V2 + CHẾ ĐỘ NỘI SUY SIÊU CHI TIẾT -->
       <section class="panel-section">
         <div class="section-head">
-          <div class="section-title"><span class="step-num">02</span>Depth Anything V2 AI</div>
-          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--text-sub);">Hi-Lo 16-bit</span>
+          <div class="section-title"><span class="step-num">02</span>Depth Anything V2 &amp; Nội Suy</div>
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:#7dd3fc;">FP16 + 16-bit</span>
         </div>
 
         <div>
@@ -1199,9 +1224,71 @@
           </select>
         </div>
 
+        <!-- Khối chọn nhanh chế độ nội suy siêu phân giải -->
+        <div class="control-group hi-res-box">
+          <div class="sub-head" style="color:#7dd3fc;">
+            <span>Chế Độ Nội Suy &amp; Siêu Chi Tiết</span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-sub);">Colab GPU</span>
+          </div>
+
+          <div class="preset-pills" id="interpPresets">
+            <button class="preset-pill" data-preset="fast" type="button">⚡ Nhanh</button>
+            <button class="preset-pill active" data-preset="cnc" type="button">✦ Chuẩn CNC</button>
+            <button class="preset-pill" data-preset="ultra" type="button">❖ Siêu Nét</button>
+          </div>
+
+          <div>
+            <label for="inferResSelect" class="field-label">
+              <span>Độ phân giải suy luận AI (Bội số 14)</span>
+            </label>
+            <select id="inferResSelect" class="select-box">
+              <option value="518">518 px (Mặc định gốc — Nhanh)</option>
+              <option value="756">756 px (Nét cao — 1.5×)</option>
+              <option value="1036" selected>1036 px (Siêu nét 2× — Khuyên dùng T4)</option>
+              <option value="1288">1288 px (Cực đại 2.5× — Rất sắc nét)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="interpModeSelect" class="field-label">
+              <span>Thuật toán nội suy phóng ảnh (Upsampling)</span>
+            </label>
+            <select id="interpModeSelect" class="select-box">
+              <option value="guided" selected>Lanczos4 + Guided Filter (Bám cạnh gốc — Nét nhất)</option>
+              <option value="guided_strong">Lanczos4 + Multi-Guided (Bám viền cực gắt)</option>
+              <option value="lanczos">Lanczos4 Thuần (Sắc hơn Bicubic)</option>
+              <option value="bicubic">Bicubic (Mềm mại nguyên bản)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="tileGridSelect" class="field-label">
+              <span>Nội suy chia ô chồng lấp (Multi-Scale Tile Fusion)</span>
+            </label>
+            <select id="tileGridSelect" class="select-box">
+              <option value="1">Tắt (1 lượt toàn khung)</option>
+              <option value="2" selected>2×2 Ô chồng lấp 28% (Chi tiết ×2 — Khuyên dùng)</option>
+              <option value="3">3×3 Ô chồng lấp 28% (Siêu chi tiết ×3 — Phù điêu nhỏ)</option>
+            </select>
+          </div>
+
+          <div id="guidedStrengthWrap">
+            <div class="field-label">
+              <span>Độ bám cạnh Guided Filter</span>
+              <span id="valGuidedStrength" class="mono-val">65%</span>
+            </div>
+            <input id="slGuidedStrength" class="studio-slider" type="range" min="0" max="100" step="5" value="65" />
+          </div>
+
+          <label class="checkbox-row">
+            <input id="chkUseTta" type="checkbox" checked />
+            <span>Bật TTA (Lật ngang ghép đôi khử nhiễu &amp; nét viền)</span>
+          </label>
+        </div>
+
         <button id="btnRunColab" class="btn btn-primary btn-block" type="button" disabled>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Tạo Height Map (Colab GPU)
+          Tạo Height Map Siêu Nét (Colab GPU)
         </button>
 
         <button id="btnRunLocalDemo" class="btn btn-ghost btn-block" type="button" disabled style="padding:8px 12px;font-size:12px;">
@@ -1214,7 +1301,7 @@
       <section class="panel-section">
         <div class="section-head">
           <div class="section-title"><span class="step-num">03</span>Hậu Kỳ Height Map 16-bit</div>
-          <button id="btnResetPost" class="btn btn-ghost btn-sm" type="button">Đặt lại mặc định</button>
+          <button id="btnResetPost" class="btn btn-ghost btn-sm" type="button">Đặt lại</button>
         </div>
 
         <!-- Khóa nền đen về Z=0 -->
@@ -1241,17 +1328,17 @@
             <div>
               <div class="field-label">
                 <span>Làm mềm viền chân khối (Feather)</span>
-                <span id="valBgFeather" class="mono-val">3 px</span>
+                <span id="valBgFeather" class="mono-val">2 px</span>
               </div>
-              <input id="slBgFeather" class="studio-slider" type="range" min="0" max="15" step="1" value="3" />
+              <input id="slBgFeather" class="studio-slider" type="range" min="0" max="15" step="1" value="2" />
             </div>
           </div>
         </div>
 
-        <!-- Định hình khối (Relief Shaping) -->
+        <!-- Định hình khối & Tăng độ nét CNC -->
         <div class="control-group">
-          <div style="font-size:11px;font-weight:800;color:var(--clay-hover);text-transform:uppercase;letter-spacing:0.04em;">
-            Định Hình Khối (Relief Shaping)
+          <div class="sub-head" style="color:var(--clay-hover);">
+            <span>Định Hình Khối &amp; Tăng Độ Nét 16-bit</span>
           </div>
 
           <div>
@@ -1280,21 +1367,34 @@
 
           <div>
             <div class="field-label">
+              <span>Tăng độ nét khối (Unsharp / Clarity 16-bit)</span>
+              <span id="valClarity" class="mono-val">22%</span>
+            </div>
+            <input id="slClarity" class="studio-slider" type="range" min="0" max="100" step="1" value="22" />
+          </div>
+
+          <div>
+            <div class="field-label">
+              <span>Trộn chi tiết đất sét 2 tầng (Micro-Detail)</span>
+              <span id="valMicroDetail" class="mono-val">12%</span>
+            </div>
+            <input id="slMicroDetail" class="studio-slider" type="range" min="0" max="45" step="1" value="12" />
+          </div>
+
+          <div>
+            <div class="field-label">
               <span>Làm mịn CNC (Khử bậc thang)</span>
               <span id="valSmooth" class="mono-val">1</span>
             </div>
             <input id="slSmooth" class="studio-slider" type="range" min="0" max="8" step="1" value="1" />
           </div>
 
-          <div>
-            <div class="field-label">
-              <span>Trộn chi tiết đất sét (Micro-Detail)</span>
-              <span id="valMicroDetail" class="mono-val">8%</span>
-            </div>
-            <input id="slMicroDetail" class="studio-slider" type="range" min="0" max="35" step="1" value="8" />
-          </div>
+          <label class="checkbox-row" style="padding-top:2px;">
+            <input id="chkEdgeSmooth" type="checkbox" checked />
+            <span>Bảo toàn cạnh sắc khi làm mịn (Guided Smooth)</span>
+          </label>
 
-          <label class="checkbox-row" style="padding-top:3px;">
+          <label class="checkbox-row">
             <input id="chkInvert" type="checkbox" />
             <span>Đảo ngược độ sâu (Invert Z)</span>
           </label>
@@ -1313,6 +1413,17 @@
           Tải Height Map 16-bit PNG (CNC)
         </button>
 
+        <div>
+          <label for="objResSelect" class="field-label">
+            <span>Độ mịn lưới khi xuất 3D (.OBJ)</span>
+          </label>
+          <select id="objResSelect" class="select-box">
+            <option value="200">200 × 200 (Nhẹ — 80k tam giác)</option>
+            <option value="320" selected>320 × 320 (Chi tiết cao — 204k tam giác)</option>
+            <option value="450">450 × 450 (Siêu mịn CNC — 404k tam giác)</option>
+          </select>
+        </div>
+
         <div class="btn-row-2">
           <button id="btnExport8" class="btn btn-ghost btn-sm" type="button" disabled>
             Tải 8-bit PNG
@@ -1327,11 +1438,8 @@
       </section>
     </aside>
 
-    <!-- ===================================================================
-         CỘT PHẢI: VIEWPORT ĐA CHẾ ĐỘ + HISTOGRAM
-         =================================================================== -->
+    <!-- CỘT PHẢI: VIEWPORT ĐA CHẾ ĐỘ + HISTOGRAM -->
     <main class="viewport-col">
-      <!-- Thanh Tabs -->
       <div class="viewport-tabs">
         <div class="tab-group" role="tablist" aria-label="Chế độ xem">
           <button class="tab-btn active" data-view="split" role="tab" aria-selected="true" type="button">
@@ -1350,9 +1458,7 @@
         <div id="viewportHint" class="viewport-hint">Kéo thanh vàng trên ảnh để so sánh gốc / Height Map</div>
       </div>
 
-      <!-- Khung Sân Khấu Chính -->
       <div id="stageWrap" class="stage-wrap">
-        <!-- Trạng thái trống -->
         <div id="emptyStage" class="empty-stage">
           <div class="empty-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -1363,15 +1469,14 @@
           </div>
           <div style="font-size:16px;font-weight:800;color:#fff;">Chưa có ảnh đất sét đầu vào</div>
           <p style="color:var(--text-sub);font-size:12.5px;">
-            Kéo thả ảnh đất sét nền đen từ Gemini vào cột trái, bấm <strong style="color:var(--amber);">Ctrl+V</strong>, hoặc bấm nút bên dưới để tạo ảnh phù điêu hoa sen mẫu và chạy thử ngay.
+            Kéo thả ảnh đất sét nền đen vào cột trái, bấm <strong style="color:var(--amber);">Ctrl+V</strong>, hoặc tạo ảnh phù điêu mẫu để trải nghiệm ngay bộ nội suy &amp; tăng nét 16-bit mới.
           </p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
             <button id="btnEmptySample" class="btn btn-primary" type="button">Tạo ảnh mẫu &amp; Demo ngay</button>
-            <button id="btnEmptyColab" class="btn btn-ghost" type="button">Xem hướng dẫn Colab GPU</button>
+            <button id="btnEmptyColab" class="btn btn-ghost" type="button">Lấy Code Colab V2.5 Pro</button>
           </div>
         </div>
 
-        <!-- Khung xem 2D (Split / Height 2D / Heatmap) -->
         <div id="stage2dContainer" class="stage-2d-container">
           <canvas id="main2dCanvas"></canvas>
           <div id="splitHandle" class="split-handle">
@@ -1381,7 +1486,6 @@
           <div id="splitLabelRight" class="split-badge right">Height Map 16-bit</div>
         </div>
 
-        <!-- Legend Heatmap -->
         <div id="heatmapLegend" class="heatmap-legend">
           <div style="font-size:10.5px;font-weight:700;color:#fff;">Inferno Z-Elevation</div>
           <div class="heatmap-bar"></div>
@@ -1392,13 +1496,12 @@
           </div>
         </div>
 
-        <!-- Khung Xem Khối 3D WebGL Thuần -->
         <div id="stage3dContainer" class="stage-3d-container">
           <canvas id="webglCanvas"></canvas>
 
           <div class="controls-3d-float">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:11px;font-weight:800;text-transform:uppercase;color:#fff;">Xem Trước CNC 3D</span>
+              <span id="mesh3dTitle" style="font-size:11px;font-weight:800;text-transform:uppercase;color:#fff;">Xem Trước CNC 3D</span>
               <button id="btnReset3dCam" class="btn btn-ghost btn-sm" style="padding:3px 7px;font-size:10.5px;" type="button">Reset góc</button>
             </div>
 
@@ -1438,15 +1541,13 @@
           </div>
         </div>
 
-        <!-- Overlay Loading -->
         <div id="stageLoader" class="stage-loader">
           <div class="spinner"></div>
           <div id="loaderTitle" style="font-size:14px;font-weight:800;color:#fff;">Đang gửi ảnh lên Google Colab GPU...</div>
-          <div id="loaderSub" style="font-size:12px;color:var(--text-sub);max-width:340px;">Depth Anything V2 đang tính toán bản đồ độ sâu 16-bit độ phân giải gốc.</div>
+          <div id="loaderSub" style="font-size:12px;color:var(--text-sub);max-width:380px;">Depth Anything V2 đang chạy suy luận độ phân giải cao &amp; nội suy giữ cạnh 16-bit.</div>
         </div>
       </div>
 
-      <!-- Thanh Trạng Thái & Biểu Đồ Histogram Dưới Đáy -->
       <footer class="status-footer">
         <div class="metrics-strip">
           <div class="metric-item">
@@ -1462,7 +1563,7 @@
             <span id="statFgRatio" class="metric-val">—</span>
           </div>
           <div class="metric-item">
-            <span class="metric-label">Nguồn xử lý</span>
+            <span class="metric-label">Chế độ xử lý</span>
             <span id="statSource" class="metric-val">—</span>
           </div>
         </div>
@@ -1479,14 +1580,14 @@
   </div>
 
   <!-- =====================================================================
-       MODAL: LẤY CODE GOOGLE COLAB (2 TABS)
+       MODAL: LẤY CODE GOOGLE COLAB V2.5 PRO (2 TABS)
        ===================================================================== -->
   <div id="colabModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal-dialog">
       <div class="modal-header">
         <div>
-          <div id="modalTitle" style="font-size:15px;font-weight:800;color:#fff;">Code Google Colab — Depth Anything V2 GPU</div>
-          <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;">Chạy miễn phí trên Google Colab T4 GPU — không cần tài khoản hay token ngrok</div>
+          <div id="modalTitle" style="font-size:15px;font-weight:800;color:#fff;">Code Google Colab V2.5 Pro — Nội Suy Siêu Chi Tiết (Tile Fusion + Guided Filter)</div>
+          <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;">Hỗ trợ suy luận tới 1288px (FP16), chia ô chồng lấp 2×2/3×3, TTA lật ngang &amp; Lanczos4 + Guided Filter</div>
         </div>
         <button id="btnCloseModal" class="btn btn-ghost btn-sm" type="button" aria-label="Đóng cửa sổ">✕ Đóng</button>
       </div>
@@ -1514,7 +1615,7 @@
         <div class="code-toolbar">
           <div class="tab-group">
             <button class="tab-btn active" data-colab-tab="server" type="button">
-              Tab 1: Colab API Server (Khuyên dùng)
+              Tab 1: Colab API Server V2.5 Pro (Khuyên dùng)
             </button>
             <button class="tab-btn" data-colab-tab="inline" type="button">
               Tab 2: Chạy trực tiếp 1-Cell trong Colab
@@ -1528,7 +1629,7 @@
         </div>
 
         <div id="colabTabDesc" style="font-size:12px;color:var(--text-sub);background:var(--bg-well);padding:9px 12px;border-radius:8px;border:1px solid var(--border);">
-          Khởi tạo API FastAPI chạy Depth Anything V2 (Large/Base/Small) trên GPU CUDA, mã hóa lossless 16-bit Hi-Lo PNG và mở đường hầm Cloudflared miễn phí.
+          Khởi tạo API FastAPI V2.5 Pro chạy Depth Anything V2 FP16 trên GPU CUDA với chế độ nội suy siêu phân giải, chia ô Tile Fusion không vết ghép, Guided Filter bám cạnh gốc và mở tunnel Cloudflared miễn phí.
         </div>
 
         <pre id="colabCodeDisplay" class="code-pre"></pre>
@@ -1537,13 +1638,18 @@
   </div>
 
   <!-- =====================================================================
-       CODE PYTHON GOOGLE COLAB (LƯU TRONG SCRIPT TEXT/PLAIN ĐỂ KHÔNG LỖI HTML)
+       CODE PYTHON GOOGLE COLAB V2.5 PRO
        ===================================================================== -->
   <script type="text/plain" id="tplColabServer"># ==============================================================================
-# CLAYDEPTH V2 STUDIO — GOOGLE COLAB GPU API SERVER (FastAPI + Cloudflared)
-# Hướng dẫn: Chọn Runtime -> Change runtime type -> T4 GPU, dán toàn bộ vào 1 cell và bấm Run
+# CLAYDEPTH V2.5 PRO — GOOGLE COLAB GPU API SERVER (HI-RES TILE + GUIDED FILTER)
+# Hướng dẫn: Runtime -> Change runtime type -> T4 GPU, dán toàn bộ vào 1 cell & Run
+# Tính năng mới:
+#   - Suy luận độ phân giải cao (518 / 756 / 1036 / 1288 px chuẩn bội số 14 + FP16)
+#   - Multi-Scale Tile Fusion (chia ô 2x2 / 3x3 chồng lấp 28% + ghép tách tần số không vết)
+#   - Nội suy phóng ảnh Lanczos4 + Fast Guided Filter bám cạnh theo ảnh gốc
+#   - TTA (Test-Time Augmentation lật ngang ghép đôi khử nhiễu)
 # ==============================================================================
-import os, sys, io, re, time, base64, threading, subprocess
+import os, sys, io, re, time, base64, threading, subprocess, contextlib
 
 print("⏳ [1/4] Đang cài đặt thư viện AI & API server...")
 subprocess.run(
@@ -1553,7 +1659,6 @@ subprocess.run(
     check=True
 )
 
-# Tải binary cloudflared (miễn phí, không cần token)
 CLOUDFLARED_BIN = "/usr/local/bin/cloudflared"
 if not os.path.exists(CLOUDFLARED_BIN):
     print("⏳ [2/4] Đang tải cloudflared tunnel...")
@@ -1576,6 +1681,7 @@ import uvicorn
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 GPU_NAME = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU (Nên bật T4 GPU)"
+LANCZOS_PIL = getattr(Image, "Resampling", Image).LANCZOS
 
 MODEL_IDS = {
     "large": "depth-anything/Depth-Anything-V2-Large-hf",
@@ -1595,10 +1701,207 @@ def get_depth_model(size: str = "large"):
         MODEL_CACHE[key] = (processor, model)
     return MODEL_CACHE[key]
 
+def calc_multiple14_size(w: int, h: int, target_max: int):
+    target_max = max(224, min(1400, int(target_max)))
+    scale = target_max / max(w, h)
+    # Không phóng quá lớn so với kích thước crop gốc (tránh tốn VRAM vô ích)
+    scale = min(scale, 2.0)
+    nw = max(14, int(round((w * scale) / 14.0)) * 14)
+    nh = max(14, int(round((h * scale) / 14.0)) * 14)
+    return nw, nh
+
+def infer_single_pass(pil_img: Image.Image, processor, model, target_res: int, interp_mode: str) -> np.ndarray:
+    orig_w, orig_h = pil_img.size
+    nw, nh = calc_multiple14_size(orig_w, orig_h, target_res)
+    resized = pil_img.resize((nw, nh), LANCZOS_PIL)
+
+    # do_resize=False giữ nguyên kích thước bội số 14 độ phân giải cao
+    inputs = processor(images=resized, do_resize=False, return_tensors="pt").to(DEVICE)
+    amp_ctx = torch.autocast(device_type="cuda", dtype=torch.float16) if DEVICE == "cuda" else contextlib.nullcontext()
+
+    with torch.inference_mode(), amp_ctx:
+        out = model(**inputs).predicted_depth  # [1, H', W']
+
+    depth_raw = out.squeeze().float().cpu().numpy()
+
+    if interp_mode == "bicubic":
+        up = F.interpolate(
+            torch.from_numpy(depth_raw).unsqueeze(0).unsqueeze(0),
+            size=(orig_h, orig_w),
+            mode="bicubic",
+            align_corners=False,
+        ).squeeze().numpy()
+    else:
+        # Lanczos4 giữ đỉnh khối và mép sắc nét hơn Bicubic
+        up = cv2.resize(depth_raw, (orig_w, orig_h), interpolation=cv2.INTER_LANCZOS4)
+
+    return up.astype(np.float32)
+
+def infer_with_tta(pil_img: Image.Image, processor, model, target_res: int, interp_mode: str, use_tta: bool) -> np.ndarray:
+    d1 = infer_single_pass(pil_img, processor, model, target_res, interp_mode)
+    if not use_tta:
+        return d1
+    flipped = pil_img.transpose(Image.FLIP_LEFT_RIGHT)
+    d2 = infer_single_pass(flipped, processor, model, target_res, interp_mode)
+    d2 = np.fliplr(d2)
+    return 0.5 * (d1 + d2)
+
+def normalize01(arr: np.ndarray) -> np.ndarray:
+    d_min = float(np.min(arr))
+    d_max = float(np.max(arr))
+    if d_max - d_min > 1e-8:
+        return ((arr - d_min) / (d_max - d_min)).astype(np.float32)
+    return np.zeros_like(arr, dtype=np.float32)
+
+def fast_guided_filter(guide: np.ndarray, src: np.ndarray, radius: int, eps: float) -> np.ndarray:
+    """Fast Guided Filter (He et al.) bám cạnh ảnh đất sét gốc vào Height Map."""
+    r = max(1, int(radius))
+    k = (2 * r + 1, 2 * r + 1)
+    mean_I = cv2.boxFilter(guide, cv2.CV_32F, k)
+    mean_p = cv2.boxFilter(src, cv2.CV_32F, k)
+    mean_Ip = cv2.boxFilter(guide * src, cv2.CV_32F, k)
+    cov_Ip = mean_Ip - mean_I * mean_p
+
+    mean_II = cv2.boxFilter(guide * guide, cv2.CV_32F, k)
+    var_I = np.maximum(0.0, mean_II - mean_I * mean_I)
+
+    a = cov_Ip / (var_I + eps)
+    b = mean_p - a * mean_I
+
+    mean_a = cv2.boxFilter(a, cv2.CV_32F, k)
+    mean_b = cv2.boxFilter(b, cv2.CV_32F, k)
+    return (mean_a * guide + mean_b).astype(np.float32)
+
+def compute_tile_coords(total_len: int, grid: int, overlap: float = 0.28):
+    if grid <= 1:
+        return [(0, total_len)]
+    tile_len = int(round(total_len / (grid - (grid - 1) * overlap)))
+    tile_len = min(total_len, max(64, tile_len))
+    step = (total_len - tile_len) / max(1, grid - 1)
+    coords = []
+    for i in range(grid):
+        start = int(round(i * step))
+        end = min(total_len, start + tile_len)
+        start = max(0, end - tile_len)
+        coords.append((start, end))
+    return coords
+
+def build_tile_weight(tw: int, th: int, x0: int, x1: int, y0: int, y1: int, full_w: int, full_h: int, overlap: float = 0.28):
+    wx = np.ones(tw, dtype=np.float32)
+    wy = np.ones(th, dtype=np.float32)
+    pad_x = max(8, int(tw * overlap * 0.72))
+    pad_y = max(8, int(th * overlap * 0.72))
+
+    if x0 > 0:
+        t = np.linspace(0.0, 1.0, pad_x, dtype=np.float32)
+        wx[:pad_x] = 0.5 * (1.0 - np.cos(np.pi * t))
+    if x1 < full_w:
+        t = np.linspace(0.0, 1.0, pad_x, dtype=np.float32)
+        wx[-pad_x:] = 0.5 * (1.0 + np.cos(np.pi * t))
+    if y0 > 0:
+        t = np.linspace(0.0, 1.0, pad_y, dtype=np.float32)
+        wy[:pad_y] = 0.5 * (1.0 - np.cos(np.pi * t))
+    if y1 < full_h:
+        t = np.linspace(0.0, 1.0, pad_y, dtype=np.float32)
+        wy[-pad_y:] = 0.5 * (1.0 + np.cos(np.pi * t))
+
+    return np.outer(wy, wx) + 1e-4
+
+def run_hires_depth_pipeline(
+    pil_img: Image.Image,
+    processor,
+    model,
+    infer_res: int = 1036,
+    interp_mode: str = "guided",
+    tile_grid: int = 2,
+    guided_strength: float = 0.65,
+    use_tta: bool = True,
+) -> np.ndarray:
+    orig_w, orig_h = pil_img.size
+    rgb_np = np.array(pil_img)
+    gray_f = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
+
+    # 1. Global pass giữ cấu trúc khối 3D tổng thể chính xác tuyệt đối
+    global_depth = normalize01(infer_with_tta(pil_img, processor, model, infer_res, interp_mode, use_tta))
+
+    # 2. Multi-Scale Tile Fusion (chia ô 2x2 hoặc 3x3 chồng lấp 28%)
+    grid = max(1, min(3, int(tile_grid)))
+    if grid > 1:
+        overlap = 0.28
+        xs = compute_tile_coords(orig_w, grid, overlap)
+        ys = compute_tile_coords(orig_h, grid, overlap)
+
+        tile_acc = np.zeros((orig_h, orig_w), dtype=np.float32)
+        weight_acc = np.zeros((orig_h, orig_w), dtype=np.float32)
+        tile_res = min(max(518, int(infer_res)), 1036)
+
+        for (y0, y1) in ys:
+            for (x0, x1) in xs:
+                crop = pil_img.crop((x0, y0, x1, y1))
+                # Mỗi ô chạy 1 lượt độ phân giải cao để tối ưu tốc độ & độ nét
+                td = infer_single_pass(crop, processor, model, tile_res, interp_mode)
+                gp = global_depth[y0:y1, x0:x1]
+                gray_p = gray_f[y0:y1, x0:x1]
+
+                # Ưu tiên căn chỉnh theo vùng vật thể sáng (nếu có nền đen)
+                fg = gray_p > 0.04
+                if np.count_nonzero(fg) > 256:
+                    ts = td[fg]
+                    gs = gp[fg]
+                else:
+                    ts = td.ravel()
+                    gs = gp.ravel()
+
+                var_t = float(np.var(ts))
+                mean_t = float(np.mean(ts))
+                mean_g = float(np.mean(gs))
+                if var_t > 1e-6:
+                    cov = float(np.mean((ts - mean_t) * (gs - mean_g)))
+                    a = float(np.clip(cov / var_t, 0.25, 4.0))
+                    b = mean_g - a * mean_t
+                    td_aligned = a * td + b
+                else:
+                    td_aligned = np.full_like(td, mean_g, dtype=np.float32)
+
+                w2d = build_tile_weight(x1 - x0, y1 - y0, x0, x1, y0, y1, orig_w, orig_h, overlap)
+                tile_acc[y0:y1, x0:x1] += td_aligned * w2d
+                weight_acc[y0:y1, x0:x1] += w2d
+
+        tiled_depth = tile_acc / np.maximum(weight_acc, 1e-6)
+
+        # Hợp nhất tách tần số: Tần số thấp của Global (0 vết ghép) + Tần số trung/cao của Tiled (siêu chi tiết)
+        sigma = max(14.0, min(orig_w, orig_h) / (grid * 4.2))
+        global_low = cv2.GaussianBlur(global_depth, (0, 0), sigma)
+        tiled_low = cv2.GaussianBlur(tiled_depth, (0, 0), sigma)
+        fused = global_low + 0.88 * (tiled_depth - tiled_low) + 0.12 * (global_depth - global_low)
+        depth = normalize01(fused)
+    else:
+        depth = global_depth
+
+    # 3. Guided Filter Edge-Aware Upsampling (bám sắc nét theo đường viền đất sét gốc)
+    alpha = float(np.clip(guided_strength, 0.0, 1.0))
+    if interp_mode in ("guided", "guided_strong") and alpha > 0.01:
+        min_dim = min(orig_w, orig_h)
+        r_fine = max(3, int(round(min_dim * 0.0055)))
+        if interp_mode == "guided_strong":
+            r_mid = max(6, int(round(min_dim * 0.012)))
+            g1 = fast_guided_filter(gray_f, depth, radius=r_mid, eps=1.5e-3)
+            g2 = fast_guided_filter(gray_f, g1, radius=r_fine, eps=6.0e-4)
+            depth = (1.0 - alpha) * depth + alpha * g2
+        else:
+            g1 = fast_guided_filter(gray_f, depth, radius=r_fine, eps=1.8e-3)
+            depth = (1.0 - alpha) * depth + alpha * g1
+        depth = normalize01(depth)
+
+    if DEVICE == "cuda":
+        torch.cuda.empty_cache()
+
+    return depth
+
 print(f"⏳ [3/4] Đang tải trước Depth-Anything-V2-Large trên {GPU_NAME}...")
 get_depth_model("large")
 
-app = FastAPI(title="ClayDepth V2 Colab API")
+app = FastAPI(title="ClayDepth V2.5 Pro Colab API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -1611,13 +1914,22 @@ app.add_middleware(
 def health():
     return {
         "status": "ok",
+        "version": "2.5-pro",
         "device": DEVICE,
         "gpu": GPU_NAME,
         "loaded_models": list(MODEL_CACHE.keys()),
     }
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...), model_size: str = Form("large")):
+async def predict(
+    file: UploadFile = File(...),
+    model_size: str = Form("large"),
+    infer_res: int = Form(1036),
+    interp_mode: str = Form("guided"),
+    tile_grid: int = Form(2),
+    guided_strength: float = Form(0.65),
+    use_tta: str = Form("true"),
+):
     t0 = time.time()
     try:
         raw_bytes = await file.read()
@@ -1625,30 +1937,22 @@ async def predict(file: UploadFile = File(...), model_size: str = Form("large"))
         orig_w, orig_h = pil_img.size
 
         processor, model = get_depth_model(model_size)
-        inputs = processor(images=pil_img, return_tensors="pt").to(DEVICE)
+        tta_flag = str(use_tta).lower() in ("true", "1", "yes", "on")
 
-        with torch.inference_mode():
-            outputs = model(**inputs)
-            predicted_depth = outputs.predicted_depth  # [1, H, W]
-            depth_up = F.interpolate(
-                predicted_depth.unsqueeze(1),
-                size=(orig_h, orig_w),
-                mode="bicubic",
-                align_corners=False,
-            ).squeeze().float().cpu().numpy()
+        depth_norm = run_hires_depth_pipeline(
+            pil_img=pil_img,
+            processor=processor,
+            model=model,
+            infer_res=int(infer_res),
+            interp_mode=str(interp_mode),
+            tile_grid=int(tile_grid),
+            guided_strength=float(guided_strength),
+            use_tta=tta_flag,
+        )
 
-        # Chuẩn hóa sang 16-bit (0..65535) không mất dữ liệu
-        d_min = float(np.min(depth_up))
-        d_max = float(np.max(depth_up))
-        if d_max - d_min > 1e-8:
-            norm = (depth_up - d_min) / (d_max - d_min)
-        else:
-            norm = np.zeros_like(depth_up, dtype=np.float32)
+        u16 = np.clip(np.round(depth_norm * 65535.0), 0, 65535).astype(np.uint16)
 
-        u16 = np.clip(np.round(norm * 65535.0), 0, 65535).astype(np.uint16)
-
-        # Mã hóa lossless 16-bit vào PNG 8-bit RGB Hi-Lo (R = byte cao, G = byte thấp, B = 0)
-        # Lưu ý: OpenCV dùng thứ tự BGR -> [B=0, G=low, R=high]
+        # Mã hóa lossless 16-bit vào PNG 8-bit RGB Hi-Lo (OpenCV BGR: B=0, G=low, R=high)
         hi_byte = (u16 >> 8).astype(np.uint8)
         lo_byte = (u16 & 0xFF).astype(np.uint8)
         zero_ch = np.zeros_like(hi_byte, dtype=np.uint8)
@@ -1666,13 +1970,15 @@ async def predict(file: UploadFile = File(...), model_size: str = Form("large"))
             "width": orig_w,
             "height": orig_h,
             "model_size": model_size,
+            "infer_res": int(infer_res),
+            "interp_mode": interp_mode,
+            "tile_grid": int(tile_grid),
             "inference_time": elapsed,
             "depth_hilo_png": f"data:image/png;base64,{b64_png}",
         }
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
-# Khởi chạy Uvicorn trên luồng nền
 def run_uvicorn():
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="warning")
 
@@ -1697,22 +2003,22 @@ try:
         match = url_regex.search(line)
         if match and not public_url:
             public_url = match.group(0)
-            print("\n" + "=" * 68)
-            print("✅ CLAYDEPTH V2 COLAB SERVER ĐÃ SẴN SÀNG!")
+            print("\n" + "=" * 72)
+            print("✅ CLAYDEPTH V2.5 PRO COLAB SERVER ĐÃ SẴN SÀNG!")
             print(f"🖥️  GPU đang chạy : {GPU_NAME}")
+            print("⚡ Chế độ        : Hi-Res (<=1288px FP16) + Tile Fusion + Guided Filter")
             print(f"🔗 Copy URL này  : {public_url}")
-            print("👉 Dán vào ô URL trên ClayDepth V2 Studio và bấm 'Kiểm tra kết nối'")
-            print("ℹ️  Giữ nguyên cell này đang chạy trong suốt quá trình tạo Height Map.")
-            print("=" * 68 + "\n")
+            print("👉 Dán vào ô URL trên ClayDepth V2.5 Pro và bấm 'Kiểm tra kết nối'")
+            print("=" * 72 + "\n")
 except KeyboardInterrupt:
     tunnel_proc.terminate()
     print("🛑 Đã dừng Colab API Server.")</script>
 
   <script type="text/plain" id="tplColabInline"># ==============================================================================
-# CLAYDEPTH V2 — CHẠY TRỰC TIẾP 1-CELL TRONG GOOGLE COLAB (KHÔNG CẦN LINK NGOÀI)
-# Hướng dẫn: Chọn Runtime -> T4 GPU, dán vào 1 cell, bấm Run rồi thao tác ngay ở Output
+# CLAYDEPTH V2.5 PRO — CHẠY TRỰC TIẾP 1-CELL TRONG GOOGLE COLAB (SIÊU CHI TIẾT)
+# Hướng dẫn: Chọn Runtime -> T4 GPU, dán vào 1 cell, bấm Run rồi thao tác ở Output
 # ==============================================================================
-import sys, io, base64, subprocess
+import sys, io, base64, subprocess, contextlib
 
 print("⏳ Đang cài đặt transformers, accelerate, opencv-python-headless...")
 subprocess.run(
@@ -1723,7 +2029,6 @@ subprocess.run(
 
 import cv2
 import torch
-import torch.nn.functional as F
 import numpy as np
 from PIL import Image
 from transformers import AutoImageProcessor, AutoModelForDepthEstimation
@@ -1732,6 +2037,7 @@ from google.colab import output
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 GPU_NAME = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
+LANCZOS_PIL = getattr(Image, "Resampling", Image).LANCZOS
 MODEL_ID = "depth-anything/Depth-Anything-V2-Large-hf"
 
 print(f"📦 Đang nạp {MODEL_ID} lên {GPU_NAME}...")
@@ -1740,46 +2046,101 @@ model = AutoModelForDepthEstimation.from_pretrained(MODEL_ID).to(DEVICE)
 model.eval()
 print("✅ Sẵn sàng! Sử dụng giao diện ngay bên dưới:")
 
-def colab_generate_heightmap(img_data_url: str, bg_thresh: int = 15, feather_px: int = 3, gamma: float = 1.0):
-    header, b64_data = img_data_url.split(",", 1)
+def _norm01(a):
+    mn, mx = float(a.min()), float(a.max())
+    return ((a - mn) / max(mx - mn, 1e-8)).astype(np.float32)
+
+def _infer_one(pil_img, target_res):
+    ow, oh = pil_img.size
+    scale = min(2.0, max(224, min(1400, int(target_res))) / max(ow, oh))
+    nw = max(14, int(round(ow * scale / 14.0)) * 14)
+    nh = max(14, int(round(oh * scale / 14.0)) * 14)
+    inp = processor(images=pil_img.resize((nw, nh), LANCZOS_PIL), do_resize=False, return_tensors="pt").to(DEVICE)
+    ctx = torch.autocast("cuda", dtype=torch.float16) if DEVICE == "cuda" else contextlib.nullcontext()
+    with torch.inference_mode(), ctx:
+        d = model(**inp).predicted_depth.squeeze().float().cpu().numpy()
+    return cv2.resize(d, (ow, oh), interpolation=cv2.INTER_LANCZOS4).astype(np.float32)
+
+def _guided(guide, src, r, eps):
+    k = (2 * r + 1, 2 * r + 1)
+    mI = cv2.boxFilter(guide, cv2.CV_32F, k)
+    mp = cv2.boxFilter(src, cv2.CV_32F, k)
+    cov = cv2.boxFilter(guide * src, cv2.CV_32F, k) - mI * mp
+    var = np.maximum(0.0, cv2.boxFilter(guide * guide, cv2.CV_32F, k) - mI * mI)
+    a = cov / (var + eps)
+    b = mp - a * mI
+    return cv2.boxFilter(a, cv2.CV_32F, k) * guide + cv2.boxFilter(b, cv2.CV_32F, k)
+
+def colab_generate_heightmap(img_data_url: str, infer_res: int = 1036, tile_grid: int = 2, guided_pct: int = 65, bg_thresh: int = 15, feather_px: int = 2, gamma: float = 1.0):
+    _, b64_data = img_data_url.split(",", 1)
     pil_img = Image.open(io.BytesIO(base64.b64decode(b64_data))).convert("RGB")
-    orig_w, orig_h = pil_img.size
+    ow, oh = pil_img.size
     rgb_np = np.array(pil_img)
-
-    inputs = processor(images=pil_img, return_tensors="pt").to(DEVICE)
-    with torch.inference_mode():
-        out = model(**inputs).predicted_depth
-        depth = F.interpolate(
-            out.unsqueeze(1), size=(orig_h, orig_w), mode="bicubic", align_corners=False
-        ).squeeze().float().cpu().numpy()
-
-    # Tách nền đen #000000 từ ảnh đất sét gốc
     gray = cv2.cvtColor(rgb_np, cv2.COLOR_RGB2GRAY)
-    fg_mask = (gray > int(bg_thresh)).astype(np.float32)
+    gray_f = gray.astype(np.float32) / 255.0
 
+    # Global + TTA
+    g1 = _infer_one(pil_img, infer_res)
+    g2 = np.fliplr(_infer_one(pil_img.transpose(Image.FLIP_LEFT_RIGHT), infer_res))
+    depth = _norm01(0.5 * (g1 + g2))
+
+    # Multi-Scale Tile Fusion
+    grid = max(1, min(3, int(tile_grid)))
+    if grid > 1:
+        ov = 0.28
+        def _coords(L):
+            tl = min(L, max(64, int(round(L / (grid - (grid - 1) * ov)))))
+            st = (L - tl) / max(1, grid - 1)
+            return [(max(0, min(L, int(round(i * st)) + tl) - tl), min(L, int(round(i * st)) + tl)) for i in range(grid)]
+        acc = np.zeros((oh, ow), dtype=np.float32)
+        wac = np.zeros((oh, ow), dtype=np.float32)
+        for y0, y1 in _coords(oh):
+            for x0, x1 in _coords(ow):
+                td = _infer_one(pil_img.crop((x0, y0, x1, y1)), min(int(infer_res), 1036))
+                gp = depth[y0:y1, x0:x1]
+                fg = gray_f[y0:y1, x0:x1] > 0.04
+                ts, gs = (td[fg], gp[fg]) if np.count_nonzero(fg) > 256 else (td.ravel(), gp.ravel())
+                vt = float(np.var(ts))
+                if vt > 1e-6:
+                    a = float(np.clip(np.mean((ts - ts.mean()) * (gs - gs.mean())) / vt, 0.25, 4.0))
+                    td_al = a * td + (float(gs.mean()) - a * float(ts.mean()))
+                else:
+                    td_al = np.full_like(td, float(gs.mean()))
+                tw, th = x1 - x0, y1 - y0
+                wx, wy = np.ones(tw, np.float32), np.ones(th, np.float32)
+                px, py = max(8, int(tw * ov * 0.72)), max(8, int(th * ov * 0.72))
+                if x0 > 0: wx[:px] = 0.5 * (1 - np.cos(np.pi * np.linspace(0, 1, px)))
+                if x1 < ow: wx[-px:] = 0.5 * (1 + np.cos(np.pi * np.linspace(0, 1, px)))
+                if y0 > 0: wy[:py] = 0.5 * (1 - np.cos(np.pi * np.linspace(0, 1, py)))
+                if y1 < oh: wy[-py:] = 0.5 * (1 + np.cos(np.pi * np.linspace(0, 1, py)))
+                w2d = np.outer(wy, wx) + 1e-4
+                acc[y0:y1, x0:x1] += td_al * w2d
+                wac[y0:y1, x0:x1] += w2d
+        tiled = acc / np.maximum(wac, 1e-6)
+        sig = max(14.0, min(ow, oh) / (grid * 4.2))
+        depth = _norm01(cv2.GaussianBlur(depth, (0, 0), sig) + 0.88 * (tiled - cv2.GaussianBlur(tiled, (0, 0), sig)) + 0.12 * (depth - cv2.GaussianBlur(depth, (0, 0), sig)))
+
+    alpha = np.clip(float(guided_pct) / 100.0, 0.0, 1.0)
+    if alpha > 0.01:
+        r = max(3, int(round(min(ow, oh) * 0.0055)))
+        depth = _norm01((1.0 - alpha) * depth + alpha * _guided(gray_f, depth, r, 1.8e-3))
+
+    fg_mask = (gray > int(bg_thresh)).astype(np.float32)
     if np.any(fg_mask > 0.5):
-        fg_vals = depth[fg_mask > 0.5]
-        d_min, d_max = float(np.percentile(fg_vals, 0.5)), float(np.percentile(fg_vals, 99.8))
+        fv = depth[fg_mask > 0.5]
+        d_min, d_max = float(np.percentile(fv, 0.5)), float(np.percentile(fv, 99.8))
     else:
         d_min, d_max = float(depth.min()), float(depth.max())
-
     norm = np.clip((depth - d_min) / max(d_max - d_min, 1e-8), 0.0, 1.0)
-
-    # Làm mềm viền chân khối (Feather) tránh vách đứng CNC
     if int(feather_px) > 0:
         k = int(feather_px) * 2 + 1
         fg_mask = cv2.GaussianBlur(fg_mask, (k, k), 0)
-
-    norm = np.power(norm, max(0.2, float(gamma))) * fg_mask
+    norm = np.power(norm, 1.0 / max(0.2, float(gamma))) * fg_mask
     u16 = np.clip(np.round(norm * 65535.0), 0, 65535).astype(np.uint16)
-    u8_preview = (u16 >> 8).astype(np.uint8)
-
     _, buf16 = cv2.imencode(".png", u16)
-    _, buf8 = cv2.imencode(".png", u8_preview)
-
+    _, buf8 = cv2.imencode(".png", (u16 >> 8).astype(np.uint8))
     return {
-        "width": orig_w,
-        "height": orig_h,
+        "width": ow, "height": oh,
         "preview_b64": "data:image/png;base64," + base64.b64encode(buf8.tobytes()).decode("ascii"),
         "png16_b64": "data:image/png;base64," + base64.b64encode(buf16.tobytes()).decode("ascii"),
     }
@@ -1787,23 +2148,25 @@ def colab_generate_heightmap(img_data_url: str, bg_thresh: int = 15, feather_px:
 output.register_callback("claydepth.generate", colab_generate_heightmap)
 
 ui_template = """
-<div style="font-family:sans-serif;background:#141820;color:#e8ecf4;border:1px solid #2b3344;border-radius:14px;padding:18px;max-width:780px;">
+<div style="font-family:sans-serif;background:#141820;color:#e8ecf4;border:1px solid #2b3344;border-radius:14px;padding:18px;max-width:820px;">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-    <strong style="font-size:16px;color:#fff;">ClayDepth V2 — 1-Cell Height Map 16-bit CNC</strong>
+    <strong style="font-size:16px;color:#fff;">ClayDepth V2.5 Pro — 1-Cell Hi-Res Tile + Guided 16-bit CNC</strong>
     <span style="font-family:monospace;font-size:11px;color:#6ee7b7;background:#11392c;padding:4px 8px;border-radius:6px;">__GPU__</span>
   </div>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
     <input id="cd_file" type="file" accept="image/*" style="color:#cbd5e1;" />
-    <label style="font-size:12px;">Ngưỡng nền đen: <input id="cd_th" type="number" value="15" min="0" max="60" style="width:52px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
-    <label style="font-size:12px;">Feather: <input id="cd_fe" type="number" value="3" min="0" max="15" style="width:48px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
-    <label style="font-size:12px;">Gamma: <input id="cd_gm" type="number" value="1.0" step="0.1" min="0.3" max="2.5" style="width:54px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
-    <button id="cd_run" style="background:#e07a5f;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Tạo Height Map 16-bit</button>
+    <label style="font-size:12px;">Res: <select id="cd_res" style="background:#0b0d11;color:#7dd3fc;border:1px solid #343e50;border-radius:5px;padding:3px;"><option value="756">756</option><option value="1036" selected>1036</option><option value="1288">1288</option></select></label>
+    <label style="font-size:12px;">Tile: <select id="cd_tile" style="background:#0b0d11;color:#7dd3fc;border:1px solid #343e50;border-radius:5px;padding:3px;"><option value="1">1x1</option><option value="2" selected>2x2</option><option value="3">3x3</option></select></label>
+    <label style="font-size:12px;">Guided%: <input id="cd_gd" type="number" value="65" min="0" max="100" style="width:52px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
+    <label style="font-size:12px;">Nền đen: <input id="cd_th" type="number" value="15" min="0" max="60" style="width:48px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
+    <label style="font-size:12px;">Gamma: <input id="cd_gm" type="number" value="1.0" step="0.1" min="0.3" max="2.5" style="width:52px;background:#0b0d11;color:#f4b942;border:1px solid #343e50;border-radius:5px;padding:3px;"></label>
+    <button id="cd_run" style="background:#e07a5f;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Tạo Height Map Siêu Nét</button>
   </div>
-  <div id="cd_status" style="font-size:12px;color:#f4b942;margin-bottom:10px;">Chọn ảnh đất sét nền đen rồi bấm Tạo Height Map 16-bit.</div>
+  <div id="cd_status" style="font-size:12px;color:#f4b942;margin-bottom:10px;">Chọn ảnh đất sét nền đen rồi bấm Tạo Height Map Siêu Nét.</div>
   <div id="cd_out" style="display:none;gap:14px;flex-wrap:wrap;align-items:flex-start;">
-    <img id="cd_prev" style="max-width:340px;border-radius:8px;border:1px solid #343e50;background:#000;" />
+    <img id="cd_prev" style="max-width:360px;border-radius:8px;border:1px solid #343e50;background:#000;" />
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <a id="cd_dl16" download="heightmap_16bit_cnc.png" style="background:#289c72;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:700;text-align:center;">⬇ Tải Height Map 16-bit PNG</a>
+      <a id="cd_dl16" download="heightmap_16bit_pro_cnc.png" style="background:#289c72;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:700;text-align:center;">⬇ Tải Height Map 16-bit PNG</a>
       <span id="cd_info" style="font-family:monospace;font-size:11px;color:#98a3b8;"></span>
     </div>
   </div>
@@ -1820,11 +2183,13 @@ __OPEN_SCRIPT__
   };
   document.getElementById('cd_run').onclick = async function() {
     if (!loadedDataUrl) { document.getElementById('cd_status').textContent = 'Vui lòng chọn ảnh trước!'; return; }
-    document.getElementById('cd_status').textContent = '⏳ Đang chạy Depth Anything V2 Large trên GPU...';
+    document.getElementById('cd_status').textContent = '⏳ Đang chạy Depth Anything V2 Large Hi-Res + Tile Fusion + Guided Filter...';
+    const resVal = Number(document.getElementById('cd_res').value) || 1036;
+    const tileVal = Number(document.getElementById('cd_tile').value) || 2;
+    const gdVal = Number(document.getElementById('cd_gd').value) || 65;
     const th = Number(document.getElementById('cd_th').value) || 15;
-    const fe = Number(document.getElementById('cd_fe').value) || 3;
     const gm = Number(document.getElementById('cd_gm').value) || 1.0;
-    const res = await google.colab.kernel.invokeFunction('claydepth.generate', [loadedDataUrl, th, fe, gm], {});
+    const res = await google.colab.kernel.invokeFunction('claydepth.generate', [loadedDataUrl, resVal, tileVal, gdVal, th, 2, gm], {});
     const data = res.data['application/json'];
     document.getElementById('cd_prev').src = data.preview_b64;
     document.getElementById('cd_dl16').href = data.png16_b64;
@@ -1845,7 +2210,7 @@ final_html = (
 display(HTML(final_html))</script>
 
   <!-- =====================================================================
-       MAIN APPLICATION SCRIPT — 100% PURE JS + PURE WEBGL + 16-BIT PNG ENCODER
+       MAIN APPLICATION SCRIPT — PURE JS + WEBGL 320x320 + 16-BIT PNG ENCODER
        ===================================================================== -->
   <script>
     (function () {
@@ -1855,49 +2220,57 @@ display(HTML(final_html))</script>
          1. TRẠNG THÁI ỨNG DỤNG (STATE)
          =================================================================== */
       const state = {
-        // Ảnh đầu vào gốc (RGB)
         width: 0,
         height: 0,
         fileName: 'clay_relief',
-        clayImageData: null,      // ImageData ảnh gốc
-        clayLum: null,            // Float32Array [0..1] độ sáng ảnh đất sét gốc
-        clayHighPass: null,       // Float32Array [-1..1] chi tiết bề mặt high-pass
-        clayBlob: null,           // Blob PNG để gửi sang Colab
+        clayImageData: null,
+        clayLum: null,            // Float32Array [0..1]
+        clayHighPassFine: null,   // Chi tiết mảnh tần số cao
+        clayHighPassMid: null,    // Chi tiết gân/nếp tần số trung
+        clayBlob: null,
 
-        // Dữ liệu độ sâu 16-bit
-        rawDepth: null,           // Float32Array [0..1] độ sâu gốc từ Colab / Demo / Depth nạp sẵn
-        processedDepth: null,     // Float32Array [0..1] sau hậu kỳ CNC
-        processedU16: null,       // Uint16Array [0..65535] sẵn sàng xuất PNG 16-bit & probe
+        rawDepth: null,
+        processedDepth: null,
+        processedU16: null,
         fgRatio: 0,
         depthSourceLabel: '—',
-        isDirectDepthOnly: false, // true khi người dùng nạp sẵn Depth Map không qua ảnh đất sét
+        isDirectDepthOnly: false,
 
-        // Thông số hậu kỳ CNC
+        // Chế độ nội suy & siêu phân giải AI (Colab)
+        inferRes: 1036,
+        interpMode: 'guided',     // 'guided' | 'guided_strong' | 'lanczos' | 'bicubic'
+        tileGrid: 2,              // 1 | 2 | 3
+        guidedStrength: 65,       // 0..100 (%)
+        useTta: true,
+
+        // Thông số hậu kỳ CNC 16-bit
         bgCutoff: true,
-        bgThreshold: 15,          // 0..60 (trên thang 0..255)
-        bgFeather: 3,             // 0..15 px
-        blackPoint: 0,            // 0..50 (%)
-        whitePoint: 100,          // 50..100 (%)
-        gamma: 1.0,               // 0.30..2.50
+        bgThreshold: 15,
+        bgFeather: 2,
+        blackPoint: 0,
+        whitePoint: 100,
+        gamma: 1.0,
+        clarity: 22,              // Unsharp / Clarity 16-bit (0..100%)
+        microDetail: 12,          // Trộn chi tiết đất sét 2 tầng (0..45%)
         smooth: 1,                // 0..8
-        microDetail: 8,           // 0..35 (%)
+        edgeSmooth: true,         // Guided Edge-Preserving Smooth
         invert: false,
 
-        // Trạng thái Viewport
-        activeView: 'split',      // 'split' | 'height2d' | 'heatmap' | 'view3d'
-        splitPos: 0.5,            // 0..1
+        // Viewport
+        activeView: 'split',
+        splitPos: 0.5,
         isDraggingSplit: false,
 
-        // Trạng thái WebGL 3D
+        // WebGL 3D
         zScale: 0.24,
         lightAngleDeg: 42,
-        material: 'clay',         // 'clay' | 'wood' | 'bronze' | 'plaster'
+        material: 'clay',
         camYaw: -0.22,
         camPitch: 0.42,
         camDist: 2.55,
 
         // Colab Modal
-        colabTab: 'server'        // 'server' | 'inline'
+        colabTab: 'server'
       };
 
       /* ===================================================================
@@ -1927,6 +2300,14 @@ display(HTML(final_html))</script>
         btnLoadExistingDepth: $('btnLoadExistingDepth'),
 
         modelSelect: $('modelSelect'),
+        interpPresets: $('interpPresets'),
+        inferResSelect: $('inferResSelect'),
+        interpModeSelect: $('interpModeSelect'),
+        tileGridSelect: $('tileGridSelect'),
+        guidedStrengthWrap: $('guidedStrengthWrap'),
+        slGuidedStrength: $('slGuidedStrength'),
+        valGuidedStrength: $('valGuidedStrength'),
+        chkUseTta: $('chkUseTta'),
         btnRunColab: $('btnRunColab'),
         btnRunLocalDemo: $('btnRunLocalDemo'),
 
@@ -1942,14 +2323,18 @@ display(HTML(final_html))</script>
         valWhitePt: $('valWhitePt'),
         slGamma: $('slGamma'),
         valGamma: $('valGamma'),
-        slSmooth: $('slSmooth'),
-        valSmooth: $('valSmooth'),
+        slClarity: $('slClarity'),
+        valClarity: $('valClarity'),
         slMicroDetail: $('slMicroDetail'),
         valMicroDetail: $('valMicroDetail'),
+        slSmooth: $('slSmooth'),
+        valSmooth: $('valSmooth'),
+        chkEdgeSmooth: $('chkEdgeSmooth'),
         chkInvert: $('chkInvert'),
         btnResetPost: $('btnResetPost'),
 
         btnExport16: $('btnExport16'),
+        objResSelect: $('objResSelect'),
         btnExport8: $('btnExport8'),
         btnExportObj: $('btnExportObj'),
 
@@ -1968,6 +2353,7 @@ display(HTML(final_html))</script>
 
         stage3dContainer: $('stage3dContainer'),
         webglCanvas: $('webglCanvas'),
+        mesh3dTitle: $('mesh3dTitle'),
         sl3dZ: $('sl3dZ'),
         val3dZ: $('val3dZ'),
         sl3dLight: $('sl3dLight'),
@@ -1995,9 +2381,9 @@ display(HTML(final_html))</script>
       };
 
       /* ===================================================================
-         3. TIỆN ÍCH TOAST & CLIPBOARD AN TOÀN
+         3. TIỆN ÍCH TOAST & CLIPBOARD
          =================================================================== */
-      function showToast(msg, type = 'success', ms = 3200) {
+      function showToast(msg, type = 'success', ms = 3400) {
         const el = document.createElement('div');
         el.className = `toast ${type}`;
         const icon = type === 'success' ? '✓' : type === 'warn' ? '!' : 'ℹ';
@@ -2050,7 +2436,7 @@ display(HTML(final_html))</script>
       }
 
       /* ===================================================================
-         4. BẢNG MÀU INFERNO LUT (256 MỨC CHO CHẾ ĐỘ HEATMAP)
+         4. INFERNO LUT (HEATMAP)
          =================================================================== */
       const INFERNO_LUT = (function buildInfernoLUT() {
         const stops = [
@@ -2079,16 +2465,8 @@ display(HTML(final_html))</script>
       })();
 
       /* ===================================================================
-         5. THUẬT TOÁN XỬ LÝ MẢNG FLOAT32 NHANH (SEPARABLE BLUR & DISTANCE)
+         5. THUẬT TOÁN XỬ LÝ FLOAT32: BOX BLUR, GUIDED FILTER & DISTANCE
          =================================================================== */
-      /**
-       * Làm mịn hộp 2 chiều tách trục O(W*H) độc lập với bán kính
-       * @param {Float32Array} src
-       * @param {number} w
-       * @param {number} h
-       * @param {number} radius
-       * @param {number} passes
-       */
       function separableBlurFloat(src, w, h, radius, passes = 2) {
         const r = Math.round(radius);
         if (r <= 0) return new Float32Array(src);
@@ -2098,7 +2476,6 @@ display(HTML(final_html))</script>
         const invWin = 1.0 / winSize;
 
         for (let p = 0; p < passes; p++) {
-          // Chiều ngang
           for (let y = 0; y < h; y++) {
             const rowOff = y * w;
             let sum = cur[rowOff] * (r + 1);
@@ -2112,7 +2489,6 @@ display(HTML(final_html))</script>
               sum += cur[rowOff + addX] - cur[rowOff + subX];
             }
           }
-          // Chiều dọc
           for (let x = 0; x < w; x++) {
             let sum = tmp[x] * (r + 1);
             for (let y = 1; y <= r; y++) {
@@ -2130,14 +2506,52 @@ display(HTML(final_html))</script>
       }
 
       /**
-       * Tính khoảng cách từ nền đen (Chamfer Distance Transform 2-pass) cho chế độ Demo cục bộ
+       * Fast Guided Filter O(W*H) trong JS:
+       * - Khi guide === src: Làm mịn bảo toàn cạnh (khử bậc thang CNC không làm mờ nét sắc)
+       * - Khi guide === clayLum: Nội suy bám cạnh theo ảnh gốc
        */
+      function guidedFilterFloat(guide, src, w, h, radius, eps) {
+        const r = Math.max(1, Math.round(radius));
+        const n = w * h;
+        const meanI = separableBlurFloat(guide, w, h, r, 1);
+        const meanP = (guide === src) ? meanI : separableBlurFloat(src, w, h, r, 1);
+
+        const prodIP = new Float32Array(n);
+        const prodII = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+          const gi = guide[i];
+          prodIP[i] = gi * src[i];
+          prodII[i] = gi * gi;
+        }
+
+        const meanIP = separableBlurFloat(prodIP, w, h, r, 1);
+        const meanII = (guide === src) ? meanIP : separableBlurFloat(prodII, w, h, r, 1);
+
+        const a = new Float32Array(n);
+        const b = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+          const cov = meanIP[i] - meanI[i] * meanP[i];
+          const vari = Math.max(0.0, meanII[i] - meanI[i] * meanI[i]);
+          const ai = cov / (vari + eps);
+          a[i] = ai;
+          b[i] = meanP[i] - ai * meanI[i];
+        }
+
+        const meanA = separableBlurFloat(a, w, h, r, 1);
+        const meanB = separableBlurFloat(b, w, h, r, 1);
+
+        const q = new Float32Array(n);
+        for (let i = 0; i < n; i++) {
+          q[i] = meanA[i] * guide[i] + meanB[i];
+        }
+        return q;
+      }
+
       function computeDistanceFromBlack(mask, w, h) {
         const dist = new Float32Array(w * h);
         const INF = 1e6;
         for (let i = 0; i < w * h; i++) dist[i] = mask[i] > 0.5 ? INF : 0;
 
-        // Forward pass
         for (let y = 0; y < h; y++) {
           const row = y * w;
           for (let x = 0; x < w; x++) {
@@ -2153,7 +2567,6 @@ display(HTML(final_html))</script>
             dist[idx] = d;
           }
         }
-        // Backward pass
         for (let y = h - 1; y >= 0; y--) {
           const row = y * w;
           for (let x = w - 1; x >= 0; x--) {
@@ -2173,150 +2586,144 @@ display(HTML(final_html))</script>
       }
 
       /* ===================================================================
-         6. TẠO ẢNH ĐẤT SÉT MẪU BẰNG CANVAS (PHÙ ĐIÊU HOA SEN NỀN ĐEN #000000)
+         6. TẠO ẢNH ĐẤT SÉT MẪU (1024×1024 PHÙ ĐIÊU HOA SEN CHI TIẾT CAO)
          =================================================================== */
       function generateSampleClayRelief() {
-        const size = 768;
+        const size = 1024;
         const c = document.createElement('canvas');
         c.width = size;
         c.height = size;
         const ctx = c.getContext('2d');
 
-        // Nền đen tuyệt đối #000000
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, size, size);
 
+        const s = size / 768;
         const cx = size * 0.5;
         const cy = size * 0.54;
 
-        // Vẽ một cánh sen điêu khắc đất sét xám có gân nổi & khối sáng tối
         function drawClayPetal(angleRad, distFromCenter, len, wid, baseTone, tipTone) {
           ctx.save();
           ctx.translate(cx, cy);
           ctx.rotate(angleRad);
-          ctx.translate(0, -distFromCenter);
+          ctx.translate(0, -distFromCenter * s);
 
-          const grad = ctx.createLinearGradient(0, 0, 0, -len);
+          const L = len * s;
+          const W = wid * s;
+
+          const grad = ctx.createLinearGradient(0, 0, 0, -L);
           grad.addColorStop(0.0, `rgb(${baseTone - 38},${baseTone - 36},${baseTone - 32})`);
           grad.addColorStop(0.45, `rgb(${baseTone + 18},${baseTone + 20},${baseTone + 24})`);
           grad.addColorStop(0.85, `rgb(${tipTone},${tipTone + 2},${tipTone + 6})`);
-          grad.addColorStop(1.0, `rgb(${tipTone - 30},${tipTone - 28},${tipTone - 24})`);
+          grad.addColorStop(1.0, `rgb(${tipTone - 28},${tipTone - 26},${tipTone - 22})`);
 
           ctx.fillStyle = grad;
           ctx.beginPath();
           ctx.moveTo(0, 0);
-          ctx.bezierCurveTo(-wid, -len * 0.25, -wid * 0.85, -len * 0.78, 0, -len);
-          ctx.bezierCurveTo(wid * 0.85, -len * 0.78, wid, -len * 0.25, 0, 0);
+          ctx.bezierCurveTo(-W, -L * 0.25, -W * 0.85, -L * 0.78, 0, -L);
+          ctx.bezierCurveTo(W * 0.85, -L * 0.78, W, -L * 0.25, 0, 0);
           ctx.closePath();
           ctx.fill();
 
-          // Viền chuyển khối nhẹ dọc mép cánh
-          ctx.strokeStyle = `rgba(38, 42, 48, 0.55)`;
-          ctx.lineWidth = 3;
+          ctx.strokeStyle = 'rgba(32, 36, 42, 0.65)';
+          ctx.lineWidth = 3.5 * s;
           ctx.stroke();
 
-          // Sống gân chính nổi giữa cánh sen
-          const ridgeGrad = ctx.createLinearGradient(0, -len * 0.1, 0, -len * 0.9);
-          ridgeGrad.addColorStop(0, `rgba(255,255,255,0.22)`);
-          ridgeGrad.addColorStop(0.6, `rgba(255,255,255,0.34)`);
-          ridgeGrad.addColorStop(1, `rgba(255,255,255,0.06)`);
+          // Sống gân chính sắc nét
+          const ridgeGrad = ctx.createLinearGradient(0, -L * 0.08, 0, -L * 0.92);
+          ridgeGrad.addColorStop(0, 'rgba(255,255,255,0.24)');
+          ridgeGrad.addColorStop(0.55, 'rgba(255,255,255,0.42)');
+          ridgeGrad.addColorStop(1, 'rgba(255,255,255,0.08)');
           ctx.strokeStyle = ridgeGrad;
-          ctx.lineWidth = Math.max(3, wid * 0.11);
+          ctx.lineWidth = Math.max(3, W * 0.10);
           ctx.lineCap = 'round';
           ctx.beginPath();
-          ctx.moveTo(0, -len * 0.12);
-          ctx.lineTo(0, -len * 0.86);
+          ctx.moveTo(0, -L * 0.1);
+          ctx.lineTo(0, -L * 0.88);
           ctx.stroke();
 
-          // Các đường gân phụ nhỏ (để test bộ trộn Micro-Detail rất rõ!)
-          ctx.strokeStyle = 'rgba(235, 240, 248, 0.14)';
-          ctx.lineWidth = 2;
-          for (let s = -1; s <= 1; s += 2) {
-            for (let k = 1; k <= 3; k++) {
+          // Gân phụ mảnh mật độ cao để kiểm tra độ sắc nét CNC
+          ctx.strokeStyle = 'rgba(240, 245, 255, 0.18)';
+          ctx.lineWidth = 2.0 * s;
+          for (let side = -1; side <= 1; side += 2) {
+            for (let k = 1; k <= 5; k++) {
               ctx.beginPath();
-              ctx.moveTo(0, -len * (0.22 + k * 0.14));
-              ctx.quadraticCurveTo(s * wid * 0.35, -len * (0.3 + k * 0.14), s * wid * 0.56, -len * (0.42 + k * 0.13));
+              ctx.moveTo(0, -L * (0.16 + k * 0.11));
+              ctx.quadraticCurveTo(side * W * 0.36, -L * (0.24 + k * 0.11), side * W * 0.62, -L * (0.34 + k * 0.105));
               ctx.stroke();
             }
           }
           ctx.restore();
         }
 
-        // Bệ lá sen nâng phía dưới (relief nền thấp)
+        // Bệ lá sen
         ctx.save();
-        ctx.translate(cx, cy + 88);
-        const padGrad = ctx.createRadialGradient(0, -18, 20, 0, 0, 250);
+        ctx.translate(cx, cy + 88 * s);
+        const padGrad = ctx.createRadialGradient(0, -18 * s, 20 * s, 0, 0, 250 * s);
         padGrad.addColorStop(0, '#a6adb8');
         padGrad.addColorStop(0.65, '#727985');
         padGrad.addColorStop(1, '#343942');
         ctx.fillStyle = padGrad;
         ctx.beginPath();
-        ctx.ellipse(0, 0, 252, 72, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 252 * s, 72 * s, 0, 0, Math.PI * 2);
         ctx.fill();
-        // Gân lá sen toả ra
-        ctx.strokeStyle = 'rgba(235,240,248,0.24)';
-        ctx.lineWidth = 3;
-        for (let i = -5; i <= 5; i++) {
+        ctx.strokeStyle = 'rgba(240,245,255,0.28)';
+        ctx.lineWidth = 3 * s;
+        for (let i = -6; i <= 6; i++) {
           ctx.beginPath();
-          ctx.moveTo(0, -4);
-          ctx.lineTo(i * 44, 48 - Math.abs(i) * 4);
+          ctx.moveTo(0, -4 * s);
+          ctx.lineTo(i * 38 * s, (48 - Math.abs(i) * 3.5) * s);
           ctx.stroke();
         }
         ctx.restore();
 
-        // Tầng 1: 7 cánh sen ngoài cùng (thấp hơn, xám trung bình)
-        const outerAngles = [-1.42, -0.96, -0.48, 0, 0.48, 0.96, 1.42];
-        outerAngles.forEach((ang, idx) => {
-          const len = 255 - Math.abs(idx - 3) * 16;
-          drawClayPetal(ang, 34, len, 78, 126, 168);
+        // Tầng 1
+        [-1.42, -0.96, -0.48, 0, 0.48, 0.96, 1.42].forEach((ang, idx) => {
+          drawClayPetal(ang, 34, 255 - Math.abs(idx - 3) * 16, 78, 126, 168);
+        });
+        // Tầng 2
+        [-1.05, -0.52, 0, 0.52, 1.05].forEach((ang, idx) => {
+          drawClayPetal(ang, 22, 228 - Math.abs(idx - 2) * 14, 76, 152, 204);
         });
 
-        // Tầng 2: 5 cánh sen giữa (nổi cao hơn)
-        const midAngles = [-1.05, -0.52, 0, 0.52, 1.05];
-        midAngles.forEach((ang, idx) => {
-          const len = 228 - Math.abs(idx - 2) * 14;
-          drawClayPetal(ang, 22, len, 76, 152, 204);
-        });
-
-        // Đài sen trung tâm (nổi cao mạnh)
+        // Đài sen
         ctx.save();
-        const podGrad = ctx.createRadialGradient(cx, cy - 52, 10, cx, cy - 34, 96);
-        podGrad.addColorStop(0, '#edf1f7');
+        const podGrad = ctx.createRadialGradient(cx, cy - 52 * s, 10 * s, cx, cy - 34 * s, 96 * s);
+        podGrad.addColorStop(0, '#eff3f9');
         podGrad.addColorStop(0.55, '#bec5d0');
         podGrad.addColorStop(1, '#58606d');
         ctx.fillStyle = podGrad;
         ctx.beginPath();
-        ctx.ellipse(cx, cy - 36, 86, 62, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy - 36 * s, 86 * s, 62 * s, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Các hạt sen điêu khắc nổi tròn trên đài
         const seeds = [
           [0, -42, 14], [-34, -46, 12], [34, -46, 12],
           [-20, -20, 12], [20, -20, 12], [-48, -24, 10], [48, -24, 10],
           [0, -68, 11], [-28, -68, 10], [28, -68, 10]
         ];
         seeds.forEach(([sx, sy, sr]) => {
-          const sg = ctx.createRadialGradient(cx + sx - sr * 0.2, cy + sy - sr * 0.25, 1, cx + sx, cy + sy, sr);
+          const rx = cx + sx * s, ry = cy + sy * s, rr = sr * s;
+          const sg = ctx.createRadialGradient(rx - rr * 0.2, ry - rr * 0.25, 1, rx, ry, rr);
           sg.addColorStop(0, '#ffffff');
           sg.addColorStop(0.6, '#c8cfd9');
-          sg.addColorStop(1, '#4a505b');
+          sg.addColorStop(1, '#444b57');
           ctx.fillStyle = sg;
           ctx.beginPath();
-          ctx.arc(cx + sx, cy + sy, sr, 0, Math.PI * 2);
+          ctx.arc(rx, ry, rr, 0, Math.PI * 2);
           ctx.fill();
         });
         ctx.restore();
 
-        // Tầng 3: 3 cánh sen ôm phía trước (gần camera nhất — nổi cao nhất!)
+        // Tầng 3
         drawClayPetal(-0.46, -10, 156, 64, 178, 228);
         drawClayPetal(0.46, -10, 156, 64, 178, 228);
-        drawClayPetal(0, -18, 162, 68, 196, 245);
+        drawClayPetal(0, -18, 162, 68, 196, 246);
 
-        // Chấm nhẹ viền dưới cho gọn khung
         c.toBlob((blob) => {
           const img = new Image();
           img.onload = () => {
-            ingestClayImage(img, 'mau_phu_dieu_hoa_sen_clay', blob);
+            ingestClayImage(img, 'mau_phu_dieu_hoa_sen_1024', blob);
             runLocalDemoDepth();
           };
           img.src = URL.createObjectURL(blob);
@@ -2324,11 +2731,10 @@ display(HTML(final_html))</script>
       }
 
       /* ===================================================================
-         7. NẠP ẢNH ĐẤT SÉT & NẠP SẴN DEPTH MAP
+         7. NẠP ẢNH ĐẤT SÉT (HỖ TRỢ TỚI 3072 PX) & NẠP SẴN DEPTH MAP
          =================================================================== */
       function ingestClayImage(img, fileName, originalBlob = null) {
-        // Giới hạn cạnh lớn nhất ở 2048px để xử lý thời gian thực 16-bit luôn mượt
-        const MAX_DIM = 2048;
+        const MAX_DIM = 3072;
         let w = img.naturalWidth;
         let h = img.naturalHeight;
         if (Math.max(w, h) > MAX_DIM) {
@@ -2350,12 +2756,18 @@ display(HTML(final_html))</script>
           lum[p] = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255.0;
         }
 
-        // Tạo lớp High-Pass chi tiết bề mặt đất sét cho bộ trộn Micro-Detail
-        const blurRadius = Math.max(2, Math.round(Math.min(w, h) * 0.008));
-        const blurredLum = separableBlurFloat(lum, w, h, blurRadius, 2);
-        const highPass = new Float32Array(w * h);
+        // Trích xuất High-Pass 2 tầng (Fine nét mảnh + Mid nếp khối) cho Micro-Detail sắc nét
+        const minSide = Math.min(w, h);
+        const rFine = Math.max(1, Math.round(minSide * 0.0025));
+        const rMid = Math.max(3, Math.round(minSide * 0.010));
+        const blurFine = separableBlurFloat(lum, w, h, rFine, 2);
+        const blurMid = separableBlurFloat(lum, w, h, rMid, 2);
+
+        const hpFine = new Float32Array(w * h);
+        const hpMid = new Float32Array(w * h);
         for (let i = 0; i < w * h; i++) {
-          highPass[i] = lum[i] - blurredLum[i];
+          hpFine[i] = lum[i] - blurFine[i];
+          hpMid[i] = blurFine[i] - blurMid[i];
         }
 
         state.width = w;
@@ -2363,20 +2775,19 @@ display(HTML(final_html))</script>
         state.fileName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_') || 'clay_relief';
         state.clayImageData = imgData;
         state.clayLum = lum;
-        state.clayHighPass = highPass;
+        state.clayHighPassFine = hpFine;
+        state.clayHighPassMid = hpMid;
         state.isDirectDepthOnly = false;
         state.rawDepth = null;
         state.processedDepth = null;
         state.processedU16 = null;
 
-        // Lưu blob gửi sang Colab
-        if (originalBlob) {
+        if (originalBlob && w === img.naturalWidth && h === img.naturalHeight) {
           state.clayBlob = originalBlob;
         } else {
           c.toBlob((b) => { state.clayBlob = b; }, 'image/png');
         }
 
-        // Cập nhật UI cột trái & viewport
         els.inputThumb.src = c.toDataURL('image/jpeg', 0.85);
         els.inputName.textContent = `${state.fileName}.png`;
         els.inputDims.textContent = `${w} × ${h} px`;
@@ -2391,7 +2802,6 @@ display(HTML(final_html))</script>
         els.statFgRatio.textContent = 'Chưa tạo Depth';
         els.statSource.textContent = 'Ảnh đất sét gốc';
 
-        // Hiển thị ảnh đất sét gốc ngay trên canvas 2D
         renderViewport();
       }
 
@@ -2405,7 +2815,7 @@ display(HTML(final_html))</script>
         img.onload = () => {
           ingestClayImage(img, file.name || 'clay_input', file);
           URL.revokeObjectURL(url);
-          showToast(`Đã nạp ảnh đất sét (${state.width}×${state.height}px). Bấm "Tạo Height Map" để chạy!`, 'success');
+          showToast(`Đã nạp ảnh (${state.width}×${state.height}px). Chọn chế độ nội suy và bấm Tạo Height Map!`, 'success');
         };
         img.onerror = () => {
           URL.revokeObjectURL(url);
@@ -2424,12 +2834,11 @@ display(HTML(final_html))</script>
         img.onload = () => {
           ingestClayImage(img, file.name || 'loaded_depth', file);
           state.isDirectDepthOnly = true;
-          // Dùng chính độ sáng của ảnh Depth Map đã nạp làm rawDepth
           state.rawDepth = new Float32Array(state.clayLum);
           state.depthSourceLabel = 'Nạp sẵn Depth Map';
           URL.revokeObjectURL(url);
           runPostProcessPipeline();
-          showToast('Đã nạp Depth Map có sẵn! Bạn có thể tinh chỉnh CNC, xem 3D và xuất 16-bit.', 'success');
+          showToast('Đã nạp Depth Map có sẵn! Bạn có thể tăng nét 16-bit, xem 3D và xuất file.', 'success');
         };
         img.onerror = () => {
           URL.revokeObjectURL(url);
@@ -2439,7 +2848,7 @@ display(HTML(final_html))</script>
       }
 
       /* ===================================================================
-         8. KẾT NỐI & GỌI GOOGLE COLAB API (GET /health & POST /predict)
+         8. KẾT NỐI & GỌI GOOGLE COLAB API V2.5 PRO
          =================================================================== */
       function normalizeColabUrl(raw) {
         return (raw || '').trim().replace(/\/+$/, '');
@@ -2473,21 +2882,24 @@ display(HTML(final_html))</script>
 
           els.statusDot.className = 'status-dot online';
           const gpuName = data.gpu || data.device || 'Colab GPU';
-          els.gpuPill.textContent = `● ${gpuName}`;
+          const verTag = data.version ? ` v${data.version}` : ' (bản cũ)';
+          els.gpuPill.textContent = `● ${gpuName}${verTag}`;
           els.gpuPill.classList.add('visible');
-          showToast(`Kết nối thành công! Đang chạy trên ${gpuName}`, 'success');
+
+          if (!data.version) {
+            showToast(`Kết nối OK (${gpuName}), nhưng Colab đang chạy code cũ! Hãy copy lại Code Colab V2.5 Pro để dùng Tile Fusion & Guided Filter.`, 'info', 5200);
+          } else {
+            showToast(`Kết nối thành công V2.5 Pro trên ${gpuName}!`, 'success');
+          }
         } catch (err) {
           els.statusDot.className = 'status-dot offline';
           els.gpuPill.classList.remove('visible');
-          showToast('Không thể kết nối Colab Server. Kiểm tra xem cell Colab còn đang chạy và URL có đúng không.', 'warn', 4500);
+          showToast('Không thể kết nối Colab Server. Kiểm tra cell Colab còn chạy và URL có đúng không.', 'warn', 4500);
         } finally {
           els.btnCheckHealth.disabled = false;
         }
       }
 
-      /**
-       * Giải mã ảnh PNG Hi-Lo RGB (R = byte cao, G = byte thấp) thành Float32Array [0..1] chuẩn 16-bit
-       */
       function decodeHiLoPngToFloat32(dataUrl, expectedW, expectedH) {
         return new Promise((resolve, reject) => {
           const img = new Image();
@@ -2524,14 +2936,14 @@ display(HTML(final_html))</script>
         try { localStorage.setItem('claydepth_v2_colab_url', baseUrl); } catch (_) {}
 
         const modelSize = els.modelSelect.value;
+        const tileDesc = state.tileGrid > 1 ? `Tile ${state.tileGrid}×${state.tileGrid}` : '1-Pass';
         setLoading(
           true,
-          `Đang chạy Depth-Anything-V2-${modelSize.toUpperCase()} trên Colab GPU...`,
-          `Đang gửi ảnh ${state.width}×${state.height}px tới ${baseUrl}/predict`
+          `Depth-Anything-V2-${modelSize.toUpperCase()} (${state.inferRes}px • ${tileDesc})`,
+          `Đang nội suy ${state.interpMode.toUpperCase()}${state.useTta ? ' + TTA' : ''} trên Google Colab GPU...`
         );
 
         try {
-          // Đảm bảo có Blob PNG để gửi
           let blobToSend = state.clayBlob;
           if (!blobToSend) {
             const tmp = document.createElement('canvas');
@@ -2544,6 +2956,11 @@ display(HTML(final_html))</script>
           const fd = new FormData();
           fd.append('file', blobToSend, `${state.fileName}.png`);
           fd.append('model_size', modelSize);
+          fd.append('infer_res', String(state.inferRes));
+          fd.append('interp_mode', state.interpMode);
+          fd.append('tile_grid', String(state.tileGrid));
+          fd.append('guided_strength', String((state.guidedStrength / 100).toFixed(2)));
+          fd.append('use_tta', state.useTta ? 'true' : 'false');
 
           const res = await fetch(`${baseUrl}/predict`, {
             method: 'POST',
@@ -2553,7 +2970,7 @@ display(HTML(final_html))</script>
 
           if (!res.ok) {
             const txt = await res.text().catch(() => '');
-            throw new Error(`HTTP ${res.status} ${txt.slice(0, 120)}`);
+            throw new Error(`HTTP ${res.status} ${txt.slice(0, 140)}`);
           }
 
           const json = await res.json();
@@ -2562,25 +2979,27 @@ display(HTML(final_html))</script>
           const depthFloat = await decodeHiLoPngToFloat32(json.depth_hilo_png, state.width, state.height);
           state.rawDepth = depthFloat;
           state.isDirectDepthOnly = false;
-          state.depthSourceLabel = `Colab V2-${modelSize.toUpperCase()} (${json.inference_time ?? '?'}s)`;
+          const usedRes = json.infer_res || state.inferRes;
+          const usedTile = json.tile_grid ? ` • T${json.tile_grid}x${json.tile_grid}` : '';
+          state.depthSourceLabel = `V2-${modelSize.toUpperCase()} ${usedRes}px${usedTile} (${json.inference_time ?? '?'}s)`;
 
           els.statusDot.className = 'status-dot online';
           runPostProcessPipeline();
-          showToast(`Tạo Height Map 16-bit thành công trong ${json.inference_time ?? '?'}s!`, 'success');
+          showToast(`Hoàn tất Height Map 16-bit siêu nét trong ${json.inference_time ?? '?'}s!`, 'success');
         } catch (err) {
           console.error(err);
-          showToast(`Lỗi kết nối Colab: ${err.message}. Hãy kiểm tra lại server Colab hoặc thử Demo cục bộ.`, 'warn', 5000);
+          showToast(`Lỗi Colab: ${err.message}. Kiểm tra server Colab hoặc thử Demo cục bộ.`, 'warn', 5200);
         } finally {
           setLoading(false);
         }
       }
 
       /* ===================================================================
-         9. CHẠY MÔ PHỎNG CỤC BỘ (DEMO KHÔNG CẦN COLAB)
+         9. MÔ PHỎNG CỤC BỘ NÂNG CẤP (CÓ GUIDED EDGE-AWARE REFINEMENT)
          =================================================================== */
       function runLocalDemoDepth() {
         if (!state.clayLum) return;
-        setLoading(true, 'Đang ước lượng độ sâu phù điêu cục bộ (Demo)...', 'Kết hợp bản đồ khoảng cách nền đen & khối sáng tối đa tỷ lệ');
+        setLoading(true, 'Đang ước lượng độ sâu phù điêu + Guided Refinement (Demo)...', 'Kết hợp bản đồ khoảng cách nền đen, khối đa tỷ lệ & lọc bám cạnh gốc');
 
         setTimeout(() => {
           try {
@@ -2590,11 +3009,9 @@ display(HTML(final_html))</script>
             const lum = state.clayLum;
             const thresh = Math.max(0.025, state.bgThreshold / 255.0);
 
-            // 1. Mặt nạ vùng vật thể đất sét
             const mask = new Float32Array(n);
             for (let i = 0; i < n; i++) mask[i] = lum[i] > thresh ? 1.0 : 0.0;
 
-            // 2. Khoảng cách từ biên nền đen tạo độ vồng khối 3D tự nhiên
             const dist = computeDistanceFromBlack(mask, w, h);
             let maxD = 1;
             for (let i = 0; i < n; i++) if (dist[i] > maxD) maxD = dist[i];
@@ -2602,24 +3019,31 @@ display(HTML(final_html))</script>
             const env = new Float32Array(n);
             const capD = Math.max(12, maxD * 0.72);
             for (let i = 0; i < n; i++) {
-              env[i] = Math.pow(Math.min(1.0, dist[i] / capD), 0.52);
+              env[i] = Math.pow(Math.min(1.0, dist[i] / capD), 0.50);
             }
-            const smoothEnv = separableBlurFloat(env, w, h, Math.max(2, Math.round(Math.min(w, h) * 0.015)), 2);
+            const smoothEnv = separableBlurFloat(env, w, h, Math.max(2, Math.round(Math.min(w, h) * 0.014)), 2);
 
-            // 3. Độ sáng khối đa tỷ lệ từ ảnh đất sét
-            const broadR = Math.max(3, Math.round(Math.min(w, h) * 0.028));
-            const midR = Math.max(2, Math.round(Math.min(w, h) * 0.008));
+            const broadR = Math.max(3, Math.round(Math.min(w, h) * 0.026));
+            const midR = Math.max(2, Math.round(Math.min(w, h) * 0.006));
             const lumBroad = separableBlurFloat(lum, w, h, broadR, 2);
             const lumMid = separableBlurFloat(lum, w, h, midR, 2);
 
-            // 4. Trộn thành bản đồ độ sâu phù điêu giàu khối
-            const raw = new Float32Array(n);
+            let raw = new Float32Array(n);
+            for (let i = 0; i < n; i++) {
+              raw[i] = mask[i] < 0.5 ? 0 : (0.44 * smoothEnv[i] + 0.30 * lumBroad[i] + 0.16 * lumMid[i] + 0.10 * lum[i]);
+            }
+
+            // Áp dụng Guided Filter bám cạnh gốc ngay trong Demo cục bộ
+            const rGuide = Math.max(2, Math.round(Math.min(w, h) * 0.005));
+            const guided = guidedFilterFloat(lum, raw, w, h, rGuide, 0.0022);
+            const gAlpha = state.guidedStrength / 100.0;
+
             let minV = 1e9, maxV = -1e9;
             for (let i = 0; i < n; i++) {
               if (mask[i] < 0.5) {
                 raw[i] = 0;
               } else {
-                const v = 0.48 * smoothEnv[i] + 0.30 * lumBroad[i] + 0.14 * lumMid[i] + 0.08 * lum[i];
+                const v = (1 - gAlpha) * raw[i] + gAlpha * guided[i];
                 raw[i] = v;
                 if (v < minV) minV = v;
                 if (v > maxV) maxV = v;
@@ -2631,9 +3055,9 @@ display(HTML(final_html))</script>
             }
 
             state.rawDepth = raw;
-            state.depthSourceLabel = 'Mô phỏng cục bộ (Demo)';
+            state.depthSourceLabel = 'Demo cục bộ + Guided Filter';
             runPostProcessPipeline();
-            showToast('Đã tạo Height Map Demo! Bạn có thể thử hậu kỳ, xem 3D & xuất file ngay.', 'info');
+            showToast('Đã tạo Height Map Demo sắc nét! Thử chỉnh Clarity 16-bit & xem khối 3D.', 'info');
           } catch (err) {
             console.error(err);
             showToast('Có lỗi khi chạy mô phỏng cục bộ.', 'warn');
@@ -2644,7 +3068,7 @@ display(HTML(final_html))</script>
       }
 
       /* ===================================================================
-         10. PIPELINE HẬU KỲ HEIGHT MAP 16-BIT CHUẨN CNC (REAL-TIME FLOAT32)
+         10. PIPELINE HẬU KỲ HEIGHT MAP 16-BIT CNC (CLARITY + GUIDED SMOOTH)
          =================================================================== */
       let postRaf = null;
       function schedulePostProcess() {
@@ -2663,7 +3087,7 @@ display(HTML(final_html))</script>
         const n = w * h;
         const raw = state.rawDepth;
 
-        // Bước 1: Tạo mặt nạ nền đen (Black Background Cutoff) & Chuẩn hóa vùng vật thể
+        // Bước 1: Khóa nền đen Z=0 & Chuẩn hóa vùng vật thể
         let mask = null;
         let fgCount = n;
         let out = new Float32Array(n);
@@ -2696,17 +3120,13 @@ display(HTML(final_html))</script>
             out.fill(0);
           }
 
-          // Làm mềm viền chân khối (Feather) tránh vách đứng CNC
           if (state.bgFeather > 0 && fgCount > 0) {
-            // Làm mượt mặt nạ biên rồi giữ nền ngoài vẫn chạm sát 0
             const feathered = separableBlurFloat(mask, w, h, state.bgFeather, 2);
-            // Kéo dốc mượt tập trung ở vùng chân khối (ramp từ 0..1)
             for (let i = 0; i < n; i++) {
               mask[i] = feathered[i] < 0.008 ? 0 : feathered[i];
             }
           }
         } else {
-          // Không cắt nền -> giữ nguyên độ sâu chuẩn hóa toàn khung
           let minV = 1e9, maxV = -1e9;
           for (let i = 0; i < n; i++) {
             const v = raw[i];
@@ -2717,18 +3137,42 @@ display(HTML(final_html))</script>
           for (let i = 0; i < n; i++) out[i] = (raw[i] - minV) / span;
         }
 
-        // Bước 2: Làm mịn CNC (Khử bậc thang)
+        // Bước 2: Làm mịn CNC (Guided Edge-Preserving Smooth hoặc Box Smooth)
         if (state.smooth > 0) {
-          out = separableBlurFloat(out, w, h, state.smooth, 2);
+          if (state.edgeSmooth) {
+            // Guided Self-Filter: khử bậc thang mặt phẳng nhưng giữ nguyên cạnh điêu khắc sắc
+            out = guidedFilterFloat(out, out, w, h, state.smooth * 1.5, 0.0016);
+          } else {
+            out = separableBlurFloat(out, w, h, state.smooth, 2);
+          }
         }
 
-        // Bước 3: Định hình khối (Black Point, White Point, Gamma, Invert, Micro-Detail)
+        // Bước 3: Tăng độ nét khối đa tỷ lệ (16-bit Multi-Scale Unsharp / Clarity)
+        if (state.clarity > 0) {
+          const minSide = Math.min(w, h);
+          const rFine = Math.max(1, Math.round(minSide * 0.003));
+          const rMid = Math.max(3, Math.round(minSide * 0.012));
+          const bFine = separableBlurFloat(out, w, h, rFine, 1);
+          const bMid = separableBlurFloat(out, w, h, rMid, 1);
+          const cAmt = (state.clarity / 100.0) * 1.35;
+
+          for (let i = 0; i < n; i++) {
+            const detail = 0.65 * (out[i] - bFine[i]) + 0.35 * (out[i] - bMid[i]);
+            let v = out[i] + detail * cAmt;
+            if (v < 0) v = 0;
+            else if (v > 1) v = 1;
+            out[i] = v;
+          }
+        }
+
+        // Bước 4: Định hình khối (Black/White Point, Gamma, Invert, Micro-Detail 2 tầng)
         const bp = state.blackPoint / 100.0;
         const wp = Math.max(bp + 0.02, state.whitePoint / 100.0);
         const invRange = 1.0 / (wp - bp);
         const invGamma = 1.0 / state.gamma;
-        const detailStrength = state.isDirectDepthOnly ? 0 : (state.microDetail / 100.0) * 0.45;
-        const highPass = state.clayHighPass;
+        const detailStrength = state.isDirectDepthOnly ? 0 : (state.microDetail / 100.0) * 0.55;
+        const hpFine = state.clayHighPassFine;
+        const hpMid = state.clayHighPassMid;
 
         const u16 = new Uint16Array(n);
         for (let i = 0; i < n; i++) {
@@ -2743,20 +3187,15 @@ display(HTML(final_html))</script>
           if (v < 0) v = 0;
           else if (v > 1) v = 1;
 
-          // Đảo ngược độ sâu (chỉ đảo vùng vật thể nếu đang khóa nền đen Z=0)
           if (state.invert) v = 1.0 - v;
-
-          // Gamma tạo độ phồng khối CNC (gamma > 1 -> phồng nổi hơn)
           v = Math.pow(v, invGamma);
 
-          // Trộn chi tiết bề mặt đất sét (High-pass micro-detail)
-          if (detailStrength > 0 && highPass) {
-            v += highPass[i] * detailStrength;
+          if (detailStrength > 0 && hpFine && hpMid) {
+            // Trộn chi tiết 2 tầng: 68% nét mảnh + 32% nếp khối trung bình
+            v += (0.68 * hpFine[i] + 0.32 * hpMid[i]) * detailStrength;
           }
 
-          // Nhân mặt nạ chân khối mượt để dốc tự nhiên xuống Z=0
           v *= m;
-
           if (v < 0) v = 0;
           else if (v > 1) v = 1;
 
@@ -2787,7 +3226,7 @@ display(HTML(final_html))</script>
       }
 
       /* ===================================================================
-         11. VẼ BIỂU ĐỒ HISTOGRAM ĐỘ SÂU Z
+         11. HISTOGRAM ĐỘ SÂU Z
          =================================================================== */
       function drawHistogram(u16) {
         const c = els.histCanvas;
@@ -2799,13 +3238,12 @@ display(HTML(final_html))</script>
         if (!u16) return;
         const BINS = 64;
         const bins = new Uint32Array(BINS);
-        const step = Math.max(1, Math.floor(u16.length / 80000)); // lấy mẫu siêu nhanh
+        const step = Math.max(1, Math.floor(u16.length / 80000));
         for (let i = 0; i < u16.length; i += step) {
           const b = Math.min(BINS - 1, (u16[i] * BINS) >> 16);
           bins[b]++;
         }
 
-        // Bỏ qua cột Z=0 khi tìm đỉnh để thấy rõ phân bố chiều cao của vật thể đất sét
         let maxBin = 1;
         for (let i = 1; i < BINS; i++) {
           if (bins[i] > maxBin) maxBin = bins[i];
@@ -2822,7 +3260,7 @@ display(HTML(final_html))</script>
       }
 
       /* ===================================================================
-         12. HIỂN THỊ VIEWPORT 2D (SPLIT / HEIGHT 2D / HEATMAP)
+         12. HIỂN THỊ VIEWPORT 2D
          =================================================================== */
       function renderViewport() {
         const hasClay = !!state.clayImageData;
@@ -2839,7 +3277,6 @@ display(HTML(final_html))</script>
         els.splitLabelRight.classList.toggle('visible', showSplitUI);
 
         if (is3D && !hasDepth && hasClay) {
-          // Chưa có depth nhưng user bấm tab 3D -> vẫn giữ thông báo nhẹ
           els.stage2dContainer.classList.add('visible');
         }
 
@@ -2853,7 +3290,6 @@ display(HTML(final_html))</script>
           return;
         }
 
-        // Vẽ lên main2dCanvas
         const w = state.width;
         const h = state.height;
         const canvas = els.main2dCanvas;
@@ -2916,7 +3352,6 @@ display(HTML(final_html))</script>
         ctx.putImageData(outImg, 0, 0);
       }
 
-      // Tương tác kéo Split & Hover Probe 16-bit trên main2dCanvas
       function updateSplitFromPointer(clientX) {
         const rect = els.main2dCanvas.getBoundingClientRect();
         if (rect.width <= 0) return;
@@ -2936,7 +3371,6 @@ display(HTML(final_html))</script>
           updateSplitFromPointer(e.clientX);
         }
 
-        // Hiển thị Tooltip tọa độ & Z 16-bit trên Height Map 2D và Heatmap
         if ((state.activeView === 'height2d' || state.activeView === 'heatmap') && state.processedU16) {
           const rect = els.main2dCanvas.getBoundingClientRect();
           if (rect.width > 0 && rect.height > 0) {
@@ -2965,17 +3399,18 @@ display(HTML(final_html))</script>
       });
 
       /* ===================================================================
-         13. TRÌNH DỰNG 3D RELIEF BẰNG WEBGL THUẦN (200x200 MESH, ZERO CDN)
+         13. WEBGL 3D ENGINE NÂNG CẤP (LƯỚI 320×320 TỰ ĐỘNG QUA OES_UINT)
          =================================================================== */
       const webglEngine = (function createWebGLEngine() {
-        const GRID = 200; // 200x200 = 40.000 đỉnh (< 65.535 nên chạy mượt với UNSIGNED_SHORT mọi GPU)
+        let GRID = 250;
         let gl = null;
         let program = null;
         let posBuf = null, normBuf = null, uvBuf = null, idxBuf = null;
-        let positions = new Float32Array(GRID * GRID * 3);
-        let normals = new Float32Array(GRID * GRID * 3);
-        let uvs = new Float32Array(GRID * GRID * 2);
+        let positions = null;
+        let normals = null;
+        let uvs = null;
         let indexCount = 0;
+        let indexType = 0;
         let uniforms = {};
         let isDragging = false, lastX = 0, lastY = 0;
 
@@ -3010,7 +3445,6 @@ display(HTML(final_html))</script>
           uniform int uMatType;
           uniform float uZScale;
 
-          // Vân gỗ hương thủ công CNC (procedural rosewood grain)
           vec3 rosewoodColor(vec2 uv, float h) {
             float wave = sin(uv.y * 42.0 + sin(uv.x * 11.0 + h * 16.0) * 1.8) * 0.5 + 0.5;
             float fine = sin(uv.y * 140.0 + uv.x * 15.0) * 0.5 + 0.5;
@@ -3025,15 +3459,12 @@ display(HTML(final_html))</script>
             vec3 L = normalize(uLightDir);
             vec3 V = normalize(uCamPos - vWorldPos);
             vec3 H = normalize(L + V);
-
-            // Đèn phụ ngược sáng (rim/fill) để thấy rõ độ dày phù điêu
             vec3 L2 = normalize(vec3(-L.x, -L.y * 0.4, 0.65));
 
             float diff1 = max(dot(N, L), 0.0);
             float diff2 = max(dot(N, L2), 0.0) * 0.28;
             float nh = max(dot(N, H), 0.0);
 
-            // Hiệu ứng tối hốc tự nhiên (AO giả lập theo chiều cao + góc nghiêng)
             float hNorm = clamp(vHeight / max(0.001, uZScale), 0.0, 1.0);
             float ao = mix(0.62, 1.0, smoothstep(0.0, 0.18, hNorm)) * (0.82 + 0.18 * max(N.z, 0.0));
 
@@ -3043,32 +3474,27 @@ display(HTML(final_html))</script>
             float specStrength;
 
             if (uMatType == 0) {
-              // Đất sét ZBrush
               baseColor = mix(vec3(0.58, 0.27, 0.20), vec3(0.84, 0.46, 0.34), 0.45 + 0.55 * hNorm);
               specColor = vec3(1.0, 0.88, 0.82);
               shininess = 24.0;
-              specStrength = 0.20;
+              specStrength = 0.22;
             } else if (uMatType == 1) {
-              // Gỗ hương CNC
               baseColor = rosewoodColor(vUv, vHeight);
               specColor = vec3(1.0, 0.86, 0.72);
               shininess = 42.0;
               specStrength = 0.28;
             } else if (uMatType == 2) {
-              // Đồng cổ (Antique Bronze)
               baseColor = mix(vec3(0.24, 0.18, 0.11), vec3(0.62, 0.46, 0.24), 0.35 + 0.65 * hNorm);
               specColor = vec3(1.0, 0.85, 0.52);
               shininess = 56.0;
               specStrength = 0.72;
             } else {
-              // Thạch cao trắng
               baseColor = vec3(0.86, 0.88, 0.91);
               specColor = vec3(1.0, 1.0, 1.0);
               shininess = 18.0;
               specStrength = 0.12;
             }
 
-            // Mặt phẳng nền Z=0 tối sâu gọn gàng như bàn CNC
             if (hNorm < 0.004) {
               baseColor *= 0.26;
               specStrength *= 0.15;
@@ -3091,7 +3517,6 @@ display(HTML(final_html))</script>
           return sh;
         }
 
-        // Tiện ích ma trận 4x4 gọn nhẹ (Column-Major cho WebGL)
         function mat4Mul(a, b) {
           const out = new Float32Array(16);
           for (let c = 0; c < 4; c++) {
@@ -3110,11 +3535,8 @@ display(HTML(final_html))</script>
           const f = 1.0 / Math.tan(fovRad / 2);
           const nf = 1 / (near - far);
           const m = new Float32Array(16);
-          m[0] = f / aspect;
-          m[5] = f;
-          m[10] = (far + near) * nf;
-          m[11] = -1;
-          m[14] = 2 * far * near * nf;
+          m[0] = f / aspect; m[5] = f; m[10] = (far + near) * nf;
+          m[11] = -1; m[14] = 2 * far * near * nf;
           return m;
         }
 
@@ -3158,6 +3580,16 @@ display(HTML(final_html))</script>
               return;
             }
 
+            // Tự động nâng lên lưới 320×320 siêu mịn nếu GPU hỗ trợ OES_element_index_uint
+            const hasUint32 = !!gl.getExtension('OES_element_index_uint');
+            GRID = hasUint32 ? 320 : 250;
+            indexType = hasUint32 ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+            els.mesh3dTitle.textContent = `CNC 3D (${GRID}×${GRID})`;
+
+            positions = new Float32Array(GRID * GRID * 3);
+            normals = new Float32Array(GRID * GRID * 3);
+            uvs = new Float32Array(GRID * GRID * 2);
+
             const vs = compileShader(gl.VERTEX_SHADER, VS_SRC);
             const fs = compileShader(gl.FRAGMENT_SHADER, FS_SRC);
             program = gl.createProgram();
@@ -3166,7 +3598,6 @@ display(HTML(final_html))</script>
             gl.linkProgram(program);
             gl.useProgram(program);
 
-            // Khởi tạo UV và Index buffer cố định cho lưới 200x200
             for (let iy = 0; iy < GRID; iy++) {
               for (let ix = 0; ix < GRID; ix++) {
                 const v = iy * GRID + ix;
@@ -3175,7 +3606,8 @@ display(HTML(final_html))</script>
               }
             }
 
-            const indices = new Uint16Array((GRID - 1) * (GRID - 1) * 6);
+            const totalIdx = (GRID - 1) * (GRID - 1) * 6;
+            const indices = hasUint32 ? new Uint32Array(totalIdx) : new Uint16Array(totalIdx);
             let ptr = 0;
             for (let iy = 0; iy < GRID - 1; iy++) {
               for (let ix = 0; ix < GRID - 1; ix++) {
@@ -3227,7 +3659,6 @@ display(HTML(final_html))</script>
             gl.enable(gl.DEPTH_TEST);
             gl.clearColor(0.045, 0.055, 0.075, 1.0);
 
-            // Gắn sự kiện xoay/zoom 3D
             canvas.addEventListener('pointerdown', (e) => {
               isDragging = true;
               lastX = e.clientX;
@@ -3287,7 +3718,6 @@ display(HTML(final_html))</script>
             const planeH = aspect >= 1 ? 2.0 / aspect : 2.0;
             const zScale = state.zScale;
 
-            // 1. Lấy mẫu nội suy song tuyến (bilinear) từ mảng 16-bit Float32
             for (let iy = 0; iy < GRID; iy++) {
               const fy = (iy / (GRID - 1)) * (h - 1);
               const y0 = Math.floor(fy), y1 = Math.min(h - 1, y0 + 1);
@@ -3313,7 +3743,6 @@ display(HTML(final_html))</script>
               }
             }
 
-            // 2. Tính vector pháp tuyến mượt bằng sai phân trung tâm
             const stepX = planeW / (GRID - 1);
             const stepY = planeH / (GRID - 1);
             for (let iy = 0; iy < GRID; iy++) {
@@ -3357,7 +3786,6 @@ display(HTML(final_html))</script>
             const canvas = els.webglCanvas;
             const aspect = canvas.width / Math.max(1, canvas.height);
 
-            // Vị trí camera theo tọa độ cầu (Yaw/Pitch/Dist) nhìn về gốc phù điêu
             const cx = Math.sin(state.camYaw) * Math.cos(state.camPitch) * state.camDist;
             const cy = -Math.sin(state.camPitch) * state.camDist;
             const cz = Math.cos(state.camYaw) * Math.cos(state.camPitch) * state.camDist;
@@ -3381,14 +3809,14 @@ display(HTML(final_html))</script>
             gl.uniform1i(uniforms.uMatType, matMap[state.material] ?? 0);
             gl.uniform1f(uniforms.uZScale, state.zScale);
 
-            gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, indexCount, indexType, 0);
           }
         };
         return api;
       })();
 
       /* ===================================================================
-         14. BỘ MÃ HÓA PNG 16-BIT GRAYSCALE THUẦN JS (CHUẨN RFC 1950/1951)
+         14. BỘ MÃ HÓA PNG 16-BIT GRAYSCALE THUẦN JS
          =================================================================== */
       const CRC32_TABLE = (function () {
         const tbl = new Uint32Array(256);
@@ -3443,31 +3871,26 @@ display(HTML(final_html))</script>
         return chunk;
       }
 
-      /**
-       * Mã hóa Uint16Array (0..65535) thành Blob PNG 16-bit Grayscale chuẩn (bitDepth=16, colorType=0)
-       */
       function encodeGrayscale16Png(u16Data, width, height) {
-        // 1. Tạo raw scanlines: mỗi dòng [filter=0, hi0, lo0, hi1, lo1, ...]
         const rowStride = 1 + width * 2;
         const raw = new Uint8Array(height * rowStride);
         for (let y = 0; y < height; y++) {
           let dst = y * rowStride;
-          raw[dst++] = 0; // Filter type 0 (None)
+          raw[dst++] = 0;
           const srcRow = y * width;
           for (let x = 0; x < width; x++) {
             const val = u16Data[srcRow + x];
-            raw[dst++] = (val >>> 8) & 0xff; // Big-endian byte cao
-            raw[dst++] = val & 0xff;         // Big-endian byte thấp
+            raw[dst++] = (val >>> 8) & 0xff;
+            raw[dst++] = val & 0xff;
           }
         }
 
-        // 2. Gói Zlib (RFC 1950) + Deflate Stored Blocks (RFC 1951) + Adler-32
         const MAX_BLOCK = 65535;
         const numBlocks = Math.max(1, Math.ceil(raw.length / MAX_BLOCK));
         const zlibLen = 2 + raw.length + numBlocks * 5 + 4;
         const zlib = new Uint8Array(zlibLen);
-        zlib[0] = 0x78; // CMF
-        zlib[1] = 0x01; // FLG (0x7801 % 31 === 0)
+        zlib[0] = 0x78;
+        zlib[1] = 0x01;
 
         let zp = 2;
         let rp = 0;
@@ -3489,17 +3912,16 @@ display(HTML(final_html))</script>
         const zdv = new DataView(zlib.buffer);
         zdv.setUint32(zp, checksum, false);
 
-        // 3. Tạo các chunk PNG: Signature + IHDR + IDAT + IEND
         const sig = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
         const ihdrData = new Uint8Array(13);
         const ihdrDv = new DataView(ihdrData.buffer);
         ihdrDv.setUint32(0, width, false);
         ihdrDv.setUint32(4, height, false);
-        ihdrData[8] = 16; // bitDepth = 16
-        ihdrData[9] = 0;  // colorType = 0 (Grayscale)
-        ihdrData[10] = 0; // compression
-        ihdrData[11] = 0; // filter
-        ihdrData[12] = 0; // interlace
+        ihdrData[8] = 16;
+        ihdrData[9] = 0;
+        ihdrData[10] = 0;
+        ihdrData[11] = 0;
+        ihdrData[12] = 0;
 
         const ihdr = makePngChunk('IHDR', ihdrData);
         const idat = makePngChunk('IDAT', zlib);
@@ -3520,7 +3942,7 @@ display(HTML(final_html))</script>
       }
 
       /* ===================================================================
-         15. XUẤT FILE: 16-BIT PNG, 8-BIT PNG & LƯỚI 3D (.OBJ)
+         15. XUẤT FILE: 16-BIT PNG, 8-BIT PNG & LƯỚI 3D (.OBJ ĐA ĐỘ MỊN)
          =================================================================== */
       els.btnExport16.addEventListener('click', () => {
         if (!state.processedU16) return;
@@ -3557,63 +3979,71 @@ display(HTML(final_html))</script>
 
       els.btnExportObj.addEventListener('click', () => {
         if (!state.processedDepth) return;
-        try {
-          const GRID = 200;
-          const depth = state.processedDepth;
-          const w = state.width;
-          const h = state.height;
-          const aspect = w / h;
-          const sizeX = aspect >= 1 ? 100.0 : 100.0 * aspect;
-          const sizeY = aspect >= 1 ? 100.0 / aspect : 100.0;
-          const sizeZ = state.zScale * 50.0; // tỉ lệ mm phù hợp cho ArtCAM / Blender / ZBrush
+        const GRID = Number(els.objResSelect.value) || 320;
+        setLoading(true, `Đang xuất lưới 3D .OBJ (${GRID}×${GRID})...`, 'Đang nội suy tọa độ đỉnh từ bản đồ độ sâu 16-bit');
 
-          const lines = [
-            `# ClayDepth V2 Studio - 3D Relief Mesh (${GRID}x${GRID})`,
-            `# Source: ${state.fileName} (${w}x${h})`,
-            `o ClayRelief`
-          ];
+        setTimeout(() => {
+          try {
+            const depth = state.processedDepth;
+            const w = state.width;
+            const h = state.height;
+            const aspect = w / h;
+            const sizeX = aspect >= 1 ? 100.0 : 100.0 * aspect;
+            const sizeY = aspect >= 1 ? 100.0 / aspect : 100.0;
+            const sizeZ = state.zScale * 50.0;
 
-          for (let iy = 0; iy < GRID; iy++) {
-            const fy = (iy / (GRID - 1)) * (h - 1);
-            const y0 = Math.floor(fy), y1 = Math.min(h - 1, y0 + 1), ty = fy - y0;
-            const py = (0.5 - iy / (GRID - 1)) * sizeY;
+            const parts = [
+              `# ClayDepth V2.5 Pro - 3D Relief Mesh (${GRID}x${GRID})\n`,
+              `# Source: ${state.fileName} (${w}x${h})\n`,
+              `o ClayRelief\n`
+            ];
 
-            for (let ix = 0; ix < GRID; ix++) {
-              const fx = (ix / (GRID - 1)) * (w - 1);
-              const x0 = Math.floor(fx), x1 = Math.min(w - 1, x0 + 1), tx = fx - x0;
-              const px = (ix / (GRID - 1) - 0.5) * sizeX;
+            for (let iy = 0; iy < GRID; iy++) {
+              const fy = (iy / (GRID - 1)) * (h - 1);
+              const y0 = Math.floor(fy), y1 = Math.min(h - 1, y0 + 1), ty = fy - y0;
+              const py = (0.5 - iy / (GRID - 1)) * sizeY;
+              let rowStr = '';
 
-              const z00 = depth[y0 * w + x0], z10 = depth[y0 * w + x1];
-              const z01 = depth[y1 * w + x0], z11 = depth[y1 * w + x1];
-              const z = ((z00 * (1 - tx) + z10 * tx) * (1 - ty) + (z01 * (1 - tx) + z11 * tx) * ty) * sizeZ;
-              lines.push(`v ${px.toFixed(4)} ${py.toFixed(4)} ${z.toFixed(4)}`);
+              for (let ix = 0; ix < GRID; ix++) {
+                const fx = (ix / (GRID - 1)) * (w - 1);
+                const x0 = Math.floor(fx), x1 = Math.min(w - 1, x0 + 1), tx = fx - x0;
+                const px = (ix / (GRID - 1) - 0.5) * sizeX;
+
+                const z00 = depth[y0 * w + x0], z10 = depth[y0 * w + x1];
+                const z01 = depth[y1 * w + x0], z11 = depth[y1 * w + x1];
+                const z = ((z00 * (1 - tx) + z10 * tx) * (1 - ty) + (z01 * (1 - tx) + z11 * tx) * ty) * sizeZ;
+                rowStr += `v ${px.toFixed(4)} ${py.toFixed(4)} ${z.toFixed(4)}\n`;
+              }
+              parts.push(rowStr);
             }
-          }
 
-          for (let iy = 0; iy < GRID - 1; iy++) {
-            for (let ix = 0; ix < GRID - 1; ix++) {
-              const a = iy * GRID + ix + 1;
-              const b = a + 1;
-              const c = a + GRID;
-              const d = c + 1;
-              lines.push(`f ${a} ${c} ${b}`);
-              lines.push(`f ${b} ${c} ${d}`);
+            for (let iy = 0; iy < GRID - 1; iy++) {
+              let fStr = '';
+              for (let ix = 0; ix < GRID - 1; ix++) {
+                const a = iy * GRID + ix + 1;
+                const b = a + 1;
+                const c = a + GRID;
+                const d = c + 1;
+                fStr += `f ${a} ${c} ${b}\nf ${b} ${c} ${d}\n`;
+              }
+              parts.push(fStr);
             }
-          }
 
-          const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
-          triggerDownloadBlob(blob, `${state.fileName}_relief_200x200.obj`);
-          showToast('Đã xuất lưới phù điêu 3D (.OBJ 200×200) mở ngay trong Blender/ZBrush/ArtCAM!', 'success', 3800);
-        } catch (err) {
-          console.error(err);
-          showToast('Có lỗi khi tạo file .OBJ.', 'warn');
-        }
+            const blob = new Blob(parts, { type: 'text/plain;charset=utf-8' });
+            triggerDownloadBlob(blob, `${state.fileName}_relief_${GRID}x${GRID}.obj`);
+            showToast(`Đã xuất lưới 3D .OBJ (${GRID}×${GRID}) sẵn sàng mở trong Blender/ZBrush/ArtCAM!`, 'success', 3800);
+          } catch (err) {
+            console.error(err);
+            showToast('Có lỗi khi tạo file .OBJ.', 'warn');
+          } finally {
+            setLoading(false);
+          }
+        }, 25);
       });
 
       /* ===================================================================
          16. GẮN SỰ KIỆN GIAO DIỆN (EVENTS)
          =================================================================== */
-      // Khôi phục URL Colab đã lưu
       try {
         const savedUrl = localStorage.getItem('claydepth_v2_colab_url');
         if (savedUrl) els.colabUrlInput.value = savedUrl;
@@ -3624,7 +4054,62 @@ display(HTML(final_html))</script>
         if (e.key === 'Enter') checkColabHealth();
       });
 
-      // Chọn / Kéo thả / Dán ảnh
+      // Chọn nhanh Preset chế độ nội suy AI
+      function syncInterpControlsUI() {
+        els.inferResSelect.value = String(state.inferRes);
+        els.interpModeSelect.value = state.interpMode;
+        els.tileGridSelect.value = String(state.tileGrid);
+        els.slGuidedStrength.value = String(state.guidedStrength);
+        els.valGuidedStrength.textContent = `${state.guidedStrength}%`;
+        els.chkUseTta.checked = state.useTta;
+        const isGuided = state.interpMode === 'guided' || state.interpMode === 'guided_strong';
+        els.guidedStrengthWrap.classList.toggle('disabled-block', !isGuided);
+      }
+
+      const INTERP_PRESETS = {
+        fast:  { inferRes: 756,  interpMode: 'lanczos',       tileGrid: 1, guidedStrength: 35, useTta: false },
+        cnc:   { inferRes: 1036, interpMode: 'guided',        tileGrid: 2, guidedStrength: 65, useTta: true },
+        ultra: { inferRes: 1288, interpMode: 'guided_strong', tileGrid: 3, guidedStrength: 80, useTta: true }
+      };
+
+      els.interpPresets.addEventListener('click', (e) => {
+        const btn = e.target.closest('.preset-pill');
+        if (!btn) return;
+        const p = INTERP_PRESETS[btn.dataset.preset];
+        if (!p) return;
+        Object.assign(state, p);
+        els.interpPresets.querySelectorAll('.preset-pill').forEach((b) => b.classList.toggle('active', b === btn));
+        syncInterpControlsUI();
+      });
+
+      function clearPresetActive() {
+        els.interpPresets.querySelectorAll('.preset-pill').forEach((b) => b.classList.remove('active'));
+      }
+
+      els.inferResSelect.addEventListener('change', (e) => {
+        state.inferRes = Number(e.target.value);
+        clearPresetActive();
+      });
+      els.interpModeSelect.addEventListener('change', (e) => {
+        state.interpMode = e.target.value;
+        clearPresetActive();
+        syncInterpControlsUI();
+      });
+      els.tileGridSelect.addEventListener('change', (e) => {
+        state.tileGrid = Number(e.target.value);
+        clearPresetActive();
+      });
+      els.slGuidedStrength.addEventListener('input', (e) => {
+        state.guidedStrength = Number(e.target.value);
+        els.valGuidedStrength.textContent = `${state.guidedStrength}%`;
+        clearPresetActive();
+      });
+      els.chkUseTta.addEventListener('change', (e) => {
+        state.useTta = e.target.checked;
+        clearPresetActive();
+      });
+
+      // Nạp ảnh
       els.clayDropzone.addEventListener('click', () => els.fileInputClay.click());
       els.btnPickClay.addEventListener('click', () => els.fileInputClay.click());
       els.btnSwapClay.addEventListener('click', () => els.fileInputClay.click());
@@ -3673,12 +4158,10 @@ display(HTML(final_html))</script>
 
       els.btnCreateSample.addEventListener('click', generateSampleClayRelief);
       els.btnEmptySample.addEventListener('click', generateSampleClayRelief);
-
-      // Chạy AI Colab & Demo cục bộ
       els.btnRunColab.addEventListener('click', runColabPrediction);
       els.btnRunLocalDemo.addEventListener('click', runLocalDemoDepth);
 
-      // Các thanh trượt Hậu kỳ CNC
+      // Thanh trượt Hậu kỳ CNC
       els.toggleBgCutoff.addEventListener('click', () => {
         state.bgCutoff = !state.bgCutoff;
         els.toggleBgCutoff.classList.toggle('on', state.bgCutoff);
@@ -3712,14 +4195,23 @@ display(HTML(final_html))</script>
         els.valGamma.textContent = state.gamma.toFixed(2);
         schedulePostProcess();
       });
-      els.slSmooth.addEventListener('input', (e) => {
-        state.smooth = Number(e.target.value);
-        els.valSmooth.textContent = String(state.smooth);
+      els.slClarity.addEventListener('input', (e) => {
+        state.clarity = Number(e.target.value);
+        els.valClarity.textContent = `${state.clarity}%`;
         schedulePostProcess();
       });
       els.slMicroDetail.addEventListener('input', (e) => {
         state.microDetail = Number(e.target.value);
         els.valMicroDetail.textContent = `${state.microDetail}%`;
+        schedulePostProcess();
+      });
+      els.slSmooth.addEventListener('input', (e) => {
+        state.smooth = Number(e.target.value);
+        els.valSmooth.textContent = String(state.smooth);
+        schedulePostProcess();
+      });
+      els.chkEdgeSmooth.addEventListener('change', (e) => {
+        state.edgeSmooth = e.target.checked;
         schedulePostProcess();
       });
       els.chkInvert.addEventListener('change', (e) => {
@@ -3730,24 +4222,28 @@ display(HTML(final_html))</script>
       els.btnResetPost.addEventListener('click', () => {
         state.bgCutoff = true;
         state.bgThreshold = 15;
-        state.bgFeather = 3;
+        state.bgFeather = 2;
         state.blackPoint = 0;
         state.whitePoint = 100;
         state.gamma = 1.0;
+        state.clarity = 22;
+        state.microDetail = 12;
         state.smooth = 1;
-        state.microDetail = 8;
+        state.edgeSmooth = true;
         state.invert = false;
 
         els.toggleBgCutoff.classList.add('on');
         els.toggleBgCutoff.setAttribute('aria-checked', 'true');
         els.bgCutoffControls.classList.remove('disabled-block');
         els.slBgThreshold.value = 15; els.valBgThreshold.textContent = '15';
-        els.slBgFeather.value = 3; els.valBgFeather.textContent = '3 px';
+        els.slBgFeather.value = 2; els.valBgFeather.textContent = '2 px';
         els.slBlackPt.value = 0; els.valBlackPt.textContent = '0%';
         els.slWhitePt.value = 100; els.valWhitePt.textContent = '100%';
         els.slGamma.value = 1.0; els.valGamma.textContent = '1.00';
+        els.slClarity.value = 22; els.valClarity.textContent = '22%';
+        els.slMicroDetail.value = 12; els.valMicroDetail.textContent = '12%';
         els.slSmooth.value = 1; els.valSmooth.textContent = '1';
-        els.slMicroDetail.value = 8; els.valMicroDetail.textContent = '8%';
+        els.chkEdgeSmooth.checked = true;
         els.chkInvert.checked = false;
 
         schedulePostProcess();
@@ -3776,7 +4272,7 @@ display(HTML(final_html))</script>
         });
       });
 
-      // Điều khiển 3D nổi
+      // Điều khiển 3D
       els.sl3dZ.addEventListener('input', (e) => {
         state.zScale = Number(e.target.value);
         els.val3dZ.textContent = state.zScale.toFixed(2);
@@ -3814,8 +4310,8 @@ display(HTML(final_html))</script>
           ? els.tplColabServer.textContent.trim()
           : els.tplColabInline.textContent.trim();
         els.colabTabDesc.textContent = isServer
-          ? 'Tab 1 (Khuyên dùng): Chạy FastAPI + Depth Anything V2 GPU + Cloudflared Tunnel miễn phí (không cần token), trả ảnh 16-bit lossless về trực tiếp ứng dụng này.'
-          : 'Tab 2 (Chạy 1-Cell tại chỗ): Không cần mở tunnel hay copy link — hiện giao diện tải ảnh, chỉnh ngưỡng nền đen & tải thẳng Height Map 16-bit PNG ngay trong Google Colab.';
+          ? 'Tab 1 (Khuyên dùng): Chạy FastAPI V2.5 Pro + Depth Anything V2 FP16 + Tile Fusion 2×2/3×3 + Guided Filter + Cloudflared Tunnel miễn phí, trả ảnh 16-bit lossless về trực tiếp trang này.'
+          : 'Tab 2 (Chạy 1-Cell tại chỗ): Không cần mở tunnel — hiện giao diện chọn Res (756/1036/1288), Tile 2×2/3×3, Guided Filter & tải thẳng Height Map 16-bit PNG ngay trong Google Colab.';
       }
 
       function openColabModal() {
@@ -3847,12 +4343,13 @@ display(HTML(final_html))</script>
       els.btnCopyColabCode.addEventListener('click', async () => {
         try {
           await copyTextSafe(els.colabCodeDisplay.textContent);
-          showToast('Đã copy Code Python! Dán vào 1 cell trên Google Colab (T4 GPU) rồi bấm Run.', 'success', 3800);
+          showToast('Đã copy Code Python V2.5 Pro! Dán vào 1 cell trên Google Colab (T4 GPU) rồi bấm Run.', 'success', 3800);
         } catch (err) {
           showToast('Không thể tự động copy. Hãy bôi đen khung code và bấm Ctrl+C.', 'warn');
         }
       });
 
+      syncInterpControlsUI();
     })();
   </script>
 </body>
